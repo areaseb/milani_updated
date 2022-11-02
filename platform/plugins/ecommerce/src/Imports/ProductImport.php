@@ -397,7 +397,7 @@ class ProductImport implements
 
     /**
      * @param string|null $url
-     * @return string
+     * @return string|null
      */
     protected function uploadImageFromURL(?string $url): ?string
     {
