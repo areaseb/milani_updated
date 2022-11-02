@@ -17,17 +17,10 @@
 @endphp
 
 <div class="col-lg-12">
-    <a class="shop-filter-toogle" href="#">
-        <span class="fal fa-filter"></span>
-        <span class="title">{{ __('Filters') }}</span>
-        <i class="far fa-angle-up angle-down"></i>
-        <i class="far fa-angle-down angle-up"></i>
-    </a>
     <form action="{{ isset($filterURL) ? $filterURL : route('public.products') }}" method="GET" id="products-filter-ajax">
         @if ($layout != 'product-full-width')
             <input type="hidden" name="layout" value="{{ $layout }}">
         @endif
-        @include(Theme::getThemeNamespace() . '::views/ecommerce/includes/filters')
     </form>
 </div>
 

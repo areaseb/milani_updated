@@ -604,30 +604,3 @@ input {
         }
     }
 }
-
-.form-group--icon {
-    .product-cat-label {
-        border-radius: 0 26px 26px 0;
-        border-left: none;
-        border-right: 2px solid #eee;
-    }
-}
-
-.main-menu > nav > ul > li ul.sub-menu li a i {
-    float: left;
-    top: 1px;
-
-    &:before {
-        content: "\f053";
-    }
-}
-
-.main-menu > nav > ul > li ul.sub-menu li ul.level-menu {
-    left: auto;
-    right: 100%;
-
-    li a i {
-        top: -12px;
-        left: -10px;
-    }
-}

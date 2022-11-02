@@ -54,10 +54,10 @@
 
                         <div>
                             <span class="d-inline-block">{{ __('Discount') }}:</span>
-                            <strong class="order-detail-value"> {{ format_price($order->discount_amount) }}
+                            <strong class="order-detail-value"> {{ $order->discount_amount_format }}
                                 @if ($order->discount_amount)
                                     @if ($order->coupon_code)
-                                        ({!! BaseHelper::html(__('Coupon code: ":code"', ['code' => Html::tag('strong', $order->coupon_code)->toHtml()])) !!})
+                                        ({!! __('Coupon code: ":code"', ['code' => Html::tag('strong', $order->coupon_code, ['class' => 'badge'])->toHtml()]) !!})
                                     @elseif ($order->discount_description)
                                         ({{ $order->discount_description }})
                                     @endif
@@ -85,10 +85,6 @@
                         <div>
                             <span class="d-inline-block">{{ __('Phone') }}:</span>
                             <strong class="order-detail-value">{{ $order->address->phone }} </strong>
-                        </div>
-                        <div>
-                            <span class="d-inline-block">{{ __('Email') }}:</span>
-                            <strong class="order-detail-value">{{ $order->address->email }} </strong>
                         </div>
                         <div class="row">
                             <div class="col-12">

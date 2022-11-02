@@ -80,12 +80,6 @@
                 </div>
             @endif
 
-            @if ($product->options()->count() > 0 && isset($product->toArray()['options']))
-                <div class="pr_switch_wrap" id="product-option">
-                    {!! render_product_options($product, $product->toArray()['options']) !!}
-                </div>
-            @endif
-
             <div class="bt-1 border-color-1 mb-30"></div>
             <form class="add-to-cart-form" method="POST" action="{{ route('public.cart.add-to-cart') }}">
                 @csrf

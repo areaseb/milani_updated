@@ -1,1 +1,93 @@
-(()=>{function e(e,a){for(var t=0;t<a.length;t++){var l=a[t];l.enumerable=l.enumerable||!1,l.configurable=!0,"value"in l&&(l.writable=!0),Object.defineProperty(e,l.key,l)}}var a=function(){function a(){!function(e,a){if(!(e instanceof a))throw new TypeError("Cannot call a class as a function")}(this,a)}var t,l,n;return t=a,(l=[{key:"init",value:function(){var e=$("#edit-slug-box");$(document).on("click","#change_slug",(function(e){$(".default-slug").unwrap();var a=$("#editable-post-name");a.html('<input type="text" id="new-post-slug" class="form-control" value="'+a.text()+'" autocomplete="off">'),$("#edit-slug-box .cancel").show(),$("#edit-slug-box .save").show(),$(e.currentTarget).hide()})),$(document).on("click","#edit-slug-box .cancel",(function(){var e=$("#current-slug").val(),a=$("#sample-permalink");a.html('<a class="permalink" href="'+$("#slug_id").data("view")+e.replace("/","")+'">'+a.html()+"</a>"),$("#editable-post-name").text(e),$("#edit-slug-box .cancel").hide(),$("#edit-slug-box .save").hide(),$("#change_slug").show()}));var a=function(a,t,l){$.ajax({url:$("#slug_id").data("url"),type:"POST",data:{value:a,slug_id:t,model:$("input[name=model]").val()},success:function(a){var t=$("#sample-permalink"),n=$("#slug_id");l?t.find(".permalink").prop("href",n.data("view")+a.replace("/","")):t.html('<a class="permalink" target="_blank" href="'+n.data("view")+a.replace("/","")+'">'+t.html()+"</a>"),$(".page-url-seo p").text(n.data("view")+a.replace("/","")),$("#editable-post-name").text(a),$("#current-slug").val(a),$("#edit-slug-box .cancel").hide(),$("#edit-slug-box .save").hide(),$("#change_slug").show(),e.removeClass("hidden")},error:function(e){Botble.handleError(e)}})};$(document).on("click","#edit-slug-box .save",(function(){var e=$("#new-post-slug"),t=e.val(),l=$("#slug_id").data("id");null==l&&(l=0),null!=t&&""!==t?a(t,l,!1):e.closest(".form-group").addClass("has-error")})),$(document).on("blur","#"+e.data("field-name"),(function(t){if(e.hasClass("hidden")){var l=$(t.currentTarget).val();null!==l&&""!==l&&a(l,0,!0)}}))}}])&&e(t.prototype,l),n&&e(t,n),Object.defineProperty(t,"prototype",{writable:!1}),a}();$((function(){(new a).init()}))})();
+/******/ (() => { // webpackBootstrap
+var __webpack_exports__ = {};
+/*!************************************************************!*\
+  !*** ./platform/packages/slug/resources/assets/js/slug.js ***!
+  \************************************************************/
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+var SlugBoxManagement = /*#__PURE__*/function () {
+  function SlugBoxManagement() {
+    _classCallCheck(this, SlugBoxManagement);
+  }
+  _createClass(SlugBoxManagement, [{
+    key: "init",
+    value: function init() {
+      var $slugBox = $('#edit-slug-box');
+      $(document).on('click', '#change_slug', function (event) {
+        $('.default-slug').unwrap();
+        var $slugInput = $('#editable-post-name');
+        $slugInput.html('<input type="text" id="new-post-slug" class="form-control" value="' + $slugInput.text() + '" autocomplete="off">');
+        $('#edit-slug-box .cancel').show();
+        $('#edit-slug-box .save').show();
+        $(event.currentTarget).hide();
+      });
+      $(document).on('click', '#edit-slug-box .cancel', function () {
+        var currentSlug = $('#current-slug').val();
+        var $permalink = $('#sample-permalink');
+        $permalink.html('<a class="permalink" href="' + $('#slug_id').data('view') + currentSlug.replace('/', '') + '">' + $permalink.html() + '</a>');
+        $('#editable-post-name').text(currentSlug);
+        $('#edit-slug-box .cancel').hide();
+        $('#edit-slug-box .save').hide();
+        $('#change_slug').show();
+      });
+      var createSlug = function createSlug(name, id, exist) {
+        $.ajax({
+          url: $('#slug_id').data('url'),
+          type: 'POST',
+          data: {
+            value: name,
+            slug_id: id,
+            model: $('input[name=model]').val()
+          },
+          success: function success(data) {
+            var $permalink = $('#sample-permalink');
+            var $slugId = $('#slug_id');
+            if (exist) {
+              $permalink.find('.permalink').prop('href', $slugId.data('view') + data.replace('/', ''));
+            } else {
+              $permalink.html('<a class="permalink" target="_blank" href="' + $slugId.data('view') + data.replace('/', '') + '">' + $permalink.html() + '</a>');
+            }
+            $('.page-url-seo p').text($slugId.data('view') + data.replace('/', ''));
+            $('#editable-post-name').text(data);
+            $('#current-slug').val(data);
+            $('#edit-slug-box .cancel').hide();
+            $('#edit-slug-box .save').hide();
+            $('#change_slug').show();
+            $slugBox.removeClass('hidden');
+          },
+          error: function error(data) {
+            Botble.handleError(data);
+          }
+        });
+      };
+      $(document).on('click', '#edit-slug-box .save', function () {
+        var $slugField = $('#new-post-slug');
+        var name = $slugField.val();
+        var id = $('#slug_id').data('id');
+        if (id == null) {
+          id = 0;
+        }
+        if (name != null && name !== '') {
+          createSlug(name, id, false);
+        } else {
+          $slugField.closest('.form-group').addClass('has-error');
+        }
+      });
+      $(document).on('blur', '#' + $slugBox.data('field-name'), function (e) {
+        if ($slugBox.hasClass('hidden')) {
+          var value = $(e.currentTarget).val();
+          if (value !== null && value !== '') {
+            createSlug(value, 0, true);
+          }
+        }
+      });
+    }
+  }]);
+  return SlugBoxManagement;
+}();
+$(function () {
+  new SlugBoxManagement().init();
+});
+/******/ })()
+;

@@ -3,18 +3,20 @@
                     ->add('custom-scrollbar-css', 'plugins/mcustom-scrollbar/jquery.mCustomScrollbar.css');
     Theme::asset()->container('footer')->usePath()
                 ->add('custom-scrollbar-js', 'plugins/mcustom-scrollbar/jquery.mCustomScrollbar.js', ['jquery']);
-
-    $categories = ProductCategoryHelper::getActiveTreeCategories();
-
-    if (Route::currentRouteName() != 'public.products' && request()->input('categories', [])) {
-        $categories = $categories->whereIn('id', (array)request()->input('categories', []));
-    }
 @endphp
 
-<div class="shop-product-filter-header">
+<div class="shop-product-filter-header_">
     <div class="row">
+        @php
+            $categories = ProductCategoryHelper::getProductCategoriesWithIndent()
+                        ->where('status', \Botble\Base\Enums\BaseStatusEnum::PUBLISHED);
+
+            if (Route::currentRouteName() != 'public.products' && request()->input('categories', [])) {
+                $categories = $categories->whereIn('id', (array)request()->input('categories', []));
+            }
+        @endphp
         @if (count($categories) > 0)
-            <div class="col-lg-3 col-md-4 mb-lg-0 mb-md-5 mb-sm-5 widget-filter-item">
+            <div class="col-12 pb-4 widget-filter-item">
                 <h5 class="mb-20 widget__title" data-title="{{ __('Categories') }}">{{ __('By :name', ['name' => __('categories')]) }}</h5>
                 <div class="custome-checkbox ps-custom-scrollbar">
                     @foreach($categories as $category)
@@ -31,26 +33,26 @@
             </div>
         @endif
 
-        @php
-            $brands = get_all_brands(['status' => \Botble\Base\Enums\BaseStatusEnum::PUBLISHED], [], ['products']);
-        @endphp
-        @if (count($brands) > 0)
-            <div class="col-lg-3 col-md-4 mb-lg-0 mb-md-5 mb-sm-5 widget-filter-item">
-                <h5 class="mb-20 widget__title" data-title="{{ __('Brand') }}">{{ __('By :name', ['name' => __('Brands')]) }}</h5>
-                <div class="custome-checkbox ps-custom-scrollbar">
-                    @foreach($brands as $brand)
-                        <input class="form-check-input"
-                               name="brands[]"
-                               type="checkbox"
-                               id="brand-filter-{{ $brand->id }}"
-                               value="{{ $brand->id }}"
-                               @if (in_array($brand->id, request()->input('brands', []))) checked @endif>
-                        <label class="form-check-label" for="brand-filter-{{ $brand->id }}"><span class="d-inline-block">{{ $brand->name }}</span> <span class="d-inline-block">({{ $brand->products_count }})</span> </label>
-                        <br>
-                    @endforeach
-                </div>
-            </div>
-        @endif
+{{--        @php--}}
+{{--            $brands = get_all_brands(['status' => \Botble\Base\Enums\BaseStatusEnum::PUBLISHED], [], ['products']);--}}
+{{--        @endphp--}}
+{{--        @if (count($brands) > 0)--}}
+{{--            <div class="col-12 widget-filter-item">--}}
+{{--                <h5 class="mb-20 widget__title" data-title="{{ __('Brand') }}">{{ __('By :name', ['name' => __('Brands')]) }}</h5>--}}
+{{--                <div class="custome-checkbox ps-custom-scrollbar">--}}
+{{--                    @foreach($brands as $brand)--}}
+{{--                        <input class="form-check-input"--}}
+{{--                               name="brands[]"--}}
+{{--                               type="checkbox"--}}
+{{--                               id="brand-filter-{{ $brand->id }}"--}}
+{{--                               value="{{ $brand->id }}"--}}
+{{--                               @if (in_array($brand->id, request()->input('brands', []))) checked @endif>--}}
+{{--                        <label class="form-check-label" for="brand-filter-{{ $brand->id }}"><span class="d-inline-block">{{ $brand->name }}</span> <span class="d-inline-block">({{ $brand->products_count }})</span> </label>--}}
+{{--                        <br>--}}
+{{--                    @endforeach--}}
+{{--                </div>--}}
+{{--            </div>--}}
+{{--        @endif--}}
 
         @php
             $tags = app(\Botble\Ecommerce\Repositories\Interfaces\ProductTagInterface::class)->advancedGet([
@@ -61,7 +63,7 @@
             ]);
         @endphp
         @if (count($tags) > 0)
-            <div class="col-lg-3 col-md-4 mb-lg-0 mb-md-5 mb-sm-5 widget-filter-item">
+            <div class="col-12 pb-4 widget-filter-item">
                 <h5 class="mb-20 widget__title" data-title="{{ __('Tag') }}">{{ __('By :name', ['name' => __('tags')]) }}</h5>
                 <div class="custome-checkbox">
                     @foreach($tags as $tag)
@@ -78,7 +80,7 @@
             </div>
         @endif
 
-        <div class="col-lg-3 col-md-4 mb-lg-0 mb-md-5 mb-sm-5 widget-filter-item" data-type="price">
+        <div class="col-12 pb-4 widget-filter-item" data-type="price">
             <h5 class="mb-20 widget__title" data-title="{{ __('Price') }}">{{ __('By :name', ['name' => __('Price')]) }}</h5>
             <div class="price-filter range">
                 <div class="price-filter-inner">
@@ -107,13 +109,7 @@
         </div>
     </div>
 
-    <a class="show-advanced-filters" href="#">
-        <span class="title">{{ __('Advanced filters') }}</span>
-        <i class="far fa-angle-up angle-down"></i>
-        <i class="far fa-angle-down angle-up"></i>
-    </a>
-
-    <div class="advanced-search-widgets" style="display: none">
+    <div class="advanced-search-widgets">
         <div class="row">
             {!! render_product_swatches_filter([
             'view' => Theme::getThemeNamespace() . '::views.ecommerce.attributes.attributes-filter-renderer'
@@ -121,9 +117,9 @@
         </div>
     </div>
 
-    <div class="widget">
+    <div class="widget pt-4">
         <a class="clear_filter dib clear_all_filter" href="{{ route('public.products') }}">{{ __('Clear All Filter') }}</a>
-
+        &nbsp; &nbsp;
         <button type="submit" class="btn btn-sm btn-default"><i class="fa fa-filter mr-5 ml-0"></i> {{ __('Filter') }}</button>
     </div>
 </div>

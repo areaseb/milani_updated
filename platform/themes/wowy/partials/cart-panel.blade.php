@@ -24,11 +24,6 @@
                             <h3><span class="d-inline-block">{{ $cartItem->qty }}</span> <span class="d-inline-block"> x </span> <span class="d-inline-block">{{ format_price($cartItem->price) }}</span> @if ($product->front_sale_price != $product->price)
                                     <small><del>{{ format_price($product->price) }}</del></small>@endif</h3>
                             <p class="mb-0"><small>{{ $cartItem->options['attributes'] ?? '' }}</small></p>
-
-                            @if (!empty($cartItem->options['options']))
-                                {!! render_product_options_info($cartItem->options['options'], $product, true) !!}
-                            @endif
-
                             @if (!empty($cartItem->options['extras']) && is_array($cartItem->options['extras']))
                                 @foreach($cartItem->options['extras'] as $option)
                                     @if (!empty($option['key']) && !empty($option['value']))

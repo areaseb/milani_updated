@@ -5,30 +5,30 @@
         [
             'key'   => 'customer.overview',
             'label' => __('Overview'),
-            'icon'  => 'fa fa-atom',
+            'icon'  => 'fa fa-atom'
         ],
         [
             'key'   => 'customer.edit-account',
             'label' => __('Profile'),
-            'icon'  => 'fa fa-user-edit',
+            'icon'  => 'fa fa-user-edit'
         ],
         [
             'key'   => 'customer.orders',
             'label' => __('Orders'),
             'icon'  => 'fa fa-shopping-basket',
-            'routes'    => ['customer.orders.view'],
+            'routes'    => ['customer.orders.view']
         ],
         [
             'key'   => 'customer.downloads',
             'label' => __('Downloads'),
             'icon'  => 'fa fa-shopping-basket',
-            'routes'    => ['customer.downloads'],
+            'routes'    => ['customer.downloads']
         ],
         [
             'key'    => 'customer.order_returns',
             'label'  => __('Order return requests'),
             'icon'   => 'fa  fa-cart-arrow-down',
-            'routes' => ['customer.order_returns.view'],
+            'routes' => ['customer.order_returns.view']
         ],
         [
             'key'   => 'customer.address',
@@ -36,7 +36,7 @@
             'icon'  => 'fa fa-map-marked',
             'routes'    => [
                 'customer.address.create',
-                'customer.address.edit',
+                'customer.address.edit'
             ]
         ],
         [
@@ -47,17 +47,17 @@
         [
             'key'   => 'customer.change-password',
             'label' => __('Change password'),
-            'icon'  => 'fa fa-key',
+            'icon'  => 'fa fa-key'
         ],
         [
             'key'   => 'customer.logout',
             'label' => __('Logout'),
-            'icon'  => 'fa fa-sign-out-alt',
-        ],
+            'icon'  => 'fa fa-sign-out-alt'
+        ]
     ];
 
     if (!EcommerceHelper::isEnabledSupportDigitalProducts()) {
-        unset($menus[3]);
+        unset($menus['customer.downloads']);
     }
 @endphp
 <section class="pt-150 pb-150">

@@ -1,1 +1,112 @@
-(()=>{function e(e,t){for(var n=0;n<t.length;n++){var o=t[n];o.enumerable=o.enumerable||!1,o.configurable=!0,"value"in o&&(o.writable=!0),Object.defineProperty(e,o.key,o)}}var t=function(){function t(){!function(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}(this,t)}var n,o,a;return n=t,a=[{key:"getStates",value:function(e,t){var n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:null;$.ajax({url:e.data("url"),data:{country_id:t},type:"GET",beforeSend:function(){n&&n.prop("disabled",!0)},success:function(t){if(t.error)Botble.showError(t.message);else{var n="";$.each(t.data,(function(e,t){n+='<option value="'+(t.id||"")+'">'+t.name+"</option>"})),e.html(n)}},complete:function(){n&&n.prop("disabled",!1)}})}},{key:"getCities",value:function(e,t){var n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:null;$.ajax({url:e.data("url"),data:{state_id:t},type:"GET",beforeSend:function(){n&&n.prop("disabled",!0)},success:function(t){if(t.error)Botble.showError(t.message);else{var n="";$.each(t.data,(function(e,t){n+='<option value="'+(t.id||"")+'">'+t.name+"</option>"})),e.html(n),e.trigger("change")}},complete:function(){n&&n.prop("disabled",!1)}})}}],(o=[{key:"init",value:function(){var e='select[data-type="state"]',n='select[data-type="city"]';$(document).on("change",'select[data-type="country"]',(function(o){o.preventDefault();var a=$(document).find(e),r=$(document).find(n);if(a.find('option:not([value=""]):not([value="0"])').remove(),r.find('option:not([value=""]):not([value="0"])').remove(),a.length){var i=$(o.currentTarget).val();if(i){var u=$(o.currentTarget).closest("form").find("button[type=submit], input[type=submit]");t.getStates(a,i,u)}}})),$(document).on("change",e,(function(e){e.preventDefault();var o=$(document).find(n);if(o.length){o.find('option:not([value=""]):not([value="0"])').remove();var a=$(e.currentTarget).val();if(a){var r=$(e.currentTarget).closest("form").find("button[type=submit], input[type=submit]");t.getCities(o,a,r)}}}))}}])&&e(n.prototype,o),a&&e(n,a),Object.defineProperty(n,"prototype",{writable:!1}),t}();$((function(){(new t).init()}))})();
+/******/ (() => { // webpackBootstrap
+var __webpack_exports__ = {};
+/*!*******************************************************************!*\
+  !*** ./platform/plugins/location/resources/assets/js/location.js ***!
+  \*******************************************************************/
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+var Location = /*#__PURE__*/function () {
+  function Location() {
+    _classCallCheck(this, Location);
+  }
+  _createClass(Location, [{
+    key: "init",
+    value: function init() {
+      var country = 'select[data-type="country"]';
+      var state = 'select[data-type="state"]';
+      var city = 'select[data-type="city"]';
+      $(document).on('change', country, function (e) {
+        e.preventDefault();
+        var $state = $(document).find(state);
+        var $city = $(document).find(city);
+        $state.find('option:not([value=""]):not([value="0"])').remove();
+        $city.find('option:not([value=""]):not([value="0"])').remove();
+        if ($state.length) {
+          var val = $(e.currentTarget).val();
+          if (val) {
+            var $button = $(e.currentTarget).closest('form').find('button[type=submit], input[type=submit]');
+            Location.getStates($state, val, $button);
+          }
+        }
+      });
+      $(document).on('change', state, function (e) {
+        e.preventDefault();
+        var $city = $(document).find(city);
+        if ($city.length) {
+          $city.find('option:not([value=""]):not([value="0"])').remove();
+          var val = $(e.currentTarget).val();
+          if (val) {
+            var $button = $(e.currentTarget).closest('form').find('button[type=submit], input[type=submit]');
+            Location.getCities($city, val, $button);
+          }
+        }
+      });
+    }
+  }], [{
+    key: "getStates",
+    value: function getStates($el, countryId) {
+      var $button = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+      $.ajax({
+        url: $el.data('url'),
+        data: {
+          country_id: countryId
+        },
+        type: 'GET',
+        beforeSend: function beforeSend() {
+          $button && $button.prop('disabled', true);
+        },
+        success: function success(res) {
+          if (res.error) {
+            Botble.showError(res.message);
+          } else {
+            var options = '';
+            $.each(res.data, function (index, item) {
+              options += '<option value="' + (item.id || '') + '">' + item.name + '</option>';
+            });
+            $el.html(options);
+          }
+        },
+        complete: function complete() {
+          $button && $button.prop('disabled', false);
+        }
+      });
+    }
+  }, {
+    key: "getCities",
+    value: function getCities($el, stateId) {
+      var $button = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+      $.ajax({
+        url: $el.data('url'),
+        data: {
+          state_id: stateId
+        },
+        type: 'GET',
+        beforeSend: function beforeSend() {
+          $button && $button.prop('disabled', true);
+        },
+        success: function success(res) {
+          if (res.error) {
+            Botble.showError(res.message);
+          } else {
+            var options = '';
+            $.each(res.data, function (index, item) {
+              options += '<option value="' + (item.id || '') + '">' + item.name + '</option>';
+            });
+            $el.html(options);
+            $el.trigger('change');
+          }
+        },
+        complete: function complete() {
+          $button && $button.prop('disabled', false);
+        }
+      });
+    }
+  }]);
+  return Location;
+}();
+$(function () {
+  new Location().init();
+});
+/******/ })()
+;

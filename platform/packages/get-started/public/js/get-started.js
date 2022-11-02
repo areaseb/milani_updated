@@ -1,1 +1,81 @@
-(()=>{var t,e;window.getStartedCookie=(t="get_started_cookie",e=window.location.hostname,{setupCookie:function(){var o,a,s,d;o=t,a=1,s=1,(d=new Date).setTime(d.getTime()+24*s*60*60*1e3),document.cookie=o+"="+a+";expires="+d.toUTCString()+";domain="+e+";path=/"},cookieExists:function(){return-1!==document.cookie.split("; ").indexOf(t+"=1")}}),$(document).ready((function(){window.getStartedCookie.cookieExists()||$('.get-started-modal[data-step="1"]').modal("show"),$(document).on("click",".get-started-modal button[type=submit]",(function(t){t.preventDefault(),t.stopPropagation();var e=$(this);e.addClass("button-loading"),$.ajax({method:"POST",cache:!1,url:e.closest("form").prop("action"),data:new FormData(e.closest("form")[0]),contentType:!1,processData:!1,success:function(t){if(t.error)return e.removeClass("button-loading"),Botble.showError(t.message),!1;e.removeClass("button-loading"),e.closest(".get-started-modal").modal("hide"),$('.get-started-modal[data-step="'+t.data.step+'"]').modal("show")},error:function(t){e.removeClass("button-loading"),Botble.handleError(t)}})})),$(".get-started-modal .btn-close").on("click",(function(t){t.preventDefault();var e=$(this).closest(".get-started-modal").data("step");$(".js-back-to-wizard").data("step",e),$(this).closest(".get-started-modal").modal("hide"),$(".close-get-started-modal").modal("show")})),$(document).on("click",".js-back-to-wizard",(function(t){t.preventDefault(),$(this).closest(".close-get-started-modal").modal("hide"),$('.get-started-modal[data-step="'+$(this).data("step")+'"]').modal("show")})),$(document).on("click",".js-close-wizard",(function(t){t.preventDefault(),window.getStartedCookie.setupCookie(),$(this).closest(".close-get-started-modal").modal("hide")})),$(document).on("click",".resume-setup-wizard",(function(t){t.preventDefault(),$('.get-started-modal[data-step="1"]').modal("show")}))}))})();
+/******/ (() => { // webpackBootstrap
+var __webpack_exports__ = {};
+/*!**************************************************************************!*\
+  !*** ./platform/packages/get-started/resources/assets/js/get-started.js ***!
+  \**************************************************************************/
+window.getStartedCookie = function () {
+  var COOKIE_VALUE = 1;
+  var COOKIE_NAME = 'get_started_cookie';
+  var COOKIE_DOMAIN = window.location.hostname;
+  function setupCookie() {
+    setCookie(COOKIE_NAME, COOKIE_VALUE, 1);
+  }
+  function cookieExists() {
+    return document.cookie.split('; ').indexOf(COOKIE_NAME + '=' + COOKIE_VALUE) !== -1;
+  }
+  function setCookie(name, value, expirationInDays) {
+    var date = new Date();
+    date.setTime(date.getTime() + expirationInDays * 24 * 60 * 60 * 1000);
+    document.cookie = name + '=' + value + ';expires=' + date.toUTCString() + ';domain=' + COOKIE_DOMAIN + ';path=/';
+  }
+  return {
+    setupCookie: setupCookie,
+    cookieExists: cookieExists
+  };
+}();
+$(document).ready(function () {
+  if (!window.getStartedCookie.cookieExists()) {
+    $('.get-started-modal[data-step="1"]').modal('show');
+  }
+  $(document).on('click', '.get-started-modal button[type=submit]', function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    var _self = $(this);
+    _self.addClass('button-loading');
+    $.ajax({
+      method: 'POST',
+      cache: false,
+      url: _self.closest('form').prop('action'),
+      data: new FormData(_self.closest('form')[0]),
+      contentType: false,
+      processData: false,
+      success: function success(res) {
+        if (res.error) {
+          _self.removeClass('button-loading');
+          Botble.showError(res.message);
+          return false;
+        }
+        _self.removeClass('button-loading');
+        _self.closest('.get-started-modal').modal('hide');
+        $('.get-started-modal[data-step="' + res.data.step + '"]').modal('show');
+      },
+      error: function error(_error) {
+        _self.removeClass('button-loading');
+        Botble.handleError(_error);
+      }
+    });
+  });
+  $('.get-started-modal .btn-close').on('click', function (event) {
+    event.preventDefault();
+    var step = $(this).closest('.get-started-modal').data('step');
+    $('.js-back-to-wizard').data('step', step);
+    $(this).closest('.get-started-modal').modal('hide');
+    $('.close-get-started-modal').modal('show');
+  });
+  $(document).on('click', '.js-back-to-wizard', function (event) {
+    event.preventDefault();
+    $(this).closest('.close-get-started-modal').modal('hide');
+    $('.get-started-modal[data-step="' + $(this).data('step') + '"]').modal('show');
+  });
+  $(document).on('click', '.js-close-wizard', function (event) {
+    event.preventDefault();
+    window.getStartedCookie.setupCookie();
+    $(this).closest('.close-get-started-modal').modal('hide');
+  });
+  $(document).on('click', '.resume-setup-wizard', function (event) {
+    event.preventDefault();
+    $('.get-started-modal[data-step="1"]').modal('show');
+  });
+});
+/******/ })()
+;

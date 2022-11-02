@@ -1,1 +1,48 @@
-(()=>{function e(e,t){for(var n=0;n<t.length;n++){var r=t[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(e,r.key,r)}}var t=function(){function t(){!function(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}(this,t)}var n,r,a;return n=t,(r=[{key:"init",value:function(){$(document).on("click",".btn-clear-cache",(function(e){e.preventDefault();var t=$(e.currentTarget);t.addClass("button-loading"),$.ajax({url:t.data("url"),type:"POST",data:{type:t.data("type")},success:function(e){t.removeClass("button-loading"),e.error?Botble.showError(e.message):Botble.showSuccess(e.message)},error:function(e){t.removeClass("button-loading"),Botble.handleError(e)}})}))}}])&&e(n.prototype,r),a&&e(n,a),Object.defineProperty(n,"prototype",{writable:!1}),t}();$(document).ready((function(){(new t).init()}))})();
+/******/ (() => { // webpackBootstrap
+var __webpack_exports__ = {};
+/*!*********************************************************!*\
+  !*** ./platform/core/base/resources/assets/js/cache.js ***!
+  \*********************************************************/
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+var CacheManagement = /*#__PURE__*/function () {
+  function CacheManagement() {
+    _classCallCheck(this, CacheManagement);
+  }
+  _createClass(CacheManagement, [{
+    key: "init",
+    value: function init() {
+      $(document).on('click', '.btn-clear-cache', function (event) {
+        event.preventDefault();
+        var _self = $(event.currentTarget);
+        _self.addClass('button-loading');
+        $.ajax({
+          url: _self.data('url'),
+          type: 'POST',
+          data: {
+            type: _self.data('type')
+          },
+          success: function success(data) {
+            _self.removeClass('button-loading');
+            if (data.error) {
+              Botble.showError(data.message);
+            } else {
+              Botble.showSuccess(data.message);
+            }
+          },
+          error: function error(data) {
+            _self.removeClass('button-loading');
+            Botble.handleError(data);
+          }
+        });
+      });
+    }
+  }]);
+  return CacheManagement;
+}();
+$(document).ready(function () {
+  new CacheManagement().init();
+});
+/******/ })()
+;
