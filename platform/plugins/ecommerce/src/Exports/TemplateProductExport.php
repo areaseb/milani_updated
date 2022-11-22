@@ -112,6 +112,7 @@ class TemplateProductExport implements
         $this->enabledDigital = EcommerceHelper::isEnabledSupportDigitalProducts();
 
         $product = [
+            'bullet_1'                         => '',
             'name'                             => $productName,
             'description'                      => $descriptions->random(),
             'slug'                             => '',
@@ -161,6 +162,7 @@ class TemplateProductExport implements
         }
 
         $productVariation1 = [
+            'bullet_1'                         => '',
             'name'                             => $productName,
             'description'                      => '',
             'slug'                             => '',
@@ -205,6 +207,7 @@ class TemplateProductExport implements
         }
 
         $productVariation2 = [
+            'bullet_1'                         => '',
             'name'                             => $productName,
             'description'                      => '',
             'slug'                             => '',
@@ -260,6 +263,7 @@ class TemplateProductExport implements
     public function headings(): array
     {
         $headings = [
+            'bullet_1'                         => 'Bullet 1',
             'name'                             => 'Product name',
             'description'                      => 'Description',
             'slug'                             => 'Slug',
@@ -565,6 +569,7 @@ class TemplateProductExport implements
     public function rules(): array
     {
         $rules = [
+            'bullet_1'                         => 'nullable',
             'name'                             => 'required',
             'description'                      => 'nullable',
             'slug'                             => 'nullable',

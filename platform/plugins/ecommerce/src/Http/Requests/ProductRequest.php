@@ -19,6 +19,7 @@ class ProductRequest extends Request
     public function rules()
     {
         $rules = [
+            'bullet_1'              => 'string|min:0|max:255',
             'name'                  => 'required|max:255',
             'price'                 => 'numeric|nullable|min:0|max:100000000000',
             'sale_price'            => 'numeric|nullable|min:0|max:100000000000',

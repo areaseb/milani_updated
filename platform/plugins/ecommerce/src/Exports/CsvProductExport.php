@@ -81,6 +81,7 @@ class CsvProductExport implements FromCollection, WithHeadings
             }
 
             $result = [
+                'bullet_1'                         => $product->bullet_1,
                 'name'                             => $product->name,
                 'description'                      => $product->description,
                 'slug'                             => $product->slug,
@@ -128,6 +129,7 @@ class CsvProductExport implements FromCollection, WithHeadings
 
                     $results[] = array_merge(
                         [
+                            'bullet_1'                         => '',
                             'name'                             => $variation->product->name,
                             'description'                      => '',
                             'slug'                             => '',
@@ -198,6 +200,7 @@ class CsvProductExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         $headings = [
+            'bullet_1'                         => 'Bullet 1',
             'name'                             => 'Product name',
             'description'                      => 'Description',
             'slug'                             => 'Slug',

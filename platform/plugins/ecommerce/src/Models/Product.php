@@ -38,6 +38,7 @@ class Product extends BaseModel
      * @var array
      */
     protected $fillable = [
+        'bullet_1',
         'name',
         'description',
         'content',
