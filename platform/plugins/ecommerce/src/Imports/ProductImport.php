@@ -849,6 +849,7 @@ class ProductImport implements
         $row['is_slug_editable'] = true;
 
         $this->setValues($row, [
+            ['key' => 'bullet_1', 'type' => 'string'],
             ['key' => 'slug', 'type' => 'string', 'default' => 'name'],
             ['key' => 'sku', 'type' => 'string'],
             ['key' => 'price', 'type' => 'number'],
@@ -900,17 +901,19 @@ class ProductImport implements
                 $title = Arr::get($attrSet, 0);
                 $valueX = Arr::get($attrSet, 1);
 
-                $attribute = $this->productAttributeSets->filter(function ($value) use ($title) {
-                    return $value['title'] == $title;
-                })->first();
-
-                if ($attribute) {
-                    $attr = $attribute->attributes->filter(function ($value) use ($valueX) {
-                        return $value['title'] == $valueX;
+                if($title && $valueX) {
+                    $attribute = $this->productAttributeSets->filter(function ($value) use ($title) {
+                        return $value['title'] == $title;
                     })->first();
 
-                    if ($attr) {
-                        $row['attribute_sets'][$attribute->id] = $attr->id;
+                    if ($attribute) {
+                        $attr = $attribute->attributes->filter(function ($value) use ($valueX) {
+                            return $value['title'] == $valueX;
+                        })->first();
+
+                        if ($attr) {
+                            $row['attribute_sets'][$attribute->id] = $attr->id;
+                        }
                     }
                 }
             }

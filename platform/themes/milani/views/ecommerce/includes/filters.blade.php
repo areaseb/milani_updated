@@ -18,7 +18,7 @@
         @if (count($categories) > 0)
             <div class="col-12 pb-4 widget-filter-item">
                 <h5 class="mb-20 widget__title" data-title="{{ __('Categories') }}">{{ __('By :name', ['name' => __('categories')]) }}</h5>
-                <div class="custome-checkbox ps-custom-scrollbar">
+                <div class="custome-checkbox ps-custom-scrollbar_">
                     @foreach($categories as $category)
                         {!! $category->indent_text !!}<input class="form-check-input category-filter-input" data-id="{{ $category->id }}" data-parent-id="{{ $category->parent_id }}"
                                name="categories[]"

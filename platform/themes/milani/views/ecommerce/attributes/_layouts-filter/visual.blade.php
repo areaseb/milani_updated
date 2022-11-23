@@ -1,6 +1,6 @@
 <div class="col-12 mb-4 widget-filter-item" data-type="visual">
     <h5 class="mb-20 widget__title" data-title="{{ $set->title }}">{{ __('By :name', ['name' => $set->title]) }}</h5>
-    <ul class="list-filter ps-custom-scrollbar">
+    <ul class="list-filter ps-custom-scrollbar_">
         @foreach($attributes->where('attribute_set_id', $set->id) as $attribute)
             <li data-slug="{{ $attribute->slug }}"
                 data-toggle="tooltip"
