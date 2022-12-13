@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "foto-gestionale",
+  "private_key_id": "2e06d615fa80550818e3e61e9fbb79593a976985",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC2TsyyD5x6vdgy\nqd75Jttg68No5sdamZGtC0eah6gvUCPP1YmSdvsNvktwrOHvrPcLQD3aStq9f+BH\nsCJRDwfDOkqyxYwT3/Jc/uO22fqu6K+DF1vm0vi3QUqTXA9g9lIEdnRyAHFch1Lo\ngoi4SWtWXqqWkGyZS44mNKmzVp/jsth0f+Z0aRhQl7RyR1/qhj6hu0xrfhjbFmpe\npUf71dowU3STrqLk6NS/7ZDl+65ts5bDJZWOH9gYaWJMqCqFLa3OxjboBhN2CYQN\nnRFFQE3tavWAfwr3VER9OBSkobzaztSjJybfQMZN0abPd7NZtntD9LOEVaSY2UbA\n0DLoIDK/AgMBAAECggEASpy5fe6RtlJYV3Pag9H5WxNiqF47HMNZMZ86MO5wUNzV\nq0vTwBPd7+P/8B9xYKxDd2FVby/PklrxqaVWhiJGpQoIZF4hVEkFYjYXcFCKHmew\n3VAEFtYlYKriIKk+ygpFyvnH8phnzNy9e9dgqTuzKGgaHQEC0UJw7QYEphc/3Oo2\ncZybjFMYgYyoTLT8iSd706kt0Yas5BtbX5mcY/i2NKbjHkcYX9gx0VMgQjGEwqxH\n67KUnLTEsAclaCwkijhaEXt8SD++nfKRSjUetMIeN/nyhZ5x2nhaBtEFY9tU2czO\n6dMMl2GRliyEqn9jqiuTOm58t22pL90dIdoB8vh5oQKBgQDeJUJ5N6VY/cco5rr4\nCl3vNiDzC2VUU61PsolStINUQppkv0nQboSUjJ4GPQ2hklHC9q3/2riuYubTYOMu\nFmmHqnJeoKCn81T3UIfmG2l6Mbt2YVRh3N6pzfwGh3RewJ2vYU+IV6sX2wOxt/Ry\nKBQTLNHGy9LGiRoXItLly52hJwKBgQDSF1GckZbSzpgtYta+q8vzAB+TK2gsU5Ag\nbZCcI0qPuiw1LOMz8KZlj9M9QuIcUStSuGtJ4wkUeYP1CJQrT7NArUtB0s0tr1LX\naBhskBcNNWnMb4CQsvodLvxpPE3ee5r8dVgfAyUf5UxWHE2wnpTb+nyhkaSNpRhD\nkye8z0qwqQKBgHBjv3bejVwxwQJTgcKeVBoDc7YjTNfWIfgRZuKeC1ek/sH7+Zdn\nYtJZNlYHq47UHWObNDse6JLp3MiS2z1k/20w8f4oHD/8nz8k0iy8L6gv4x0obu24\nNjsIyPpwq5KItv6VKAzd9eTy3LKcVCMxXb65zURbuL7TfIy6BKNYWd6/AoGAB56y\n5hPdvY2itVq1YTsH7ateec8EOz9YpeRzb0ZUaPweqFsVbofW8S4TQlCPtOk4wgpQ\nUeC7LpPttlB2V0/Pt5PRe/SyXmrSfV+YKy/ati7uxGxy5Eyph69xljuKs3wWNfvn\nk1Bg41REvYbPRo2p5oSiSpXmuwB27dSDh3SZR+kCgYA2ECTISOZWUX2IEGUjqT3K\nc+tdoO1leltSaNMs35xMZrTioqT0bQSQagz+pamCUkmAkATHEuPJqlGLB1Soh/aK\n5pUUIIi2pAVujSxts/e+ce5rZE/1IX+LiMVY96DtcZX3fs4NgUxon375/3W7EEXo\nK+gw0urY4+DFrZgpnw1p+Q==\n-----END PRIVATE KEY-----\n",
+  "client_email": "areaseb@foto-gestionale.iam.gserviceaccount.com",
+  "client_id": "104269177761100517330",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/areaseb%40foto-gestionale.iam.gserviceaccount.com"
+}
