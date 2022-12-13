@@ -11,6 +11,7 @@
 |
 */
 
-Route::get('/test', function(){
+use App\Http\Controllers\ImportController;
+use Illuminate\Support\Facades\Route;
 
-});
+Route::get('/test', [ImportController::class, 'productMediaImporter']);
