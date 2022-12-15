@@ -11,7 +11,8 @@
 |
 */
 
-use App\Http\Controllers\ImportController;
+use App\Http\Controllers\GoogleCloudService;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/test', [ImportController::class, 'productMediaImporter']);
+Route::get('/test', [GoogleCloudService::class, 'importFile']);
+Route::get('/test2', [GoogleCloudService::class, 'resizeImages']);

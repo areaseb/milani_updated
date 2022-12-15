@@ -32,8 +32,8 @@
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "league/flysystem-aws-s3-v3": "^1.0",
-        "nao-pon/flysystem-google-drive": "~1.1",
         "predis/predis": "^2.0",
+        "spatie/laravel-google-cloud-storage": "^1.0",
         "superbalist/laravel-google-cloud-storage": "^2.2",
         "wikimedia/composer-merge-plugin": "^2.0"
     },

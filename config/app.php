@@ -193,8 +193,6 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Superbalist\LaravelGoogleCloudStorage\GoogleCloudStorageServiceProvider::class,
-        App\Providers\GoogleDriveServiceProvider::class,
-
     ],
 
     /*
