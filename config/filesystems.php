@@ -49,7 +49,7 @@ return [
 
         'images' => [
             'driver' => 'local',
-            'root' => storage_path('app/public/cloud'),
+            'root' => storage_path('app/public/products'),
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
             'throw' => false,

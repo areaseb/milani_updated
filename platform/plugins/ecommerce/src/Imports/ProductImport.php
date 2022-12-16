@@ -21,6 +21,7 @@ use Botble\Ecommerce\Repositories\Interfaces\ProductVariationInterface;
 use Botble\Ecommerce\Repositories\Interfaces\TaxInterface;
 use Botble\Ecommerce\Services\Products\StoreProductService;
 use Botble\Ecommerce\Services\StoreProductTagService;
+use Botble\Media\Models\MediaFile;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,6 +30,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\Importable;
@@ -337,7 +339,18 @@ class ProductImport implements
     {
         $product = $this->productRepository->getModel();
 
-        $this->request->merge(['images' => $this->getImageURLs((array)$this->request->input('images', []))]);
+        $el_img = MediaFile::where('name', 'like', $this->request->input('sku') . '%')->pluck('name')->toArray();
+        $images = [];
+        if(in_array($this->request->input('sku'), $el_img)){
+            $images[] = $this->request->input('sku');
+        }
+        for($i = 1; $i <= 10; $i++){
+            if(in_array($this->request->input('sku') . '_' . $i, $el_img)) {
+                $images[] = 'products/' . $this->request->input('sku') . '_' . $i;
+            }
+        }
+
+        $this->request->merge(['images' => $this->getImageURLs($images)]);
 
         if ($description = $this->request->input('description')) {
             $this->request->merge(['description' => BaseHelper::clean($description)]);

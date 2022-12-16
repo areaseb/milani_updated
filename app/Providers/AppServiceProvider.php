@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Botble\Ecommerce\Imports\ProductImport;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
