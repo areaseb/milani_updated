@@ -338,15 +338,14 @@ class ProductImport implements
     public function storeProduct(): ?Product
     {
         $product = $this->productRepository->getModel();
-
         $el_img = MediaFile::where('name', 'like', $this->request->input('sku') . '%')->pluck('name')->toArray();
         $images = [];
         if(in_array($this->request->input('sku'), $el_img)){
-            $images[] = $this->request->input('sku');
+            $images[] = 'products/' . $this->request->input('sku') . '.jpg';
         }
-        for($i = 1; $i <= 10; $i++){
+        for($i = 0; $i <= 10; $i++){
             if(in_array($this->request->input('sku') . '_' . $i, $el_img)) {
-                $images[] = 'products/' . $this->request->input('sku') . '_' . $i;
+                $images[] = 'products/' . $this->request->input('sku') . '_' . $i.'.jpg';
             }
         }
 

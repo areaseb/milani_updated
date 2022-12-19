@@ -114,7 +114,7 @@ class TemplateProductExport implements
         $product = [
             'sku'                               => '',
             'codice_cosma'                      => '',
-            'product_name'                      => $productName,
+            'name'                              => $productName,
             'description'                       => $descriptions->random(),
             'slug'                              => '',
             'auto_generate_sku'                 => '',
@@ -175,7 +175,7 @@ class TemplateProductExport implements
             'peso_con_imballo_collo_4'          => '',
             'peso_con_imballo_collo_5'          => '',
             'assemblato'                        => '',
-            'kit_e_istruzioni_incluse'          => '',
+            'kit_e_istruzioni_incluse'            => '',
             'sku_set'                           => '',
             'sku_parent'                        => ''
         ];
@@ -301,7 +301,7 @@ class TemplateProductExport implements
         $headings = [
             'sku'                               => 'SKU',
             'codice_cosma'                      => 'Codice Cosma',
-            'product_name'                      => 'Product Name',
+            'name'                              => 'Product Name',
             'description'                       => 'Description',
             'slug'                              => 'Slug',
             'auto_generate_sku'                 => 'Auto Generate SKU',
@@ -346,10 +346,10 @@ class TemplateProductExport implements
             'larghezza_scatola_collo_4'         => 'Larghezza Scatola collo 4',
             'larghezza_scatola_collo_5'         => 'Larghezza Scatola collo 5',
             'profondita_scatola_collo_1'        => 'Profondita Scatola collo 1',
-            'profondita_scatola_collo_2'        => 'Profondita Scatola collo 1',
-            'profondita_scatola_collo_3'        => 'Profondita Scatola collo 1',
-            'profondita_scatola_collo_4'        => 'Profondita Scatola collo 1',
-            'profondita_scatola_collo_5'        => 'Profondita Scatola collo 1',
+            'profondita_scatola_collo_2'        => 'Profondita Scatola collo 2',
+            'profondita_scatola_collo_3'        => 'Profondita Scatola collo 3',
+            'profondita_scatola_collo_4'        => 'Profondita Scatola collo 4',
+            'profondita_scatola_collo_5'        => 'Profondita Scatola collo 5',
             'altezza_scatola_collo_1'           => 'Altezza Scatola collo 1',
             'altezza_scatola_collo_2'           => 'Altezza Scatola collo 2',
             'altezza_scatola_collo_3'           => 'Altezza Scatola collo 3',
@@ -362,18 +362,18 @@ class TemplateProductExport implements
             'peso_con_imballo_collo_4'          => 'Peso Con Imballo collo 4',
             'peso_con_imballo_collo_5'          => 'Peso Con Imballo collo 5',
             'assemblato'                        => 'Assemblato',
-            'kit_e_istruzioni_incluse'          => 'Kit E Istruzioni Incluse (Si Intendono Anche Pile)',
+            'kit_e_istruzioni_incluse'            => 'Kit E Istruzioni Incluse',
             'sku_set'                           => 'SKU Set',
             'sku_parent'                        => 'SKU Parent'
         ];
 
-//        if ($this->enabledDigital) {
-//            $headings['product_type'] = 'Product type';
-//        }
-//
-//        if ($this->isMarketplaceActive) {
-//            $headings['vendor'] = 'Vendor';
-//        }
+        if ($this->enabledDigital) {
+            $headings['product_type'] = 'Product type';
+        }
+
+        if ($this->isMarketplaceActive) {
+            $headings['vendor'] = 'Vendor';
+        }
 
         return $headings;
     }
@@ -392,7 +392,6 @@ class TemplateProductExport implements
                 $isFeaturedColumn = 'H';
                 $brandColumn = 'I';
                 $taxColumn = 'L';
-
                 $importTypeColumn = 'P';
                 $isVariationDefaultColumn = 'Q';
                 $withStorehouseManagementColumn = 'S';
@@ -641,45 +640,45 @@ class TemplateProductExport implements
     {
         $rules = [
             'bullet_1'                         => 'nullable',
-//            'name'                             => 'required',
-//            'description'                      => 'nullable',
-//            'slug'                             => 'nullable',
-//            'sku'                              => 'nullable|multiple',
-//            'auto_generate_sku'                => 'nullable|string (Yes or No)|default: Yes',
-//            'categories'                       => 'nullable|multiple',
-//            'status'                           => 'required|enum:' . implode(',', BaseStatusEnum::values()) . '|default:' . BaseStatusEnum::PENDING,
-//            'is_featured'                      => 'nullable|string (Yes or No)|default: No',
-//            'brand'                            => 'nullable|[Brand name | Brand ID]',
-//            'product_collections'              => 'nullable|[Product collection name | Product collection ID]|multiple',
-//            'labels'                           => 'nullable|[Product label name | Product label ID]|multiple',
-//            'tax'                              => 'nullable|[Tax name | Tax ID]|default:0',
-//            'images'                           => 'nullable|string|multiple',
-//            'price'                            => 'nullable|number',
-//            'product_attributes'               => 'nullable|string',
-//            'import_type'                      => 'nullable|enum:product,variation|default:product',
-//            'is_variation_default'             => 'nullable|bool|default:false',
-//            'stock_status'                     => 'nullable|enum:' . implode(',', StockStatusEnum::values()) .'|default:' . StockStatusEnum::IN_STOCK,
-//            'with_storehouse_management'       => 'nullable|bool|default:0',
-//            'quantity'                         => 'nullable|number',
-//            'allow_checkout_when_out_of_stock' => 'nullable|bool|default:0',
-//            'sale_price'                       => 'nullable|number',
-//            'start_date_sale_price'            => 'nullable|datetime|date_format:Y-m-d H:i:s',
-//            'end_date_sale_price'              => 'nullable|datetime|date_format:Y-m-d H:i:s',
-//            'weight'                           => 'nullable|number',
-//            'length'                           => 'nullable|number',
-//            'wide'                             => 'nullable|number',
-//            'height'                           => 'nullable|number',
-//            'content'                          => 'nullable',
-//            'tags'                             => 'nullable|[Product tag name]|multiple',
+            'name'                             => 'required',
+            'description'                      => 'nullable',
+            'slug'                             => 'nullable',
+            'sku'                              => 'nullable|multiple',
+            'auto_generate_sku'                => 'nullable|string (Yes or No)|default: Yes',
+            'categories'                       => 'nullable|multiple',
+            'status'                           => 'required|enum:' . implode(',', BaseStatusEnum::values()) . '|default:' . BaseStatusEnum::PENDING,
+            'is_featured'                      => 'nullable|string (Yes or No)|default: No',
+            'brand'                            => 'nullable|[Brand name | Brand ID]',
+            'product_collections'              => 'nullable|[Product collection name | Product collection ID]|multiple',
+            'labels'                           => 'nullable|[Product label name | Product label ID]|multiple',
+            'tax'                              => 'nullable|[Tax name | Tax ID]|default:0',
+            'images'                           => 'nullable|string|multiple',
+            'price'                            => 'nullable|number',
+            'product_attributes'               => 'nullable|string',
+            'import_type'                      => 'nullable|enum:product,variation|default:product',
+            'is_variation_default'             => 'nullable|bool|default:false',
+            'stock_status'                     => 'nullable|enum:' . implode(',', StockStatusEnum::values()) .'|default:' . StockStatusEnum::IN_STOCK,
+            'with_storehouse_management'       => 'nullable|bool|default:0',
+            'quantity'                         => 'nullable|number',
+            'allow_checkout_when_out_of_stock' => 'nullable|bool|default:0',
+            'sale_price'                       => 'nullable|number',
+            'start_date_sale_price'            => 'nullable|datetime|date_format:Y-m-d H:i:s',
+            'end_date_sale_price'              => 'nullable|datetime|date_format:Y-m-d H:i:s',
+            'weight'                           => 'nullable|number',
+            'length'                           => 'nullable|number',
+            'wide'                             => 'nullable|number',
+            'height'                           => 'nullable|number',
+            'content'                          => 'nullable',
+            'tags'                             => 'nullable|[Product tag name]|multiple',
         ];
 
-//        if ($this->enabledDigital) {
-//            $rules['product_type'] = 'nullable|enum:' . implode(',', ProductTypeEnum::values()) .'|default:' . ProductTypeEnum::PHYSICAL;
-//        }
-//
-//        if ($this->isMarketplaceActive) {
-//            $rules['vendor'] = 'nullable|[Vendor name | Vendor ID]';
-//        }
+        if ($this->enabledDigital) {
+            $rules['product_type'] = 'nullable|enum:' . implode(',', ProductTypeEnum::values()) .'|default:' . ProductTypeEnum::PHYSICAL;
+        }
+
+        if ($this->isMarketplaceActive) {
+            $rules['vendor'] = 'nullable|[Vendor name | Vendor ID]';
+        }
 
         return $rules;
     }

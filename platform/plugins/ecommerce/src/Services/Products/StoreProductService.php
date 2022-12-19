@@ -38,6 +38,7 @@ class StoreProductService
      * @param Product $product
      * @param bool $forceUpdateAll
      * @return Product
+     * @throws Exception
      */
     public function execute(Request $request, Product $product, bool $forceUpdateAll = false): Product
     {
