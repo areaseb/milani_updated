@@ -42,7 +42,7 @@ return new class () extends Migration
             'peso_con_imballo_collo_4',
             'peso_con_imballo_collo_5',
             'assemblato',
-            'kit_istruzioni_incluse',
+            'kit_e_istruzioni_incluse',
             'sku_set',
             'sku_parent'
         ])) {
@@ -80,7 +80,7 @@ return new class () extends Migration
                 $table->float('peso_con_imballo_collo_4', 6, 2)->nullable();
                 $table->float('peso_con_imballo_collo_5', 6, 2)->nullable();
                 $table->string('assemblato')->nullable();
-                $table->string('kit_istruzioni_incluse')->nullable();
+                $table->string('kit_e_istruzioni_incluse')->nullable();
                 $table->text('sku_set')->nullable();
                 $table->string('sku_parent')->nullable();
             });
