@@ -828,6 +828,15 @@ class EcommerceServiceProvider extends ServiceProvider
 
             dashboard_menu()
                 ->registerItem([
+                    'id'          => 'cms-core-tools-ecommerce-export-products-discount',
+                    'priority'    => 2,
+                    'parent_id'   => 'cms-core-tools',
+                    'name'        => 'Import discount',
+                    'icon'        => 'fas fa-file-import',
+                    'url'         => route('ecommerce.discount-import.index'),
+                    'permissions' => ['ecommerce.export.products.index'],
+                ])
+                ->registerItem([
                     'id'          => 'cms-core-tools-ecommerce-bulk-import',
                     'priority'    => 1,
                     'parent_id'   => 'cms-core-tools',

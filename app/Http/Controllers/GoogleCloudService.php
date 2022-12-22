@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
-use DateTime;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Routing\ResponseFactory;
@@ -23,10 +22,7 @@ class GoogleCloudService extends Controller
     public function importImage(): void
     {
         $filesName = Storage::disk('gcs')->files();
-        $path = Storage::disk('images')->path('');
-        if (!file_exists($path)) {
-            mkdir($path, 666, true);
-        }
+        $path = Storage::disk('products')->path('');
 
         $i = 0;
         foreach(array_chunk($filesName, 500) as $part){
@@ -37,7 +33,18 @@ class GoogleCloudService extends Controller
                 $fileContent = Storage::disk('gcs')->get($file);
 
                 $img = Image::make($fileContent);
-                $img->save("$path.$file", 80);
+
+                $img_150 = Image::make($fileContent)->resize(150, 150);
+                $img_400 = Image::make($fileContent)->resize(400, 400);
+                $img_800 = Image::make($fileContent)->resize(800, 800);
+
+                $img->save($path.$file, 80);
+
+                $fileName = rtrim($file, '.jpg');
+
+                $img_150->save($path.$fileName.'-150x150.jpg', 80);
+                $img_400->save($path.$fileName.'-400x400.jpg', 80);
+                $img_800->save($path.$fileName.'-800x800.jpg', 80);
 
                 $this->saveImageInDatabase($img, $file);
                 $i++;

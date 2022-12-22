@@ -9,11 +9,13 @@
     </div>
     <div class="custome-checkbox _mCS_1">
     	<ul class="ps-list--categories">
-    		@foreach($attributes as $attribute)
-    			@if(in_array($attribute->attribute_set_id, $bullets))
-    				<li>{{ $attribute->title }}</li>
-    			@endif
-    		@endforeach
+            @if(!is_null($attributes))
+                @foreach($attributes as $attribute)
+                    @if(in_array($attribute->attribute_set_id, $bullets))
+                        <li>{{ $attribute->title }}</li>
+                    @endif
+                @endforeach
+            @endif
     	</ul>
     </div>
 </div>

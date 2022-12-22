@@ -501,7 +501,10 @@ add_shortcode('bullets', 'Products bullets', 'Display bullets on product sidebar
     $prod = \Botble\Ecommerce\Models\Product::where('id', $prod_id)->first()->defaultVariation;
 
     if($prod){
-        $attributes = \Botble\Ecommerce\Models\Product::where('id', $prod->product_id)->first()->variationProductAttributes;
+        $attributes = \Botble\Ecommerce\Models\Product::where('id', $prod->product_id)->first();
+        if ($attributes) {
+            $attributes = $attributes->variationProductAttributes;
+        }
     } else {
         $attributes = array();
     }

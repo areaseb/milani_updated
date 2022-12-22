@@ -1,18 +1,23 @@
 <?php
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
-
+use App\Http\Controllers\DiscountImportController;
 use App\Http\Controllers\GoogleCloudService;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/test', [GoogleCloudService::class, 'importImage']);
-Route::get('/test2', [GoogleCloudService::class, 'resizeImages']);
+Route::get('/import-product-images', [GoogleCloudService::class, 'importImage']);
+
+Route::group(['namespace' => 'App\Http\Controllers', 'middleware' => ['web', 'core']], function () {
+    Route::group(['prefix' => BaseHelper::getAdminPrefix() . '/ecommerce', 'middleware' => 'auth'], function () {
+        Route::group(['prefix' => 'discount-import', 'as' => 'ecommerce.discount-import.'], function () {
+            Route::get('/', [
+                'as'   => 'index',
+                'uses' => 'DiscountImportController@index',
+            ]);
+            Route::post('/import', [
+                'as'   => 'import',
+                'uses' => 'DiscountImportController@import',
+            ]);
+        });
+    });
+});
+

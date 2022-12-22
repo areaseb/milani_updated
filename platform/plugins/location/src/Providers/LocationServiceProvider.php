@@ -139,10 +139,10 @@ class LocationServiceProvider extends ServiceProvider
                 ])
                 ->registerItem([
                     'id'          => 'cms-core-tools-location-export',
-                    'priority'    => 2,
+                    'priority'    => 3,
                     'parent_id'   => 'cms-core-tools',
                     'name'        => 'plugins/location::location.export_location',
-                    'icon'        => 'fas fa-file-import',
+                    'icon'        => 'fas fa-file-export',
                     'url'         => route('location.export.index'),
                     'permissions' => ['location.export.index'],
                 ]);

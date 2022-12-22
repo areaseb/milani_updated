@@ -127,7 +127,7 @@
                 <form class="add-to-cart-form" method="POST" action="{{ route('public.cart.add-to-cart') }}">
                     @csrf
                     {!! apply_filters(ECOMMERCE_PRODUCT_DETAIL_EXTRA_HTML, null, $product) !!}
-                    <input type="hidden" name="id" class="hidden-product-id" value="{{ ($product->is_variation || !$product->defaultVariation->product_id) ? $product->id : $product->defaultVariation->product_id }}"/>
+{{--                    <input type="hidden" name="id" class="hidden-product-id" value="{{ ($product->is_variation || !$product->defaultVariation->product_id) ? $product->id : $product->defaultVariation->product_id }}"/>--}}
                     <div class="detail-extralink">
                         @if (EcommerceHelper::isCartEnabled())
                             <div class="detail-qty border radius">
@@ -236,27 +236,24 @@
                     {!! BaseHelper::clean($product->content) !!}
 
                     @php
-                        $prod = $product->defaultVariation;
-                        $prod_id = $prod->product_id;
+                          $prod = $product->defaultVariation;
+                          $prod_id = $prod->product_id;
 
-                        $attributes = \Botble\Ecommerce\Models\Product::where('id', $prod_id)->first()->variationProductAttributes;
-
+                          $attributes = \Botble\Ecommerce\Models\Product::where('id', $prod_id)->first();
                     @endphp
 
                     <div class="table-responsive mt-30">
                         <table class="table table-striped table-bordered">
-
-                            @foreach($attributes as $attribute)
-                                <tr>
-                                    <td>{{ $attribute->attribute_set_title }}</td>
-                                    <td>{{ $attribute->title }}</td>
-                                </tr>
-                            @endforeach
-
+                            @if(!is_null($attributes))
+                                @foreach($attributes->variationProductAttributes as $attribute)
+                                    <tr>
+                                        <td>{{ $attribute->attribute_set_title }}</td>
+                                        <td>{{ $attribute->title }}</td>
+                                    </tr>
+                                @endforeach
+                            @endif
                         </table>
                     </div>
-
-
                     @if (theme_option('facebook_comment_enabled_in_product', 'yes') == 'yes')
                         <br />
                         {!! apply_filters(BASE_FILTER_PUBLIC_COMMENT_AREA, Theme::partial('comments')) !!}
