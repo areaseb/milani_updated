@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "52cb1231d8d584fd58d9f74cb8ef260f",
+    "content-hash": "1c24571d26934e369c145e3fe4ed79ca",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -282,6 +282,62 @@
                 }
             ],
             "time": "2022-07-06T11:12:10+00:00"
+        },
+        {
+            "name": "beezup/api-php-client",
+            "version": "v1.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/BeezUP/api-php-client.git",
+                "reference": "0d264e4fab10140822fc52dd8df60fcedc0a5246"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/BeezUP/api-php-client/zipball/0d264e4fab10140822fc52dd8df60fcedc0a5246",
+                "reference": "0d264e4fab10140822fc52dd8df60fcedc0a5246",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "guzzlehttp/guzzle": "^7.4",
+                "php": ">=5.5"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "~1.12",
+                "phpunit/phpunit": "^4.8",
+                "squizlabs/php_codesniffer": "~2.6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Swagger\\Client\\": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "BeezUP",
+                    "homepage": "https://www.beezup.com"
+                }
+            ],
+            "description": "The REST API of BeezUP system",
+            "homepage": "https://api-docs.beezup.com",
+            "keywords": [
+                "api",
+                "php",
+                "sdk",
+                "swagger"
+            ],
+            "support": {
+                "issues": "https://github.com/BeezUP/api-php-client/issues",
+                "source": "https://github.com/BeezUP/api-php-client/tree/v1.0.4"
+            },
+            "time": "2022-08-30T09:04:41+00:00"
         },
         {
             "name": "botble/api",

@@ -6,7 +6,6 @@
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
     });
-
     var showError = message => {
         window.showAlert('alert-danger', message);
     }

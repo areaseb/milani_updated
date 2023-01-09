@@ -10,6 +10,7 @@
         "ext-gd": "*",
         "ext-json": "*",
         "ext-zip": "*",
+        "beezup/api-php-client": "^1.0",
         "botble/api": "*@dev",
         "botble/get-started": "*@dev",
         "botble/menu": "*@dev",

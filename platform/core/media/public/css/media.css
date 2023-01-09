@@ -884,7 +884,7 @@ html {
     min-width: 220px;
   }
   .rv-media-container .rv-media-details .rv-media-thumbnail,
-.rv-media-container .rv-media-details .rv-media-description {
+  .rv-media-container .rv-media-details .rv-media-description {
     width: 220px;
     min-width: 220px;
   }
@@ -898,7 +898,7 @@ html {
     min-width: 200px;
   }
   .rv-media-container .rv-media-details .rv-media-thumbnail,
-.rv-media-container .rv-media-details .rv-media-description {
+  .rv-media-container .rv-media-details .rv-media-description {
     width: 200px;
     min-width: 200px;
   }
