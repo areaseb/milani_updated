@@ -7,22 +7,16 @@ use Botble\Base\Http\Responses\BaseHttpResponse;
 use Botble\Payment\Enums\PaymentStatusEnum;
 use Botble\Payment\Supports\PaymentHelper;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Paystack;
-use Throwable;
 
 class PaystackController extends BaseController
 {
-    /**
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     * @throws Throwable
-     */
     public function getPaymentStatus(Request $request, BaseHttpResponse $response)
     {
         $result = Paystack::getPaymentData();
 
-        if (!$result['status']) {
+        if (! $result['status']) {
             return $response
                 ->setError()
                 ->setNextUrl(PaymentHelper::getCancelURL())
@@ -30,15 +24,15 @@ class PaystackController extends BaseController
         }
 
         do_action(PAYMENT_ACTION_PAYMENT_PROCESSED, [
-            'amount'          => $request->input('amount'),
-            'currency'        => $result['data']['currency'],
-            'charge_id'       => $request->input('reference'),
+            'amount' => $result['data']['amount'] / 100,
+            'currency' => $result['data']['currency'],
+            'charge_id' => $result['data']['reference'],
             'payment_channel' => PAYSTACK_PAYMENT_METHOD_NAME,
-            'status'          => PaymentStatusEnum::COMPLETED,
-            'customer_id'     => $request->input('customer_id'),
-            'customer_type'   => $request->input('customer_type'),
-            'payment_type'    => 'direct',
-            'order_id'        => (array)$result['data']['metadata']['order_id'],
+            'status' => PaymentStatusEnum::COMPLETED,
+            'customer_id' => Arr::get($result['data']['metadata'], 'customer_id'),
+            'customer_type' => Arr::get($result['data']['metadata'], 'customer_type'),
+            'payment_type' => 'direct',
+            'order_id' => (array)$result['data']['metadata']['order_id'],
         ], $request);
 
         return $response

@@ -5,12 +5,12 @@ namespace Botble\Media\Facades;
 use Botble\Media\RvMedia;
 use Illuminate\Support\Facades\Facade;
 
+/**
+ * @see \Botble\Media\RvMedia
+ */
 class RvMediaFacade extends Facade
 {
-    /**
-     * @return string
-     */
-    protected static function getFacadeAccessor()
+    protected static function getFacadeAccessor(): string
     {
         return RvMedia::class;
     }

@@ -2,26 +2,17 @@
 
 namespace Botble\Base\Forms\Fields;
 
-use Assets;
 use Illuminate\Support\Arr;
 use Kris\LaravelFormBuilder\Fields\FormField;
 
 class EditorField extends FormField
 {
-    /**
-     * {@inheritDoc}
-     */
-    protected function getTemplate()
+    protected function getTemplate(): string
     {
-        Assets::addScriptsDirectly('vendor/core/core/base/js/editor.js');
-
         return 'core/base::forms.fields.editor';
     }
 
-    /**
-     *{@inheritDoc}
-     */
-    public function render(array $options = [], $showLabel = true, $showField = true, $showError = true)
+    public function render(array $options = [], $showLabel = true, $showField = true, $showError = true): string
     {
         $options['with-short-code'] = Arr::get($options, 'with-short-code', false);
 

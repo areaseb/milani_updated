@@ -5,14 +5,12 @@ namespace Botble\Setting\Facades;
 use Botble\Setting\Supports\SettingStore;
 use Illuminate\Support\Facades\Facade;
 
+/**
+ * @see \Botble\Setting\Supports\SettingStore
+ */
 class SettingFacade extends Facade
 {
-    /**
-     * Get the registered name of the component.
-     *
-     * @return string
-     */
-    protected static function getFacadeAccessor()
+    protected static function getFacadeAccessor(): string
     {
         return SettingStore::class;
     }

@@ -2,22 +2,23 @@
 
 use Botble\Ecommerce\Models\Product;
 
-if (!function_exists('render_product_options')) {
-    /**
-     * @param Product $product
-     * @param array $options
-     * @return string
-     */
-    function render_product_options(Product $product, array $options = []): string
+if (! function_exists('render_product_options')) {
+    function render_product_options(Product $product): string
     {
-        Theme::asset()->container('footer')
-            ->add('change-product-options', 'vendor/core/plugins/ecommerce/js/change-product-options.js', [
-                'jquery',
-            ]);
+        $product->loadMissing(['options', 'options.values']);
 
-        $html = '';
-        foreach ($options as $option) {
-            $typeClass = __NAMESPACE__ . '\\' . $option['option_type'];
+        if (! $product->options) {
+            return '';
+        }
+
+        $html = '<div class="pr_switch_wrap" id="product-option">';
+
+        $script = 'vendor/core/plugins/ecommerce/js/change-product-options.js';
+
+        Theme::asset()->container('footer')->add('change-product-options', $script, ['jquery']);
+
+        foreach ($product->options as $option) {
+            $typeClass = __NAMESPACE__ . '\\' . $option->option_type;
             if (class_exists($typeClass)) {
                 $instance = new $typeClass();
                 $html .= $instance->setOption($option)->setProduct($product)->render();
@@ -26,17 +27,17 @@ if (!function_exists('render_product_options')) {
             }
         }
 
-        return $html;
+        $html .= '</div>';
+
+        if (! request()->ajax()) {
+            return $html;
+        }
+
+        return $html . Html::script($script)->toHtml();
     }
 }
 
-if (!function_exists('render_product_options_info')) {
-    /**
-     * @param array $productOption
-     * @param Product $product
-     * @param bool $displayBasePrice
-     * @return string
-     */
+if (! function_exists('render_product_options_info')) {
     function render_product_options_info(array $productOption, Product $product, bool $displayBasePrice = false): string
     {
         $view = 'plugins/ecommerce::themes.options.render-options-info';
@@ -48,8 +49,8 @@ if (!function_exists('render_product_options_info')) {
         }
 
         return view($view, [
-            'productOptions'   => $productOption,
-            'product'          => $product,
+            'productOptions' => $productOption,
+            'product' => $product,
             'displayBasePrice' => $displayBasePrice,
         ])->render();
     }

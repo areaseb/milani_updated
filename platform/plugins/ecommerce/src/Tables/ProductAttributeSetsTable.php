@@ -8,27 +8,22 @@ use Botble\Ecommerce\Repositories\Interfaces\ProductAttributeSetInterface;
 use Botble\Table\Abstracts\TableAbstract;
 use Html;
 use Illuminate\Contracts\Routing\UrlGenerator;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 use Yajra\DataTables\DataTables;
 
 class ProductAttributeSetsTable extends TableAbstract
 {
-    /**
-     * @var bool
-     */
     protected $hasActions = true;
 
-    /**
-     * @var bool
-     */
     protected $hasFilter = true;
 
-    /**
-     * ProductAttributeSetsTable constructor.
-     * @param DataTables $table
-     * @param UrlGenerator $urlGenerator
-     * @param ProductAttributeSetInterface $productAttributeSetRepository
-     */
     public function __construct(
         DataTables $table,
         UrlGenerator $urlGenerator,
@@ -38,21 +33,18 @@ class ProductAttributeSetsTable extends TableAbstract
 
         $this->repository = $productAttributeSetRepository;
 
-        if (!Auth::user()->hasAnyPermission(['product-attribute-sets.edit', 'product-attribute-sets.destroy'])) {
+        if (! Auth::user()->hasAnyPermission(['product-attribute-sets.edit', 'product-attribute-sets.destroy'])) {
             $this->hasOperations = false;
             $this->hasActions = false;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function ajax()
+    public function ajax(): JsonResponse
     {
         $data = $this->table
             ->eloquent($this->query())
             ->editColumn('title', function ($item) {
-                if (!Auth::user()->hasPermission('product-attribute-sets.edit')) {
+                if (! Auth::user()->hasPermission('product-attribute-sets.edit')) {
                     return BaseHelper::clean($item->title);
                 }
 
@@ -74,10 +66,7 @@ class ProductAttributeSetsTable extends TableAbstract
         return $this->toJson($data);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function query()
+    public function query(): Relation|Builder|QueryBuilder
     {
         $query = $this->repository->getModel()->select([
             'id',
@@ -91,26 +80,23 @@ class ProductAttributeSetsTable extends TableAbstract
         return $this->applyScopes($query);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function columns()
+    public function columns(): array
     {
         return [
-            'id'         => [
+            'id' => [
                 'title' => trans('core/base::tables.id'),
                 'width' => '20px',
                 'class' => 'text-center',
             ],
-            'title'      => [
+            'title' => [
                 'title' => trans('core/base::tables.title'),
                 'class' => 'text-start',
             ],
-            'slug'       => [
+            'slug' => [
                 'title' => trans('core/base::tables.slug'),
                 'class' => 'text-start',
             ],
-            'order'      => [
+            'order' => [
                 'title' => trans('core/base::tables.order'),
                 'class' => 'text-start',
             ],
@@ -119,7 +105,7 @@ class ProductAttributeSetsTable extends TableAbstract
                 'width' => '100px',
                 'class' => 'text-start',
             ],
-            'status'     => [
+            'status' => [
                 'title' => trans('core/base::tables.status'),
                 'width' => '100px',
                 'class' => 'text-start',
@@ -127,17 +113,11 @@ class ProductAttributeSetsTable extends TableAbstract
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function buttons()
+    public function buttons(): array
     {
         return $this->addCreateButton(route('product-attribute-sets.create'), 'product-attribute-sets.create');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function bulkActions(): array
     {
         return $this->addDeleteAction(
@@ -147,38 +127,32 @@ class ProductAttributeSetsTable extends TableAbstract
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getBulkChanges(): array
     {
         return [
-            'title'      => [
-                'title'    => trans('core/base::tables.name'),
-                'type'     => 'text',
+            'title' => [
+                'title' => trans('core/base::tables.name'),
+                'type' => 'text',
                 'validate' => 'required|max:120',
             ],
-            'status'     => [
-                'title'    => trans('core/base::tables.status'),
-                'type'     => 'select',
-                'choices'  => BaseStatusEnum::labels(),
+            'status' => [
+                'title' => trans('core/base::tables.status'),
+                'type' => 'select',
+                'choices' => BaseStatusEnum::labels(),
                 'validate' => 'required|in:' . implode(',', BaseStatusEnum::values()),
             ],
             'created_at' => [
                 'title' => trans('core/base::tables.created_at'),
-                'type'  => 'date',
+                'type' => 'datePicker',
             ],
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function renderTable($data = [], $mergeData = [])
+    public function renderTable($data = [], $mergeData = []): View|Factory|Response
     {
         if ($this->query()->count() === 0 &&
-            !$this->request()->wantsJson() &&
-            $this->request()->input('filter_table_id') !== $this->getOption('id') && !$this->request()->ajax()
+            ! $this->request()->wantsJson() &&
+            $this->request()->input('filter_table_id') !== $this->getOption('id') && ! $this->request()->ajax()
         ) {
             return view('plugins/ecommerce::product-attributes.intro');
         }

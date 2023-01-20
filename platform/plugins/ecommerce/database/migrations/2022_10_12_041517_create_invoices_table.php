@@ -6,12 +6,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class () extends Migration {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         Schema::dropIfExists('ec_invoice_items');
         Schema::dropIfExists('ec_invoices');
@@ -59,21 +54,20 @@ return new class () extends Migration {
             $table->timestamps();
         });
 
-        foreach (Order::with('invoice')->get() as $order) {
-            if ($order->invoice->id) {
-                continue;
-            }
+        try {
+            foreach (Order::with('invoice')->where('is_finished', 1)->get() as $order) {
+                if ($order->invoice->id) {
+                    continue;
+                }
 
-            InvoiceHelper::store($order);
+                InvoiceHelper::store($order);
+            }
+        } catch (Exception $exception) {
+            info($exception->getMessage());
         }
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('ec_invoice_items');
         Schema::dropIfExists('ec_invoices');

@@ -2,6 +2,7 @@
 
 namespace Botble\Location\Http\Controllers;
 
+use BaseHelper;
 use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Base\Events\BeforeEditContentEvent;
 use Botble\Base\Events\CreatedContentEvent;
@@ -18,30 +19,16 @@ use Botble\Location\Repositories\Interfaces\CityInterface;
 use Botble\Location\Tables\CityTable;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Contracts\View\View;
-use Throwable;
 
 class CityController extends BaseController
 {
-    /**
-     * @var CityInterface
-     */
-    protected $cityRepository;
+    protected CityInterface $cityRepository;
 
-    /**
-     * CityController constructor.
-     * @param CityInterface $cityRepository
-     */
     public function __construct(CityInterface $cityRepository)
     {
         $this->cityRepository = $cityRepository;
     }
 
-    /**
-     * @param CityTable $table
-     * @return \Illuminate\Http\JsonResponse|View
-     * @throws Throwable
-     */
     public function index(CityTable $table)
     {
         page_title()->setTitle(trans('plugins/location::city.name'));
@@ -49,10 +36,6 @@ class CityController extends BaseController
         return $table->renderTable();
     }
 
-    /**
-     * @param FormBuilder $formBuilder
-     * @return string
-     */
     public function create(FormBuilder $formBuilder)
     {
         page_title()->setTitle(trans('plugins/location::city.create'));
@@ -60,11 +43,6 @@ class CityController extends BaseController
         return $formBuilder->create(CityForm::class)->renderForm();
     }
 
-    /**
-     * @param CityRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function store(CityRequest $request, BaseHttpResponse $response)
     {
         $city = $this->cityRepository->createOrUpdate($request->input());
@@ -77,13 +55,7 @@ class CityController extends BaseController
             ->setMessage(trans('core/base::notices.create_success_message'));
     }
 
-    /**
-     * @param $id
-     * @param Request $request
-     * @param FormBuilder $formBuilder
-     * @return string
-     */
-    public function edit($id, FormBuilder $formBuilder, Request $request)
+    public function edit(int $id, FormBuilder $formBuilder, Request $request)
     {
         $city = $this->cityRepository->findOrFail($id);
 
@@ -94,13 +66,7 @@ class CityController extends BaseController
         return $formBuilder->create(CityForm::class, ['model' => $city])->renderForm();
     }
 
-    /**
-     * @param $id
-     * @param CityRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function update($id, CityRequest $request, BaseHttpResponse $response)
+    public function update(int $id, CityRequest $request, BaseHttpResponse $response)
     {
         $city = $this->cityRepository->findOrFail($id);
 
@@ -115,13 +81,7 @@ class CityController extends BaseController
             ->setMessage(trans('core/base::notices.update_success_message'));
     }
 
-    /**
-     * @param Request $request
-     * @param $id
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function destroy(Request $request, $id, BaseHttpResponse $response)
+    public function destroy(Request $request, int $id, BaseHttpResponse $response)
     {
         try {
             $city = $this->cityRepository->findOrFail($id);
@@ -138,12 +98,6 @@ class CityController extends BaseController
         }
     }
 
-    /**
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     * @throws Exception
-     */
     public function deletes(Request $request, BaseHttpResponse $response)
     {
         $ids = $request->input('ids');
@@ -162,16 +116,11 @@ class CityController extends BaseController
         return $response->setMessage(trans('core/base::notices.delete_success_message'));
     }
 
-    /**
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function getList(Request $request, BaseHttpResponse $response)
     {
-        $keyword = $request->input('q');
+        $keyword = BaseHelper::stringify($request->input('q'));
 
-        if (!$keyword) {
+        if (! $keyword) {
             return $response->setData([]);
         }
 
@@ -179,9 +128,9 @@ class CityController extends BaseController
             'condition' => [
                 ['cities.name', 'LIKE', '%' . $keyword . '%'],
             ],
-            'select'    => ['cities.id', 'cities.name'],
-            'take'      => 10,
-            'order_by'  => ['order' => 'ASC', 'name' => 'ASC'],
+            'select' => ['cities.id', 'cities.name'],
+            'take' => 10,
+            'order_by' => ['order' => 'ASC', 'name' => 'ASC'],
         ]);
 
         $data->prepend(new City(['id' => 0, 'name' => trans('plugins/location::city.select_city')]));
@@ -189,11 +138,6 @@ class CityController extends BaseController
         return $response->setData(CityResource::collection($data));
     }
 
-    /**
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function ajaxGetCities(Request $request, BaseHttpResponse $response)
     {
         $params = [
@@ -201,7 +145,7 @@ class CityController extends BaseController
             'condition' => [
                 'cities.status' => BaseStatusEnum::PUBLISHED,
             ],
-            'order_by'  => ['order' => 'ASC', 'name' => 'ASC'],
+            'order_by' => ['order' => 'ASC', 'name' => 'ASC'],
         ];
 
         if ($request->input('state_id') && $request->input('state_id') != 'null') {

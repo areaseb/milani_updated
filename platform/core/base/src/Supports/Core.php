@@ -5,79 +5,44 @@ namespace Botble\Base\Supports;
 use BaseHelper;
 use Botble\Base\Events\UpdatedEvent;
 use Botble\Base\Events\UpdatingEvent;
-use Botble\Base\Supports\PclZip as Zip;
 use Botble\Theme\Services\ThemeService;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Validator;
 use Menu;
 use Theme;
 use Throwable;
 use ZipArchive;
 
-class Core
+final class Core
 {
-    /**
-     * @var string
-     */
-    protected $productId;
+    private string $productId;
 
-    /**
-     * @var string
-     */
-    protected $apiUrl;
+    private string $apiUrl;
 
-    /**
-     * @var string
-     */
-    protected $apiKey;
+    private string $apiKey;
 
-    /**
-     * @var string
-     */
-    protected $verifyType;
+    private string $verifyType;
 
-    /**
-     * @var int
-     */
-    protected $verificationPeriod;
+    private string $verificationPeriod;
 
-    /**
-     * @var string
-     */
-    protected $currentVersion;
+    private string $currentVersion;
 
-    /**
-     * @var string
-     */
-    protected $rootPath;
+    private string $rootPath;
 
-    /**
-     * @var string
-     */
-    protected $licenseFile;
+    private string $licenseFile;
 
-    /**
-     * @var bool
-     */
-    protected $showUpdateProcess = true;
+    private bool $showUpdateProcess = true;
 
-    /**
-     * @var string
-     */
-    protected $sessionKey = '44622179e10cab6';
+    private bool $runningInConsole;
 
-    /**
-     * @var string
-     */
-    protected $coreFilePath;
+    private string $sessionKey = '44622179e10cab6';
 
-    /**
-     * Core constructor.
-     */
+    private string $coreFilePath;
+
     public function __construct()
     {
         $this->apiUrl = 'https://license.botble.com';
@@ -88,6 +53,8 @@ class Core
         $this->licenseFile = storage_path('.license');
 
         $this->coreFilePath = core_path('core.json');
+
+        $this->runningInConsole = app()->runningInConsole();
 
         $core = BaseHelper::getFileData($this->coreFilePath);
 
@@ -102,40 +69,26 @@ class Core
         $this->apiUrl = rtrim($this->apiUrl, '/');
     }
 
-    /**
-     * @return string
-     */
     public function getCurrentVersion(): string
     {
         return $this->currentVersion;
     }
 
-    /**
-     * @return string
-     */
     public function getLicenseFilePath(): string
     {
         return $this->licenseFile;
     }
 
-    /**
-     * @return array
-     */
     public function checkConnection(): array
     {
-        return $this->callApi($this->apiUrl . '/api/check_connection_ext', []);
+        return $this->callApi($this->apiUrl . '/api/check_connection_ext');
     }
 
-    /**
-     * @param string $url
-     * @param array $data
-     * @return array
-     */
-    protected function callApi(string $url, array $data = []): array
+    private function callApi(string $url, array $data = []): array
     {
-        if (!extension_loaded('curl')) {
+        if (! extension_loaded('curl')) {
             return [
-                'status'  => false,
+                'status' => false,
                 'message' => 'Cannot activate license. PHP Curl extension needs to be installed first.',
             ];
         }
@@ -146,47 +99,37 @@ class Core
             $result = $client->post($url, [
                 'headers' => [
                     'Content-Type' => 'application/json',
-                    'Accept'       => 'application/json',
-                    'LB-API-KEY'   => $this->apiKey,
-                    'LB-URL'       => rtrim(url('/'), '/'),
-                    'LB-IP'        => Helper::getIpFromThirdParty(),
-                    'LB-LANG'      => 'english',
+                    'Accept' => 'application/json',
+                    'LB-API-KEY' => $this->apiKey,
+                    'LB-URL' => rtrim(url('/'), '/'),
+                    'LB-IP' => Helper::getIpFromThirdParty(),
+                    'LB-LANG' => 'english',
                 ],
-                'json'    => $data,
+                'json' => $data,
             ]);
-        } catch (Exception | GuzzleException $exception) {
+
+            $result = json_decode($result->getBody(), true);
+
+            if (! $result['status']) {
+                if (app()->hasDebugModeEnabled()) {
+                    return $result;
+                }
+
+                return [
+                    'status' => false,
+                    'message' => 'Server returned an invalid response, please contact support.',
+                ];
+            }
+
+            return $result;
+        } catch (Exception|GuzzleException $exception) {
             return [
-                'status'  => false,
+                'status' => false,
                 'message' => $exception->getMessage(),
             ];
         }
-
-        if (!$result && config('app.debug')) {
-            return [
-                'status'  => false,
-                'message' => 'Server is unavailable at the moment, please try again.',
-            ];
-        }
-
-        $result = json_decode($result->getBody(), true);
-
-        if (!$result['status']) {
-            if (config('app.debug')) {
-                return $result;
-            }
-
-            return [
-                'status'  => false,
-                'message' => 'Server returned an invalid response, please contact support.',
-            ];
-        }
-
-        return $result;
     }
 
-    /**
-     * @return array
-     */
     public function getLatestVersion(): array
     {
         return $this->callApi(
@@ -197,25 +140,19 @@ class Core
         );
     }
 
-    /**
-     * @param string $license
-     * @param string $client
-     * @param bool $createLicense
-     * @return array
-     */
     public function activateLicense(string $license, string $client, bool $createLicense = true): array
     {
         $data = [
-            'product_id'   => $this->productId,
+            'product_id' => $this->productId,
             'license_code' => $license,
-            'client_name'  => $client,
-            'verify_type'  => $this->verifyType,
+            'client_name' => $client,
+            'verify_type' => $this->verifyType,
         ];
 
         try {
             $response = $this->callApi($this->apiUrl . '/api/activate_license', $data);
 
-            if (!empty($createLicense)) {
+            if (! empty($createLicense)) {
                 if ($response['status']) {
                     $license = trim($response['lic_response']);
                     file_put_contents($this->licenseFile, $license, LOCK_EX);
@@ -236,46 +173,40 @@ class Core
         }
     }
 
-    /**
-     * @param bool $timeBasedCheck
-     * @param bool $license
-     * @param bool $client
-     * @return array
-     */
-    public function verifyLicense(bool $timeBasedCheck = false, bool $license = false, bool $client = false): array
+    public function verifyLicense(bool $timeBasedCheck = false, string $license = null, string $client = null): array
     {
         $data = [
-            'product_id'   => $this->productId,
+            'product_id' => $this->productId,
             'license_file' => null,
             'license_code' => null,
-            'client_name'  => null,
+            'client_name' => null,
         ];
 
-        if (!empty($license) && !empty($client)) {
+        if (! empty($license) && ! empty($client)) {
             $data = [
-                'product_id'   => $this->productId,
+                'product_id' => $this->productId,
                 'license_file' => null,
                 'license_code' => $license,
-                'client_name'  => $client,
+                'client_name' => $client,
             ];
         } elseif ($this->checkLocalLicenseExist()) {
             $data = [
-                'product_id'   => $this->productId,
+                'product_id' => $this->productId,
                 'license_file' => file_get_contents($this->licenseFile),
                 'license_code' => null,
-                'client_name'  => null,
+                'client_name' => null,
             ];
         }
 
         $response = [
-            'status'  => true,
+            'status' => true,
             'message' => 'Verified! Thanks for purchasing our product.',
         ];
 
         if ($timeBasedCheck && $this->verificationPeriod > 0) {
             $type = $this->verificationPeriod;
             $today = date('d-m-Y');
-            if (!session($this->sessionKey)) {
+            if (! session($this->sessionKey)) {
                 session([$this->sessionKey => '00-00-0000']);
             }
             $typeText = $type . ' days';
@@ -302,36 +233,28 @@ class Core
         return $this->callApi($this->apiUrl . '/api/verify_license', $data);
     }
 
-    /**
-     * @return bool
-     */
     public function checkLocalLicenseExist(): bool
     {
         return is_file($this->licenseFile);
     }
 
-    /**
-     * @param bool $license
-     * @param bool $client
-     * @return array
-     */
-    public function deactivateLicense(bool $license = false, bool $client = false): array
+    public function deactivateLicense(string $license = null, string $client = null): array
     {
         $data = [];
 
-        if (!empty($license) && !empty($client)) {
+        if (! empty($license) && ! empty($client)) {
             $data = [
-                'product_id'   => $this->productId,
+                'product_id' => $this->productId,
                 'license_file' => null,
                 'license_code' => $license,
-                'client_name'  => $client,
+                'client_name' => $client,
             ];
         } elseif (is_file($this->licenseFile)) {
             $data = [
-                'product_id'   => $this->productId,
+                'product_id' => $this->productId,
                 'license_file' => file_get_contents($this->licenseFile),
                 'license_code' => null,
-                'client_name'  => null,
+                'client_name' => null,
             ];
         }
 
@@ -348,40 +271,34 @@ class Core
         return $response;
     }
 
-    /**
-     * @return array
-     */
     public function checkUpdate(): array
     {
         return $this->callApi(
             $this->apiUrl . '/api/check_update',
             [
-                'product_id'      => $this->productId,
+                'product_id' => $this->productId,
                 'current_version' => $this->currentVersion,
             ]
         );
     }
 
-    /**
-     * @param string $updateId
-     * @param string $version
-     * @param string|null $license
-     * @param string|null $client
-     * @throws Throwable
-     */
-    public function downloadUpdate(string $updateId, string $version, ?string $license = null, ?string $client = null)
-    {
-        if (!empty($license) && !empty($client)) {
+    public function downloadUpdate(
+        string $updateId,
+        string $version,
+        ?string $license = null,
+        ?string $client = null
+    ): void {
+        if (! empty($license) && ! empty($client)) {
             $dataArray = [
                 'license_file' => null,
                 'license_code' => $license,
-                'client_name'  => $client,
+                'client_name' => $client,
             ];
         } elseif (is_file($this->licenseFile)) {
             $dataArray = [
                 'license_file' => file_get_contents($this->licenseFile),
                 'license_code' => null,
-                'client_name'  => null,
+                'client_name' => null,
             ];
         } else {
             $dataArray = [];
@@ -392,16 +309,27 @@ class Core
         $version = str_replace('.', '_', $version);
         ob_start();
         $sourceSize = $this->apiUrl . '/api/get_update_size/main/' . $updateId;
+
         echo 'Preparing to download main update...' . '<br>';
 
         if ($this->showUpdateProcess) {
             echo '<script>document.getElementById(\'prog\').value = 1;</script>';
         }
 
+        if ($this->runningInConsole) {
+            ob_clean();
+            echo '-';
+        }
+
         ob_flush();
         echo 'Main Update size: ' . $this->getRemoteFileSize($sourceSize) . ' (Please do not refresh the page).<br>';
         if ($this->showUpdateProcess) {
             echo '<script>document.getElementById(\'prog\').value = 5;</script>';
+        }
+
+        if ($this->runningInConsole) {
+            ob_clean();
+            echo '-';
         }
 
         ob_flush();
@@ -438,6 +366,11 @@ class Core
             echo '<script>document.getElementById(\'prog\').value = 10;</script>';
         }
 
+        if ($this->runningInConsole) {
+            ob_clean();
+            echo '-';
+        }
+
         ob_flush();
         $data = curl_exec($ch);
         $httpStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -454,14 +387,15 @@ class Core
             $error = true;
         }
 
-        if (!$error) {
+        if (! $error) {
             event(new UpdatingEvent());
 
             curl_close($ch);
             $destination = $this->rootPath . '/update_main_' . $version . '.zip';
+
             $file = fopen($destination, 'w+');
 
-            if (!$file) {
+            if (! $file) {
                 echo '<br><span class="text-danger">Folder does not have permission to write file or the update file path could not be resolved, please contact support.</span>';
             } else {
                 fputs($file, $data);
@@ -471,7 +405,16 @@ class Core
                     echo '<script>document.getElementById(\'prog\').value = 65;</script>';
                 }
 
-                $this->processUpdate($destination);
+                if ($this->runningInConsole) {
+                    ob_clean();
+                    echo '-';
+                }
+
+                if (! $this->validateUpdateFile($destination)) {
+                    echo '<br><span class="text-danger">Updated files are invalid. Please contact support.</span>';
+                } else {
+                    $this->processUpdate($destination);
+                }
             }
         }
 
@@ -479,41 +422,25 @@ class Core
         ob_end_flush();
     }
 
-    public function processUpdate(string $destination)
+    public function processUpdate(string $destination): void
     {
         $this->clearCache();
 
         $coreTempPath = storage_path('app/core.json');
 
         try {
-            DB::beginTransaction();
-
             File::copy($this->coreFilePath, $coreTempPath);
 
             ob_flush();
-            if (class_exists('ZipArchive', false)) {
-                $zip = new ZipArchive();
-                $res = $zip->open($destination);
-                if ($res === true) {
-                    $zip->extractTo($this->rootPath . '/');
-                    $zip->close();
-                    unlink($destination);
-                    echo 'Main update files downloaded and extracted.<br><br>';
-                    if ($this->showUpdateProcess) {
-                        echo '<script>document.getElementById(\'prog\').value = 75;</script>';
-                    }
-                } else {
-                    echo 'Update zip extraction failed.<br><br>';
-                }
-            } else {
-                $archive = new Zip($destination);
-                $archive->extract(PCLZIP_OPT_PATH, $this->rootPath . '/');
-
+            $zip = new Zipper();
+            if ($zip->extract($destination, $this->rootPath)) {
                 unlink($destination);
                 echo 'Main update files downloaded and extracted.<br><br>';
                 if ($this->showUpdateProcess) {
                     echo '<script>document.getElementById(\'prog\').value = 75;</script>';
                 }
+            } else {
+                echo 'Update zip extraction failed.<br><br>';
             }
 
             ob_flush();
@@ -530,19 +457,19 @@ class Core
 
             foreach ($paths as $path) {
                 foreach (BaseHelper::scanFolder($path) as $module) {
-                    if ($path == plugin_path() && !is_plugin_active($module)) {
+                    if ($path == plugin_path() && ! is_plugin_active($module)) {
                         continue;
                     }
 
                     $modulePath = $path . '/' . $module;
 
-                    if (!File::isDirectory($modulePath)) {
+                    if (! File::isDirectory($modulePath)) {
                         continue;
                     }
 
                     $publishedPath = 'vendor/core/' . File::basename($path);
 
-                    if (!File::isDirectory($publishedPath)) {
+                    if (! File::isDirectory($publishedPath)) {
                         File::makeDirectory($publishedPath, 0755, true);
                     }
 
@@ -553,6 +480,11 @@ class Core
                     if (File::isDirectory($modulePath . '/database/migrations')) {
                         $migrator->run($modulePath . '/database/migrations');
                     }
+                }
+
+                if ($this->runningInConsole) {
+                    ob_clean();
+                    echo '-';
                 }
             }
 
@@ -576,24 +508,15 @@ class Core
 
             echo '<br><span class="text-success">Update database successfully!</span>';
 
-            DB::commit();
-
             File::delete($coreTempPath);
         } catch (Throwable $exception) {
-            rescue(function () {
-                DB::rollBack();
-            });
-
             File::copy($coreTempPath, $this->coreFilePath);
 
             echo '<br><span class="text-danger">' . $exception->getMessage() . '</span>';
         }
     }
 
-    /**
-     * @return bool
-     */
-    protected function clearCache(): bool
+    private function clearCache(): void
     {
         try {
             Helper::clearCache();
@@ -603,20 +526,16 @@ class Core
             File::delete(app()->getCachedRoutesPath());
             File::delete(base_path('bootstrap/cache/packages.php'));
             File::delete(base_path('bootstrap/cache/services.php'));
+            File::delete(base_path('bootstrap/cache/plugins.php'));
             foreach (File::glob(storage_path('app/purifier') . '/*') as $view) {
                 File::delete($view);
             }
-
-            return true;
-        } catch (Exception $exception) {
-            return false;
+        } catch (Throwable $exception) {
+            info($exception->getMessage());
         }
     }
 
-    /**
-     * @return string
-     */
-    protected function getSiteURL(): string
+    private function getSiteURL(): string
     {
         $request = request();
 
@@ -628,19 +547,12 @@ class Core
         return $thisHttpOrHttps . $thisServerName . $request->server('REQUEST_URI');
     }
 
-    /**
-     * @return string
-     */
-    protected function getSiteIP(): string
+    private function getSiteIP(): string
     {
         return request()->server('SERVER_ADDR') ?: Helper::getIpFromThirdParty() ?: gethostbyname(gethostname());
     }
 
-    /**
-     * @param string $url
-     * @return string
-     */
-    protected function getRemoteFileSize(string $url)
+    private function getRemoteFileSize(string $url): float|int|string
     {
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_HEADER, true);
@@ -670,9 +582,10 @@ class Core
         return -1;
     }
 
-    protected function progress($resource, $downloadSize, $downloaded)
+    protected function progress($resource, $downloadSize, $downloaded): void
     {
         static $prev = 0;
+
         if ($downloadSize == 0) {
             $progress = 0;
         } else {
@@ -682,25 +595,75 @@ class Core
         if (($progress != $prev) && ($progress == 25)) {
             $prev = $progress;
             echo '<script>document.getElementById(\'prog\').value = 22.5;</script>';
-            ob_flush();
         }
 
         if (($progress != $prev) && ($progress == 50)) {
             $prev = $progress;
             echo '<script>document.getElementById(\'prog\').value = 35;</script>';
-            ob_flush();
         }
 
         if (($progress != $prev) && ($progress == 75)) {
             $prev = $progress;
             echo '<script>document.getElementById(\'prog\').value = 47.5;</script>';
-            ob_flush();
         }
 
         if (($progress != $prev) && ($progress == 100)) {
             $prev = $progress;
             echo '<script>document.getElementById(\'prog\').value = 60;</script>';
-            ob_flush();
         }
+
+        if ($this->runningInConsole) {
+            ob_clean();
+            echo '-';
+        }
+
+        ob_flush();
+    }
+
+    private function validateUpdateFile(string $filePath): bool
+    {
+        if (! class_exists('ZipArchive', false)) {
+            return true;
+        }
+
+        $zip = new ZipArchive();
+
+        if ($zip->open($filePath)) {
+            if ($zip->getFromName('.env')) {
+                return false;
+            }
+
+            $content = json_decode($zip->getFromName('platform/core/core.json'), true);
+
+            if (! $content) {
+                return false;
+            }
+
+            $validator = Validator::make($content, [
+                'productId' => ['required'],
+                'source' => ['required'],
+                'apiUrl' => ['required'],
+                'apiKey' => ['required'],
+                'version' => ['required'],
+            ]);
+
+            if ($validator->fails()) {
+                return false;
+            }
+
+            $core = BaseHelper::getFileData(core_path('core.json'));
+
+            if ($content['productId'] !== $core['productId']) {
+                return false;
+            }
+
+            if (! version_compare($content['version'], get_cms_version(), '>=') > 0) {
+                return false;
+            }
+        }
+
+        $zip->close();
+
+        return true;
     }
 }

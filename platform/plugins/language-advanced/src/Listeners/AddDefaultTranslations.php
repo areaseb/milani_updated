@@ -9,13 +9,7 @@ use Language;
 
 class AddDefaultTranslations
 {
-    /**
-     * Handle the event.
-     *
-     * @param CreatedContentEvent $event
-     * @return void
-     */
-    public function handle(CreatedContentEvent $event)
+    public function handle(CreatedContentEvent $event): void
     {
         if (LanguageAdvancedManager::isSupported($event->data)) {
             $table = $event->data->getTable() . '_translations';
@@ -26,7 +20,7 @@ class AddDefaultTranslations
                 }
 
                 $condition = [
-                    'lang_code'                      => $language->lang_code,
+                    'lang_code' => $language->lang_code,
                     $event->data->getTable() . '_id' => $event->data->id,
                 ];
 
@@ -40,7 +34,7 @@ class AddDefaultTranslations
 
                 $data = [];
                 foreach (DB::getSchemaBuilder()->getColumnListing($table) as $column) {
-                    if (!in_array($column, array_keys($condition))) {
+                    if (! in_array($column, array_keys($condition))) {
                         $data[$column] = $dataDefault->{$column};
                     }
                 }

@@ -11,7 +11,7 @@ class SslCommerzServiceProvider extends ServiceProvider
 {
     use LoadAndPublishDataTrait;
 
-    public function register()
+    public function register(): void
     {
         Helper::autoload(__DIR__ . '/../../helpers');
     }
@@ -20,12 +20,12 @@ class SslCommerzServiceProvider extends ServiceProvider
      * @return void
      * @throws BindingResolutionException
      */
-    public function boot()
+    public function boot(): void
     {
         if (is_plugin_active('payment')) {
             $this->setNamespace('plugins/sslcommerz')
                 ->loadAndPublishConfigurations(['sslcommerz'])
-                ->loadRoutes(['web'])
+                ->loadRoutes()
                 ->loadAndPublishViews()
                 ->publishAssets();
 
@@ -37,10 +37,10 @@ class SslCommerzServiceProvider extends ServiceProvider
             $apiURL = $isSandbox ? 'https://sandbox.sslcommerz.com' : 'https://securepay.sslcommerz.com';
 
             $this->app->make('config')->set([
-                'plugins.sslcommerz.sslcommerz.apiCredentials.store_id'       => $storeID,
+                'plugins.sslcommerz.sslcommerz.apiCredentials.store_id' => $storeID,
                 'plugins.sslcommerz.sslcommerz.apiCredentials.store_password' => $storePassword,
-                'plugins.sslcommerz.sslcommerz.connect_from_localhost'        => $isSandbox,
-                'plugins.sslcommerz.sslcommerz.apiDomain'                     => $apiURL,
+                'plugins.sslcommerz.sslcommerz.connect_from_localhost' => $isSandbox,
+                'plugins.sslcommerz.sslcommerz.apiDomain' => $apiURL,
             ]);
         }
     }

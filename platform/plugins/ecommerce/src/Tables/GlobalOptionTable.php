@@ -8,52 +8,40 @@ use Botble\Ecommerce\Repositories\Interfaces\GlobalOptionInterface;
 use Botble\Table\Abstracts\TableAbstract;
 use Html;
 use Illuminate\Contracts\Routing\UrlGenerator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\DataTables;
 
 class GlobalOptionTable extends TableAbstract
 {
-    /**
-     * @var bool
-     */
     protected $hasActions = true;
 
-    /**
-     * @var bool
-     */
     protected $hasFilter = true;
 
-    /**
-     * ProductTagTable constructor.
-     * @param DataTables $table
-     * @param UrlGenerator $urlGenerator
-     * @param GlobalOptionInterface $globalOptionRepository
-     */
     public function __construct(
-        DataTables            $table,
-        UrlGenerator          $urlGenerator,
+        DataTables $table,
+        UrlGenerator $urlGenerator,
         GlobalOptionInterface $globalOptionRepository
-    )
-    {
+    ) {
         parent::__construct($table, $urlGenerator);
 
         $this->repository = $globalOptionRepository;
 
-        if (!Auth::user()->hasAnyPermission(['global-option.edit', 'global-option.destroy'])) {
+        if (! Auth::user()->hasAnyPermission(['global-option.edit', 'global-option.destroy'])) {
             $this->hasOperations = false;
             $this->hasActions = false;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function ajax()
+    public function ajax(): JsonResponse
     {
         $data = $this->table
             ->eloquent($this->query())
             ->editColumn('name', function ($item) {
-                if (!Auth::user()->hasPermission('global-option.edit')) {
+                if (! Auth::user()->hasPermission('global-option.edit')) {
                     return BaseHelper::clean($item->name);
                 }
 
@@ -75,10 +63,7 @@ class GlobalOptionTable extends TableAbstract
         return $this->toJson($data);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function query()
+    public function query(): Relation|Builder|QueryBuilder
     {
         $query = $this->repository->getModel()->select([
             'id',
@@ -90,21 +75,18 @@ class GlobalOptionTable extends TableAbstract
         return $this->applyScopes($query);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function columns()
+    public function columns(): array
     {
         return [
-            'id'         => [
+            'id' => [
                 'title' => trans('core/base::tables.id'),
                 'width' => '20px',
             ],
-            'name'       => [
+            'name' => [
                 'title' => trans('core/base::tables.name'),
                 'class' => 'text-start',
             ],
-            'required'   => [
+            'required' => [
                 'title' => trans('plugins/ecommerce::product-option.required'),
                 'class' => 'text-start',
             ],
@@ -116,42 +98,33 @@ class GlobalOptionTable extends TableAbstract
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function buttons()
+    public function buttons(): array
     {
         return $this->addCreateButton(route('global-option.create'), 'global-option.create');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function bulkActions(): array
     {
         return $this->addDeleteAction(route('global-option.deletes'), 'global-option.destroy', parent::bulkActions());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getBulkChanges(): array
     {
         return [
-            'name'       => [
-                'title'    => trans('core/base::tables.name'),
-                'type'     => 'text',
+            'name' => [
+                'title' => trans('core/base::tables.name'),
+                'type' => 'text',
                 'validate' => 'required|max:120',
             ],
-            'status'     => [
-                'title'    => trans('core/base::tables.status'),
-                'type'     => 'select',
-                'choices'  => BaseStatusEnum::labels(),
+            'status' => [
+                'title' => trans('core/base::tables.status'),
+                'type' => 'select',
+                'choices' => BaseStatusEnum::labels(),
                 'validate' => 'required|in:' . implode(',', BaseStatusEnum::values()),
             ],
             'created_at' => [
                 'title' => trans('core/base::tables.created_at'),
-                'type'  => 'date',
+                'type' => 'datePicker',
             ],
         ];
     }

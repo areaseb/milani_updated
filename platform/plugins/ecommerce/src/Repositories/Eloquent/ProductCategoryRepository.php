@@ -8,17 +8,14 @@ use Botble\Support\Repositories\Eloquent\RepositoriesAbstract;
 
 class ProductCategoryRepository extends RepositoriesAbstract implements ProductCategoryInterface
 {
-    /**
-     * {@inheritDoc}
-     */
     public function getCategories(array $param)
     {
         $param = array_merge([
-            'active'      => true,
-            'order_by'    => 'desc',
-            'is_child'    => null,
+            'active' => true,
+            'order_by' => 'desc',
+            'is_child' => null,
             'is_featured' => null,
-            'num'         => null,
+            'num' => null,
         ], $param);
 
         $data = $this->model;
@@ -48,9 +45,6 @@ class ProductCategoryRepository extends RepositoriesAbstract implements ProductC
         return $this->applyBeforeExecuteQuery($data)->get();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getDataSiteMap()
     {
         $data = $this->model
@@ -60,14 +54,11 @@ class ProductCategoryRepository extends RepositoriesAbstract implements ProductC
         return $this->applyBeforeExecuteQuery($data)->get();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getFeaturedCategories($limit)
     {
         $data = $this->model
             ->where([
-                'status'      => BaseStatusEnum::PUBLISHED,
+                'status' => BaseStatusEnum::PUBLISHED,
                 'is_featured' => 1,
             ])
             ->select([
@@ -82,9 +73,6 @@ class ProductCategoryRepository extends RepositoriesAbstract implements ProductC
         return $this->applyBeforeExecuteQuery($data)->get();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getAllCategories($active = true)
     {
         $data = $this->model;
@@ -95,9 +83,6 @@ class ProductCategoryRepository extends RepositoriesAbstract implements ProductC
         return $this->applyBeforeExecuteQuery($data)->get();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getProductCategories(
         array $conditions = [],
         array $with = [],
@@ -106,15 +91,15 @@ class ProductCategoryRepository extends RepositoriesAbstract implements ProductC
     ) {
         $data = $this->model;
 
-        if (!empty($conditions)) {
+        if (! empty($conditions)) {
             $data = $data->where($conditions);
         }
 
-        if (!empty($with)) {
+        if (! empty($with)) {
             $data = $data->with($with);
         }
 
-        if (!empty($withCount)) {
+        if (! empty($withCount)) {
             $data = $data->withCount($withCount);
         }
 

@@ -2,25 +2,15 @@
 
 namespace Botble\Location\Models;
 
-use Botble\Base\Traits\EnumCastable;
+use Botble\Base\Casts\SafeContent;
 use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Base\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class City extends BaseModel
 {
-    use EnumCastable;
-
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
     protected $table = 'cities';
 
-    /**
-     * @var array
-     */
     protected $fillable = [
         'name',
         'state_id',
@@ -31,24 +21,16 @@ class City extends BaseModel
         'status',
     ];
 
-    /**
-     * @var array
-     */
     protected $casts = [
         'status' => BaseStatusEnum::class,
+        'name' => SafeContent::class,
     ];
 
-    /**
-     * @return BelongsTo
-     */
     public function state(): BelongsTo
     {
         return $this->belongsTo(State::class)->withDefault();
     }
 
-    /**
-     * @return BelongsTo
-     */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class)->withDefault();

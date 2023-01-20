@@ -7,23 +7,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DiscountProduct extends BaseModel
 {
-    /**
-     * @var string
-     */
     protected $table = 'ec_discount_products';
 
-    /**
-     * @var array
-     */
     protected $fillable = [
         'discount_id',
         'product_id',
     ];
 
-    /**
-     * @return BelongsTo
-     */
-    public function products()
+    public function products(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id')->withDefault();
     }

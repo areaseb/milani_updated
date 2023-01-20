@@ -4,19 +4,17 @@ namespace Botble\AuditLog\Providers;
 
 use Assets;
 use AuditLog;
-use Botble\ACL\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Botble\Dashboard\Supports\DashboardWidgetInstance;
 use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
 use Botble\AuditLog\Events\AuditHandlerEvent;
 use Illuminate\Http\Request;
-use stdClass;
-use Throwable;
 
 class HookServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         add_action(AUTH_ACTION_AFTER_LOGOUT_SYSTEM, [$this, 'handleLogout'], 45, 2);
 
@@ -31,94 +29,52 @@ class HookServiceProvider extends ServiceProvider
         add_filter(DASHBOARD_FILTER_ADMIN_LIST, [$this, 'registerDashboardWidgets'], 28, 2);
     }
 
-    /**
-     * @param Request $request
-     * @param User $data
-     */
-    public function handleLogin(Request $request, $data)
-    {
-        event(new AuditHandlerEvent(
-            'to the system',
-            'logged in',
-            $data->id,
-            $data->name,
-            'info'
-        ));
-    }
-
-    /**
-     * @param string $screen
-     * @param Request $request
-     * @param User $data
-     */
-    public function handleLogout(Request $request, $data)
+    public function handleLogout(Request $request, Model $data): void
     {
         event(new AuditHandlerEvent(
             'of the system',
             'logged out',
-            $data->id,
+            $data->getKey(),
             $data->name,
             'info'
         ));
     }
 
-    /**
-     * @param string $screen
-     * @param Request $request
-     * @param stdClass $data
-     */
-    public function handleUpdateProfile($screen, Request $request, $data)
+    public function handleUpdateProfile(string $screen, Request $request, Model $data)
     {
         event(new AuditHandlerEvent(
             $screen,
             'updated profile',
-            $data->id,
+            $data->getKey(),
             AuditLog::getReferenceName($screen, $data),
             'info'
         ));
     }
 
-    /**
-     * @param string $screen
-     * @param Request $request
-     * @param stdClass $data
-     */
-    public function handleUpdatePassword($screen, Request $request, $data)
+    public function handleUpdatePassword(string $screen, Request $request, Model $data)
     {
         event(new AuditHandlerEvent(
             $screen,
             'changed password',
-            $data->id,
+            $data->getKey(),
             AuditLog::getReferenceName($screen, $data),
             'danger'
         ));
     }
 
-    /**
-     * @param string $screen
-     */
-    public function handleBackup($screen)
+    public function handleBackup(string $screen)
     {
         event(new AuditHandlerEvent($screen, 'created', 0, '', 'info'));
     }
 
-    /**
-     * @param string $screen
-     */
-    public function handleRestore($screen)
+    public function handleRestore(string $screen)
     {
         event(new AuditHandlerEvent($screen, 'restored', 0, '', 'info'));
     }
 
-    /**
-     * @param array $widgets
-     * @param Collection $widgetSettings
-     * @return array
-     * @throws Throwable
-     */
-    public function registerDashboardWidgets($widgets, $widgetSettings)
+    public function registerDashboardWidgets(array $widgets, Collection $widgetSettings): array
     {
-        if (!Auth::user()->hasPermission('audit-log.index')) {
+        if (! Auth::user()->hasPermission('audit-log.index')) {
             return $widgets;
         }
 

@@ -4,24 +4,13 @@ namespace Botble\Ads\Models;
 
 use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Base\Models\BaseModel;
-use Botble\Base\Traits\EnumCastable;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 
 class Ads extends BaseModel
 {
-    use EnumCastable;
-
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
     protected $table = 'ads';
 
-    /**
-     * @var array
-     */
     protected $fillable = [
         'name',
         'key',
@@ -34,37 +23,21 @@ class Ads extends BaseModel
         'order',
     ];
 
-    /**
-     * @var string[]
-     */
-    protected $dates = [
-        'expired_at',
-    ];
-
-    /**
-     * @var array
-     */
     protected $casts = [
         'status' => BaseStatusEnum::class,
+        'expired_at' => 'datetime',
     ];
 
-    /**
-     * @param Builder $query
-     * @return Builder
-     */
-    public function scopeNotExpired($query)
+    public function scopeNotExpired(Builder $query): Builder
     {
         return $query->where(function ($query) {
             $query->whereDate('expired_at', '>=', Carbon::now()->toDateString());
         });
     }
 
-    /**
-     * @return string|null
-     */
-    public function getExpiredAtAttribute($value)
+    public function getExpiredAtAttribute($value): ?string
     {
-        if (!$value) {
+        if (! $value) {
             return null;
         }
 

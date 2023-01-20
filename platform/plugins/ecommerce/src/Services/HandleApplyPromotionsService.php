@@ -12,39 +12,19 @@ use OrderHelper;
 
 class HandleApplyPromotionsService
 {
-    /**
-     * @var DiscountInterface
-     */
-    protected $discountRepository;
+    protected DiscountInterface $discountRepository;
 
-    /**
-     * @var ProductInterface
-     */
-    protected $productRepository;
+    protected ProductInterface $productRepository;
 
-    /**
-     * @var null|Collection
-     */
-    protected $promotions;
+    protected ?Collection $promotions = null;
 
-    /**
-     * HandleApplyPromotionsService constructor.
-     * @param DiscountInterface $discountRepository
-     * @param ProductInterface $productRepository
-     */
     public function __construct(DiscountInterface $discountRepository, ProductInterface $productRepository)
     {
         $this->discountRepository = $discountRepository;
         $this->productRepository = $productRepository;
     }
 
-    /**
-     * @param null $token
-     * @param array $data
-     * @param string|null $prefix
-     * @return float
-     */
-    public function execute($token = null, array $data = [], ?string $prefix = '')
+    public function execute($token = null, array $data = [], ?string $prefix = ''): float|int
     {
         if (empty($this->promotions)) {
             $promotions = $this->discountRepository->getAvailablePromotions();
@@ -70,16 +50,20 @@ class HandleApplyPromotionsService
                             if ($promotion->min_order_price <= $rawTotal) {
                                 $promotionDiscountAmount += $promotion->value;
                             }
+
                             break;
                         case 'all-orders':
                             $promotionDiscountAmount += $promotion->value;
+
                             break;
                         default:
                             if ($countCart >= $promotion->product_quantity) {
                                 $promotionDiscountAmount += $promotion->value;
                             }
+
                             break;
                     }
+
                     break;
                 case 'percentage':
                     switch ($promotion->target) {
@@ -87,16 +71,20 @@ class HandleApplyPromotionsService
                             if ($promotion->min_order_price <= $rawTotal) {
                                 $promotionDiscountAmount += $rawTotal * $promotion->value / 100;
                             }
+
                             break;
                         case 'all-orders':
                             $promotionDiscountAmount += $rawTotal * $promotion->value / 100;
+
                             break;
                         default:
                             if ($countCart >= $promotion->product_quantity) {
                                 $promotionDiscountAmount += $rawTotal * $promotion->value / 100;
                             }
+
                             break;
                     }
+
                     break;
                 case 'same-price':
                     if ($promotion->product_quantity > 1 && $countCart >= $promotion->product_quantity) {
@@ -116,7 +104,7 @@ class HandleApplyPromotionsService
                                         ->pluck('ec_product_collections.id')
                                         ->all();
 
-                                    if (!empty(array_intersect(
+                                    if (! empty(array_intersect(
                                         $productCollections,
                                         $discountProductCollections
                                     ))) {
@@ -131,7 +119,7 @@ class HandleApplyPromotionsService
             }
         }
 
-        if (!$token) {
+        if (! $token) {
             $token = OrderHelper::getOrderSessionToken();
         }
 

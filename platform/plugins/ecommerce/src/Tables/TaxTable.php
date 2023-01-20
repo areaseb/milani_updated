@@ -8,48 +8,37 @@ use Botble\Ecommerce\Repositories\Interfaces\TaxInterface;
 use Botble\Table\Abstracts\TableAbstract;
 use Html;
 use Illuminate\Contracts\Routing\UrlGenerator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\DataTables;
 
 class TaxTable extends TableAbstract
 {
-    /**
-     * @var bool
-     */
     protected $hasActions = true;
 
-    /**
-     * @var bool
-     */
     protected $hasFilter = true;
 
-    /**
-     * TaxTable constructor.
-     * @param DataTables $table
-     * @param UrlGenerator $urlGenerator
-     * @param TaxInterface $taxRepository
-     */
     public function __construct(DataTables $table, UrlGenerator $urlGenerator, TaxInterface $taxRepository)
     {
         parent::__construct($table, $urlGenerator);
 
         $this->repository = $taxRepository;
 
-        if (!Auth::user()->hasAnyPermission(['tax.edit', 'tax.destroy'])) {
+        if (! Auth::user()->hasAnyPermission(['tax.edit', 'tax.destroy'])) {
             $this->hasOperations = false;
             $this->hasActions = false;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function ajax()
+    public function ajax(): JsonResponse
     {
         $data = $this->table
             ->eloquent($this->query())
             ->editColumn('title', function ($item) {
-                if (!Auth::user()->hasPermission('tax.edit')) {
+                if (! Auth::user()->hasPermission('tax.edit')) {
                     return BaseHelper::clean($item->title);
                 }
 
@@ -74,10 +63,7 @@ class TaxTable extends TableAbstract
         return $this->toJson($data);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function query()
+    public function query(): Relation|Builder|QueryBuilder
     {
         $query = $this->repository->getModel()->select([
             'id',
@@ -91,18 +77,15 @@ class TaxTable extends TableAbstract
         return $this->applyScopes($query);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function columns()
+    public function columns(): array
     {
         return [
-            'id'         => [
+            'id' => [
                 'title' => trans('core/base::tables.id'),
                 'width' => '20px',
                 'class' => 'text-start',
             ],
-            'title'      => [
+            'title' => [
                 'title' => trans('core/base::tables.name'),
                 'class' => 'text-start',
             ],
@@ -110,11 +93,11 @@ class TaxTable extends TableAbstract
                 'title' => trans('plugins/ecommerce::tax.percentage'),
                 'class' => 'text-center',
             ],
-            'priority'   => [
+            'priority' => [
                 'title' => trans('plugins/ecommerce::tax.priority'),
                 'class' => 'text-center',
             ],
-            'status'     => [
+            'status' => [
                 'title' => trans('core/base::tables.status'),
                 'class' => 'text-center',
             ],
@@ -126,42 +109,33 @@ class TaxTable extends TableAbstract
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function buttons()
+    public function buttons(): array
     {
         return $this->addCreateButton(route('tax.create'), 'tax.create');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function bulkActions(): array
     {
         return $this->addDeleteAction(route('tax.deletes'), 'tax.destroy', parent::bulkActions());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getBulkChanges(): array
     {
         return [
-            'title'      => [
-                'title'    => trans('core/base::tables.name'),
-                'type'     => 'text',
+            'title' => [
+                'title' => trans('core/base::tables.name'),
+                'type' => 'text',
                 'validate' => 'required|max:120',
             ],
-            'status'     => [
-                'title'    => trans('core/base::tables.status'),
-                'type'     => 'select',
-                'choices'  => BaseStatusEnum::labels(),
+            'status' => [
+                'title' => trans('core/base::tables.status'),
+                'type' => 'select',
+                'choices' => BaseStatusEnum::labels(),
                 'validate' => 'required|in:' . implode(',', BaseStatusEnum::values()),
             ],
             'created_at' => [
                 'title' => trans('core/base::tables.created_at'),
-                'type'  => 'date',
+                'type' => 'datePicker',
             ],
         ];
     }

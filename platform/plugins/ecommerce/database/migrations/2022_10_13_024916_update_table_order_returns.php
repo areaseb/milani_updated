@@ -7,14 +7,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class () extends Migration {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        if (!Schema::hasColumn('ec_order_returns', 'code')) {
+        if (! Schema::hasColumn('ec_order_returns', 'code')) {
             Schema::table('ec_order_returns', function (Blueprint $table) {
                 $table->string('code')->after('id')->unique()->nullable();
             });
@@ -25,7 +20,7 @@ return new class () extends Migration {
             $orderReturn->save();
         }
 
-        if (!Schema::hasColumn('ec_order_return_items', 'product_image')) {
+        if (! Schema::hasColumn('ec_order_return_items', 'product_image')) {
             Schema::table('ec_order_return_items', function (Blueprint $table) {
                 $table->string('product_image')->after('product_name')->nullable();
             });
@@ -35,15 +30,5 @@ return new class () extends Migration {
             $orderReturnItem->product_image = $orderReturnItem->product->image ?: $orderReturnItem->product->original_product->image;
             $orderReturnItem->save();
         }
-    }
-
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        //
     }
 };

@@ -5,15 +5,12 @@ namespace Botble\Theme\Facades;
 use Botble\Theme\ThemeOption;
 use Illuminate\Support\Facades\Facade;
 
+/**
+ * @see \Botble\Theme\ThemeOption
+ */
 class ThemeOptionFacade extends Facade
 {
-    /**
-     * Get the registered name of the component.
-     *
-     * @return string
-     *
-     */
-    protected static function getFacadeAccessor()
+    protected static function getFacadeAccessor(): string
     {
         return ThemeOption::class;
     }

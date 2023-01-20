@@ -5,12 +5,12 @@ namespace Botble\Theme\Facades;
 use Botble\Theme\Supports\SiteMapManager;
 use Illuminate\Support\Facades\Facade;
 
+/**
+ * @see \Botble\Theme\Supports\SiteMapManager
+ */
 class SiteMapManagerFacade extends Facade
 {
-    /**
-     * @return string
-     */
-    protected static function getFacadeAccessor()
+    protected static function getFacadeAccessor(): string
     {
         return SiteMapManager::class;
     }

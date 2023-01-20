@@ -2,25 +2,16 @@
 
 namespace Botble\Ecommerce\Option\OptionType;
 
+use Botble\Ecommerce\Models\Option;
 use Botble\Ecommerce\Models\Product;
 use Theme;
 
 abstract class BaseOptionType
 {
-    /**
-     * @var string
-     */
-    public $option = null;
+    public Option|array|null $option = null;
 
-    /**
-     * @var Product
-     */
-    public $product = null;
+    public ?Product $product = null;
 
-    /**
-     * @param $option
-     * @return $this
-     */
     public function setOption($option): self
     {
         $this->option = $option;
@@ -28,10 +19,6 @@ abstract class BaseOptionType
         return $this;
     }
 
-    /**
-     * @param Product $product
-     * @return $this
-     */
     public function setProduct(Product $product): self
     {
         $this->product = $product;
@@ -41,9 +28,6 @@ abstract class BaseOptionType
 
     abstract public function view(): string;
 
-    /**
-     * @return string
-     */
     public function render(): string
     {
         $view = 'plugins/ecommerce::themes.options.' . $this->view();

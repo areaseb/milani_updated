@@ -9,12 +9,10 @@ use Botble\Setting\Supports\SettingStore;
 use Botble\SocialLogin\Http\Requests\SocialLoginRequest;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Socialite\AbstractUser;
 use RvMedia;
@@ -23,19 +21,11 @@ use SocialService;
 
 class SocialLoginController extends BaseController
 {
-    /**
-     * Redirect the user to the {provider} authentication page.
-     *
-     * @param string $provider
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return mixed
-     */
     public function redirectToProvider(string $provider, Request $request, BaseHttpResponse $response)
     {
         $guard = $this->guard($request);
 
-        if (!$guard) {
+        if (! $guard) {
             return $response
                 ->setError()
                 ->setNextUrl(route('public.index'));
@@ -48,11 +38,6 @@ class SocialLoginController extends BaseController
         return Socialite::driver($provider)->redirect();
     }
 
-    /**
-     *
-     * @param Request|null $request
-     * @return bool|string
-     */
     protected function guard(Request $request = null)
     {
         if ($request) {
@@ -61,45 +46,35 @@ class SocialLoginController extends BaseController
             $guard = session('social_login_guard_current');
         }
 
-        if (!$guard) {
+        if (! $guard) {
             $guard = array_key_first(SocialService::supportedModules());
         }
 
-        if (!$guard || !SocialService::isSupportedModuleByKey($guard) || Auth::guard($guard)->check()) {
+        if (! $guard || ! SocialService::isSupportedModuleByKey($guard) || Auth::guard($guard)->check()) {
             return false;
         }
 
         return $guard;
     }
 
-    /**
-     * @param string $provider
-     * @return bool
-     */
     protected function setProvider(string $provider): bool
     {
         config()->set([
             'services.' . $provider => [
-                'client_id'     => SocialService::setting($provider . '_app_id'),
+                'client_id' => SocialService::setting($provider . '_app_id'),
                 'client_secret' => SocialService::setting($provider . '_app_secret'),
-                'redirect'      => route('auth.social.callback', $provider),
+                'redirect' => route('auth.social.callback', $provider),
             ],
         ]);
 
         return true;
     }
 
-    /**
-     * Obtain the user information from {provider}.
-     * @param string $provider
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function handleProviderCallback($provider, BaseHttpResponse $response)
+    public function handleProviderCallback(string $provider, BaseHttpResponse $response)
     {
         $guard = $this->guard();
 
-        if (!$guard) {
+        if (! $guard) {
             return $response
                 ->setError()
                 ->setNextUrl(route('public.index'))
@@ -122,7 +97,7 @@ class SocialLoginController extends BaseController
                 $message = json_encode($message);
             }
 
-            if (!$message) {
+            if (! $message) {
                 $message = __('An error occurred while trying to login');
             }
 
@@ -132,7 +107,7 @@ class SocialLoginController extends BaseController
                 ->setMessage($message);
         }
 
-        if (!$oAuth->getEmail()) {
+        if (! $oAuth->getEmail()) {
             return $response
                 ->setError()
                 ->setNextUrl($providerData['login_url'])
@@ -141,14 +116,14 @@ class SocialLoginController extends BaseController
 
         $account = (new $providerData['model']())->where('email', $oAuth->getEmail())->first();
 
-        if (!$account) {
+        if (! $account) {
             $avatarId = null;
 
             try {
                 $url = $oAuth->getAvatar();
                 if ($url) {
                     $result = RvMedia::uploadFromUrl($url, 0, 'accounts', 'image/png');
-                    if (!$result['error']) {
+                    if (! $result['error']) {
                         $avatarId = $result['data']->id;
                     }
                 }
@@ -157,9 +132,9 @@ class SocialLoginController extends BaseController
             }
 
             $data = [
-                'name'      => $oAuth->getName() ?: $oAuth->getEmail(),
-                'email'     => $oAuth->getEmail(),
-                'password'  => bcrypt(Str::random(36)),
+                'name' => $oAuth->getName() ?: $oAuth->getEmail(),
+                'email' => $oAuth->getEmail(),
+                'password' => Hash::make(Str::random(36)),
                 'avatar_id' => $avatarId,
             ];
 
@@ -178,9 +153,6 @@ class SocialLoginController extends BaseController
             ->setMessage(trans('core/acl::auth.login.success'));
     }
 
-    /**
-     * @return Application|Factory|View
-     */
     public function getSettings()
     {
         page_title()->setTitle(trans('plugins/social-login::social-login.settings.title'));
@@ -190,12 +162,6 @@ class SocialLoginController extends BaseController
         return view('plugins/social-login::settings');
     }
 
-    /**
-     * @param SocialLoginRequest $request
-     * @param BaseHttpResponse $response
-     * @param SettingStore $setting
-     * @return BaseHttpResponse
-     */
     public function postSettings(SocialLoginRequest $request, BaseHttpResponse $response, SettingStore $setting)
     {
         $prefix = 'social_login_';
@@ -208,8 +174,8 @@ class SocialLoginController extends BaseController
             $setting->set($prefix . 'enable', $request->input($prefix . 'enable'));
 
             foreach ($item['data'] as $input) {
-                if (!in_array(app()->environment(), SocialService::getEnvDisableData()) ||
-                    !in_array($input, Arr::get($item, 'disable', []))
+                if (! in_array(app()->environment(), SocialService::getEnvDisableData()) ||
+                    ! in_array($input, Arr::get($item, 'disable', []))
                 ) {
                     $setting->set($prefix . $input, $request->input($prefix . $input));
                 }

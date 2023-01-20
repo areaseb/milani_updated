@@ -19,17 +19,12 @@ class VerificationController extends Controller
      * @bodyParam email string required The email of the user.
      *
      * @group Authentication
-     *
-     * @param ResendEmailVerificationRequest $request
-     * @param BaseHttpResponse $response
-     *
-     * @return BaseHttpResponse
      */
     public function resend(ResendEmailVerificationRequest $request, BaseHttpResponse $response)
     {
         $user = ApiHelper::newModel()->where(['email' => $request->input('email')])->first();
 
-        if (!$user) {
+        if (! $user) {
             return $response
                 ->setError()
                 ->setMessage(__('User not found!'))

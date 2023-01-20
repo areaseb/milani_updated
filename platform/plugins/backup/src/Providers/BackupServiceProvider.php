@@ -11,12 +11,12 @@ class BackupServiceProvider extends ServiceProvider
 {
     use LoadAndPublishDataTrait;
 
-    public function boot()
+    public function boot(): void
     {
         $this->setNamespace('plugins/backup')
             ->loadHelpers()
             ->loadAndPublishConfigurations(['permissions', 'general'])
-            ->loadRoutes(['web'])
+            ->loadRoutes()
             ->loadAndPublishViews()
             ->loadAndPublishTranslations()
             ->publishAssets();
@@ -25,12 +25,12 @@ class BackupServiceProvider extends ServiceProvider
 
         Event::listen(RouteMatched::class, function () {
             dashboard_menu()->registerItem([
-                'id'          => 'cms-plugin-backup',
-                'priority'    => 8,
-                'parent_id'   => 'cms-core-platform-administration',
-                'name'        => 'plugins/backup::backup.menu_name',
-                'icon'        => null,
-                'url'         => route('backups.index'),
+                'id' => 'cms-plugin-backup',
+                'priority' => 8,
+                'parent_id' => 'cms-core-platform-administration',
+                'name' => 'plugins/backup::backup.menu_name',
+                'icon' => null,
+                'url' => route('backups.index'),
                 'permissions' => ['backups.index'],
             ]);
         });

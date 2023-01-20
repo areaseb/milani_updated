@@ -9,6 +9,7 @@ use Botble\Base\Http\Responses\BaseHttpResponse;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use RvMedia;
 
@@ -19,11 +20,6 @@ class ProfileController extends Controller
      *
      * @group Profile
      * @authenticated
-     *
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     *
-     * @return BaseHttpResponse
      */
     public function getProfile(Request $request, BaseHttpResponse $response)
     {
@@ -37,10 +33,6 @@ class ProfileController extends Controller
      *
      * @group Profile
      * @authenticated
-     *
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
      */
     public function updateAvatar(Request $request, BaseHttpResponse $response)
     {
@@ -86,23 +78,19 @@ class ProfileController extends Controller
      *
      * @group Profile
      * @authenticated
-     *
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
      */
     public function updateProfile(Request $request, BaseHttpResponse $response)
     {
         $userId = $request->user()->id();
 
         $validator = Validator::make($request->input(), [
-            'first_name'  => 'required|max:120|min:2',
-            'last_name'   => 'required|max:120|min:2',
-            'phone'       => 'required|max:15|min:8',
-            'dob'         => 'required|max:15|min:8',
-            'gender'      => 'nullable',
+            'first_name' => 'required|max:120|min:2',
+            'last_name' => 'required|max:120|min:2',
+            'phone' => 'required|max:15|min:8',
+            'dob' => 'required|max:15|min:8',
+            'gender' => 'nullable',
             'description' => 'nullable',
-            'email'       => 'nullable|max:60|min:6|email|unique:' . ApiHelper::getTable() . ',email,' . $userId,
+            'email' => 'nullable|max:60|min:6|email|unique:' . ApiHelper::getTable() . ',email,' . $userId,
         ]);
 
         if ($validator->fails()) {
@@ -132,10 +120,6 @@ class ProfileController extends Controller
      *
      * @group Profile
      * @authenticated
-     *
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
      */
     public function updatePassword(Request $request, BaseHttpResponse $response)
     {
@@ -151,7 +135,7 @@ class ProfileController extends Controller
         }
 
         $request->user()->update([
-            'password' => bcrypt($request->input('password')),
+            'password' => Hash::make($request->input('password')),
         ]);
 
         return $response->setMessage(trans('core/acl::users.password_update_success'));

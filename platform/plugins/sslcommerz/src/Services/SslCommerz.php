@@ -19,8 +19,8 @@ class SslCommerz extends SslCommerzNotification
         $this->setApiUrl($this->config['apiDomain'] . $this->config['apiUrl']['refund_payment']);
 
         $requestData = [
-            'bank_tran_id'   => $paymentId,
-            'refund_amount'  => number_format($amount, 2, '.', ''),
+            'bank_tran_id' => $paymentId,
+            'refund_amount' => number_format($amount, 2, '.', ''),
             'refund_remarks' => Arr::get($options, 'refund_note', ''),
         ];
 
@@ -42,7 +42,7 @@ class SslCommerz extends SslCommerzNotification
         $this->setApiUrl($this->config['apiDomain'] . $this->config['apiUrl']['refund_status']);
 
         $requestData = [
-            'refund_ref_id'   => $refundRefId,
+            'refund_ref_id' => $refundRefId,
         ];
 
         $this->data = array_merge($this->data, $requestData);
@@ -81,7 +81,7 @@ class SslCommerz extends SslCommerzNotification
     {
         $client = new Client();
         $response = $client->request('GET', $this->getApiUrl(), [
-            'query' => $this->data
+            'query' => $this->data,
         ]);
 
         $data = json_decode($response->getBody(), true);

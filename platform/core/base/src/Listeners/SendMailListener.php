@@ -6,32 +6,22 @@ use Botble\Base\Events\SendMailEvent;
 use Botble\Base\Supports\EmailAbstract;
 use Exception;
 use Illuminate\Contracts\Mail\Mailer;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Queue\InteractsWithQueue;
 use Log;
 
-class SendMailListener
+class SendMailListener implements ShouldQueue
 {
-    /**
-     * @var Mailer
-     */
-    protected $mailer;
+    use InteractsWithQueue;
 
-    /**
-     * SendMailListener constructor.
-     * @param Mailer $mailer
-     */
+    protected Mailer $mailer;
+
     public function __construct(Mailer $mailer)
     {
         $this->mailer = $mailer;
     }
 
-    /**
-     * Handle the event.
-     *
-     * @param SendMailEvent $event
-     * @return void
-     * @throws Exception
-     */
-    public function handle(SendMailEvent $event)
+    public function handle(SendMailEvent $event): void
     {
         try {
             $this->mailer->to($event->to)->send(new EmailAbstract($event->content, $event->title, $event->args));

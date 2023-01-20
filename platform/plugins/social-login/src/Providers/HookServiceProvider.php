@@ -6,26 +6,19 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\ServiceProvider;
 use SocialService;
 use Theme;
-use Throwable;
 
 class HookServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         if (SocialService::setting('enable')) {
             add_filter(BASE_FILTER_AFTER_LOGIN_OR_REGISTER_FORM, [$this, 'addLoginOptions'], 25, 2);
         }
     }
 
-    /**
-     * @param string|null $html
-     * @param string $module
-     * @return null|string
-     * @throws Throwable
-     */
     public function addLoginOptions(?string $html, string $module): ?string
     {
-        if (!SocialService::isSupportedModule($module)) {
+        if (! SocialService::isSupportedModule($module)) {
             return $html;
         }
 

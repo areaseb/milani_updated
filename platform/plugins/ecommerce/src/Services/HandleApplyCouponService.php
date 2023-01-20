@@ -15,43 +15,25 @@ use OrderHelper;
 
 class HandleApplyCouponService
 {
-    /**
-     * @var DiscountInterface
-     */
-    protected $discountRepository;
+    protected DiscountInterface $discountRepository;
 
-    /**
-     * @var ProductInterface
-     */
-    protected $productRepository;
+    protected ProductInterface $productRepository;
 
-    /**
-     * HandleApplyCouponService constructor.
-     * @param DiscountInterface $discountRepository
-     * @param ProductInterface $productRepository
-     */
     public function __construct(DiscountInterface $discountRepository, ProductInterface $productRepository)
     {
         $this->discountRepository = $discountRepository;
         $this->productRepository = $productRepository;
     }
 
-    /**
-     * @param string $coupon
-     * @param array $sessionData
-     * @param array $cartData
-     * @param string|null $prefix
-     * @return array
-     */
     public function execute(string $coupon, array $sessionData = [], array $cartData = [], ?string $prefix = ''): array
     {
         $token = OrderHelper::getOrderSessionToken();
 
-        if (!$token) {
+        if (! $token) {
             $token = OrderHelper::getOrderSessionToken();
         }
 
-        if (!$sessionData) {
+        if (! $sessionData) {
             $sessionData = OrderHelper::getOrderSessionData($token);
         }
 
@@ -61,26 +43,26 @@ class HandleApplyCouponService
 
         if (empty($discount)) {
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => trans('plugins/ecommerce::discount.invalid_coupon'),
             ];
         }
 
         if ($discount->target === 'customer') {
             $discountCustomers = $discount->customers()->pluck('customer_id')->all();
-            if (!auth('customer')->check() ||
-                !in_array(auth('customer')->id(), $discountCustomers)
+            if (! auth('customer')->check() ||
+                ! in_array(auth('customer')->id(), $discountCustomers)
             ) {
                 return [
-                    'error'   => true,
+                    'error' => true,
                     'message' => trans('plugins/ecommerce::discount.invalid_coupon'),
                 ];
             }
         }
 
-        if (!$discount->can_use_with_promotion && (float)Arr::get($sessionData, 'promotion_discount_amount')) {
+        if (! $discount->can_use_with_promotion && (float)Arr::get($sessionData, 'promotion_discount_amount')) {
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => trans('plugins/ecommerce::discount.cannot_use_same_time_with_other_discount_program'),
             ];
         }
@@ -113,10 +95,10 @@ class HandleApplyCouponService
                                 $couponDiscountAmount += $discount->value;
                             } else {
                                 return [
-                                    'error'   => true,
+                                    'error' => true,
                                     'message' => trans('plugins/ecommerce::discount.minimum_order_amount_error', [
                                         'minimum_amount' => format_price($discount->min_order_price),
-                                        'add_more'       => format_price($rawTotal - $discount->min_order_price),
+                                        'add_more' => format_price($rawTotal - $discount->min_order_price),
                                     ]),
                                 ];
                             }
@@ -124,6 +106,7 @@ class HandleApplyCouponService
                             break;
                         case 'all-orders':
                             $couponDiscountAmount += $discount->value;
+
                             break;
                         case 'specific-product':
                         case 'product-variant':
@@ -133,13 +116,16 @@ class HandleApplyCouponService
                                     $couponDiscountAmount += max($discountValue, 0);
                                 }
                             }
+
                             break;
                         default:
                             if ($countCart >= $discount->product_quantity) {
                                 $couponDiscountAmount += $discount->value;
                             }
+
                             break;
                     }
+
                     break;
                 case 'percentage':
                     switch ($discount->target) {
@@ -147,9 +133,11 @@ class HandleApplyCouponService
                             if ($discount->min_order_price <= $rawTotal) {
                                 $couponDiscountAmount = $rawTotal * $discount->value / 100;
                             }
+
                             break;
                         case 'all-orders':
                             $couponDiscountAmount = $rawTotal * $discount->value / 100;
+
                             break;
                         case 'specific-product':
                         case 'product-variant':
@@ -158,13 +146,16 @@ class HandleApplyCouponService
                                     $couponDiscountAmount += $item->price * $discount->value / 100;
                                 }
                             }
+
                             break;
                         default:
                             if ($countCart >= $discount->product_quantity) {
                                 $couponDiscountAmount += $rawTotal * $discount->value / 100;
                             }
+
                             break;
                     }
+
                     break;
                 case 'same-price':
                     foreach ($cartItems as $item) {
@@ -184,7 +175,7 @@ class HandleApplyCouponService
                                 ->pluck('ec_product_collections.id')
                                 ->all();
 
-                            if (!empty(array_intersect($productCollections, $discountProductCollections))) {
+                            if (! empty(array_intersect($productCollections, $discountProductCollections))) {
                                 $discountValue = $item->price - $discount->value;
                                 $couponDiscountAmount += max($discountValue, 0);
                             }
@@ -202,9 +193,11 @@ class HandleApplyCouponService
                 case 'percentage' || 'same-price':
                     Arr::set($sessionData, $prefix . 'coupon_discount_amount', $couponDiscountAmount);
                     OrderHelper::setOrderSessionData($token, $sessionData);
+
                     break;
                 default:
                     Arr::set($sessionData, $prefix . 'coupon_discount_amount', 0);
+
                     break;
             }
         } else {
@@ -216,21 +209,16 @@ class HandleApplyCouponService
 
         return [
             'error' => false,
-            'data'  => [
-                'discount_amount'      => $couponDiscountAmount,
-                'is_free_shipping'     => $isFreeShipping,
+            'data' => [
+                'discount_amount' => $couponDiscountAmount,
+                'is_free_shipping' => $isFreeShipping,
                 'discount_type_option' => $discount->type_option,
-                'discount'             => $discount,
+                'discount' => $discount,
             ],
         ];
     }
 
-    /**
-     * @param string $couponCode
-     * @param array $sessionData
-     * @return Eloquent|Builder|Model|object|null
-     */
-    public function getCouponData(string $couponCode, array $sessionData)
+    public function getCouponData(string $couponCode, array $sessionData): Model|Eloquent|Builder|null
     {
         $couponCode = trim($couponCode);
 
@@ -295,41 +283,37 @@ class HandleApplyCouponService
             ->first();
     }
 
-    /**
-     * @param Request $request
-     * @return array
-     */
     public function applyCouponWhenCreatingOrderFromAdmin(Request $request): array
     {
         $couponCode = trim($request->input('coupon_code'));
 
         $sessionData = [
             'shipping_amount' => $request->input('shipping_amount'),
-            'state'           => $request->input('state'),
+            'state' => $request->input('state'),
         ];
 
         $discount = $this->getCouponData($couponCode, $sessionData);
 
         if (empty($discount)) {
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => trans('plugins/ecommerce::discount.invalid_coupon'),
             ];
         }
 
         if ($discount->target == 'customer') {
             $discountCustomers = $discount->customers()->pluck('customer_id')->all();
-            if (!in_array($request->input('customer_id'), $discountCustomers)) {
+            if (! in_array($request->input('customer_id'), $discountCustomers)) {
                 return [
-                    'error'   => true,
+                    'error' => true,
                     'message' => trans('plugins/ecommerce::discount.invalid_coupon'),
                 ];
             }
         }
 
-        if (!$discount->can_use_with_promotion && Arr::get($sessionData, 'promotion_discount_amount')) {
+        if (! $discount->can_use_with_promotion && Arr::get($sessionData, 'promotion_discount_amount')) {
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => trans('plugins/ecommerce::discount.cannot_use_same_time_with_other_discount_program'),
             ];
         }
@@ -349,16 +333,20 @@ class HandleApplyCouponService
                             if ($discount->min_order_price <= $request->input('sub_total')) {
                                 $couponDiscountAmount += $discount->value * count($request->input('product_ids', []));
                             }
+
                             break;
                         case 'all-orders':
                             $couponDiscountAmount += $discount->value * count($request->input('product_ids', []));
+
                             break;
                         default:
                             if (count($request->input('product_ids', [])) >= $discount->product_quantity) {
                                 $couponDiscountAmount += $discount->value * count($request->input('product_ids', []));
                             }
+
                             break;
                     }
+
                     break;
                 case 'percentage':
                     switch ($discount->target) {
@@ -366,22 +354,26 @@ class HandleApplyCouponService
                             if ($discount->min_order_price <= $request->input('sub_total')) {
                                 $couponDiscountAmount = $request->input('sub_total') * $discount->value / 100;
                             }
+
                             break;
                         case 'all-orders':
                             $couponDiscountAmount = $request->input('sub_total') * $discount->value / 100;
+
                             break;
                         default:
                             if (count($request->input('product_ids', [])) >= $discount->product_quantity) {
                                 $couponDiscountAmount += $request->input('sub_total') * $discount->value / 100;
                             }
+
                             break;
                     }
+
                     break;
                 case 'same-price':
                     foreach ($request->input('product_ids', []) as $productId) {
                         $product = $this->productRepository->findById($productId);
 
-                        if (!$product) {
+                        if (! $product) {
                             break;
                         }
 
@@ -402,7 +394,7 @@ class HandleApplyCouponService
                                 ->pluck('product_collection_id')
                                 ->all();
 
-                            if (!empty(array_intersect($productCollections, $discountProductCollections))) {
+                            if (! empty(array_intersect($productCollections, $discountProductCollections))) {
                                 $discountValue = $product->original_price - $discount->value;
 
                                 $couponDiscountAmount += max($discountValue, 0);
@@ -420,8 +412,8 @@ class HandleApplyCouponService
 
         return [
             'error' => false,
-            'data'  => [
-                'discount_amount'  => $couponDiscountAmount,
+            'data' => [
+                'discount_amount' => $couponDiscountAmount,
                 'is_free_shipping' => $isFreeShipping,
             ],
         ];

@@ -33,7 +33,7 @@ class BlogServiceProvider extends ServiceProvider
 {
     use LoadAndPublishDataTrait;
 
-    public function register()
+    public function register(): void
     {
         $this->app->bind(PostInterface::class, function () {
             return new PostCacheDecorator(new PostRepository(new Post()));
@@ -48,7 +48,7 @@ class BlogServiceProvider extends ServiceProvider
         });
     }
 
-    public function boot()
+    public function boot(): void
     {
         SlugHelper::registerModule(Post::class, 'Blog Posts');
         SlugHelper::registerModule(Category::class, 'Blog Categories');
@@ -63,7 +63,7 @@ class BlogServiceProvider extends ServiceProvider
             ->loadAndPublishConfigurations(['permissions', 'general'])
             ->loadAndPublishViews()
             ->loadAndPublishTranslations()
-            ->loadRoutes(['web'])
+            ->loadRoutes()
             ->loadMigrations()
             ->publishAssets();
 
@@ -76,39 +76,39 @@ class BlogServiceProvider extends ServiceProvider
         Event::listen(RouteMatched::class, function () {
             dashboard_menu()
                 ->registerItem([
-                    'id'          => 'cms-plugins-blog',
-                    'priority'    => 3,
-                    'parent_id'   => null,
-                    'name'        => 'plugins/blog::base.menu_name',
-                    'icon'        => 'fa fa-edit',
-                    'url'         => route('posts.index'),
+                    'id' => 'cms-plugins-blog',
+                    'priority' => 3,
+                    'parent_id' => null,
+                    'name' => 'plugins/blog::base.menu_name',
+                    'icon' => 'fa fa-edit',
+                    'url' => route('posts.index'),
                     'permissions' => ['posts.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-blog-post',
-                    'priority'    => 1,
-                    'parent_id'   => 'cms-plugins-blog',
-                    'name'        => 'plugins/blog::posts.menu_name',
-                    'icon'        => null,
-                    'url'         => route('posts.index'),
+                    'id' => 'cms-plugins-blog-post',
+                    'priority' => 1,
+                    'parent_id' => 'cms-plugins-blog',
+                    'name' => 'plugins/blog::posts.menu_name',
+                    'icon' => null,
+                    'url' => route('posts.index'),
                     'permissions' => ['posts.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-blog-categories',
-                    'priority'    => 2,
-                    'parent_id'   => 'cms-plugins-blog',
-                    'name'        => 'plugins/blog::categories.menu_name',
-                    'icon'        => null,
-                    'url'         => route('categories.index'),
+                    'id' => 'cms-plugins-blog-categories',
+                    'priority' => 2,
+                    'parent_id' => 'cms-plugins-blog',
+                    'name' => 'plugins/blog::categories.menu_name',
+                    'icon' => null,
+                    'url' => route('categories.index'),
                     'permissions' => ['categories.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-blog-tags',
-                    'priority'    => 3,
-                    'parent_id'   => 'cms-plugins-blog',
-                    'name'        => 'plugins/blog::tags.menu_name',
-                    'icon'        => null,
-                    'url'         => route('tags.index'),
+                    'id' => 'cms-plugins-blog-tags',
+                    'priority' => 3,
+                    'parent_id' => 'cms-plugins-blog',
+                    'name' => 'plugins/blog::tags.menu_name',
+                    'icon' => null,
+                    'url' => route('tags.index'),
                     'permissions' => ['tags.index'],
                 ]);
         });
@@ -137,7 +137,7 @@ class BlogServiceProvider extends ServiceProvider
         $this->app->booted(function () use ($useLanguageV2) {
             $models = [Post::class, Category::class, Tag::class];
 
-            if (defined('LANGUAGE_MODULE_SCREEN_NAME') && !$useLanguageV2) {
+            if (defined('LANGUAGE_MODULE_SCREEN_NAME') && ! $useLanguageV2) {
                 Language::registerModule($models);
             }
 

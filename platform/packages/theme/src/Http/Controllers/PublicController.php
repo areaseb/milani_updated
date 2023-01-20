@@ -8,10 +8,8 @@ use Botble\Page\Services\PageService;
 use Botble\Theme\Events\RenderingHomePageEvent;
 use Botble\Theme\Events\RenderingSingleEvent;
 use Botble\Theme\Events\RenderingSiteMapEvent;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Arr;
-use Response;
 use SeoHelper;
 use SiteMapManager;
 use SlugHelper;
@@ -19,10 +17,6 @@ use Theme;
 
 class PublicController extends Controller
 {
-    /**
-     * @param string|null $key
-     * @return RedirectResponse|Response
-     */
     public function getView(?string $key = null)
     {
         if (empty($key)) {
@@ -31,7 +25,7 @@ class PublicController extends Controller
 
         $slug = SlugHelper::getSlug($key, '');
 
-        if (!$slug) {
+        if (! $slug) {
             abort(404);
         }
 
@@ -49,16 +43,13 @@ class PublicController extends Controller
 
         event(new RenderingSingleEvent($slug));
 
-        if (!empty($result) && is_array($result)) {
+        if (! empty($result) && is_array($result)) {
             return Theme::scope($result['view'], $result['data'], Arr::get($result, 'default_view'))->render();
         }
 
         abort(404);
     }
 
-    /**
-     * @return \Illuminate\Http\Response|Response
-     */
     public function getIndex()
     {
         if (defined('PAGE_MODULE_SCREEN_NAME')) {
@@ -85,9 +76,6 @@ class PublicController extends Controller
         return Theme::scope('index')->render();
     }
 
-    /**
-     * @return Response|string
-     */
     public function getSiteMap()
     {
         event(RenderingSiteMapEvent::class);

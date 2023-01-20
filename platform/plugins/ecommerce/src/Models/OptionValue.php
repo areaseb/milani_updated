@@ -7,20 +7,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OptionValue extends BaseModel
 {
-    /**
-     * @var string
-     */
     protected $table = 'ec_option_value';
 
-    /**
-     * @var string[]
-     */
     protected $fillable = [
         'option_id',
         'option_value',
         'affect_price',
         'affect_type',
-        'order'
+        'order',
     ];
 
     public function option(): BelongsTo

@@ -5,45 +5,32 @@ namespace Botble\PluginManagement\Services;
 use BaseHelper;
 use Botble\Base\Supports\Helper;
 use Botble\PluginManagement\Events\ActivatedPluginEvent;
+use Botble\PluginManagement\PluginManifest;
 use Composer\Autoload\ClassLoader;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Setting;
-use Throwable;
 
 class PluginService
 {
-    /**
-     * @var Application
-     */
-    protected $app;
+    protected Application $app;
 
-    /**
-     * @var Filesystem
-     */
-    protected $files;
+    protected Filesystem $files;
 
-    /**
-     * PluginService constructor.
-     * @param Application $app
-     * @param Filesystem $files
-     */
-    public function __construct(Application $app, Filesystem $files)
+    protected PluginManifest $pluginManifest;
+
+    public function __construct(Application $app, Filesystem $files, PluginManifest $pluginManifest)
     {
         $this->app = $app;
         $this->files = $files;
+        $this->pluginManifest = $pluginManifest;
     }
 
-    /**
-     * @param string $plugin
-     * @return array
-     */
     public function activate(string $plugin): array
     {
         $validate = $this->validate($plugin);
@@ -55,14 +42,14 @@ class PluginService
         $content = BaseHelper::getFileData(plugin_path($plugin) . '/plugin.json');
         if (empty($content)) {
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => trans('packages/plugin-management::plugin.invalid_json'),
             ];
         }
 
-        if (!Arr::get($content, 'ready', 1)) {
+        if (! Arr::get($content, 'ready', 1)) {
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => trans(
                     'packages/plugin-management::plugin.plugin_is_not_ready',
                     ['name' => Str::studly($plugin)]
@@ -71,12 +58,12 @@ class PluginService
         }
 
         $activatedPlugins = get_active_plugins();
-        if (!in_array($plugin, $activatedPlugins)) {
-            if (!empty(Arr::get($content, 'require'))) {
+        if (! in_array($plugin, $activatedPlugins)) {
+            if (! empty(Arr::get($content, 'require'))) {
                 $valid = count(array_intersect($content['require'], $activatedPlugins)) == count($content['require']);
-                if (!$valid) {
+                if (! $valid) {
                     return [
-                        'error'   => true,
+                        'error' => true,
                         'message' => trans(
                             'packages/plugin-management::plugin.missing_required_plugins',
                             ['plugins' => implode(',', $content['require'])]
@@ -85,99 +72,80 @@ class PluginService
                 }
             }
 
-            try {
-                DB::beginTransaction();
+            if (! class_exists($content['provider'])) {
+                $loader = new ClassLoader();
+                $loader->setPsr4($content['namespace'], plugin_path($plugin . '/src'));
+                $loader->register(true);
 
-                if (!class_exists($content['provider'])) {
-
-                    $loader = new ClassLoader();
-                    $loader->setPsr4($content['namespace'], plugin_path($plugin . '/src'));
-                    $loader->register(true);
-
-                    if (class_exists($content['namespace'] . 'Plugin')) {
-                        call_user_func([$content['namespace'] . 'Plugin', 'activate']);
-                    }
-
-                    if ($this->files->isDirectory(plugin_path($plugin . '/database/migrations'))) {
-                        $this->app['migrator']->run(plugin_path($plugin . '/database/migrations'));
-                    }
-
-                    $this->app->register($content['provider']);
-
-                    $published = $this->publishAssets($plugin);
-
-                    if ($published['error']) {
-                        return $published;
-                    }
-                }
-
-                Setting::set('activated_plugins', json_encode(array_values(array_merge($activatedPlugins, [$plugin]))))
-                    ->save();
+                $this->app->register($content['provider']);
 
                 if (class_exists($content['namespace'] . 'Plugin')) {
-                    call_user_func([$content['namespace'] . 'Plugin', 'activated']);
+                    call_user_func([$content['namespace'] . 'Plugin', 'activate']);
                 }
 
-                Helper::clearCache();
+                $migrationPath = plugin_path($plugin . '/database/migrations');
 
-                event(new ActivatedPluginEvent($plugin));
+                if ($this->files->isDirectory($migrationPath)) {
+                    $this->app['migrator']->run($migrationPath);
+                }
 
-                DB::commit();
-            } catch (Throwable $exception) {
-                rescue(function () {
-                    DB::rollBack();
-                });
+                $published = $this->publishAssets($plugin);
 
-                return [
-                    'error'   => true,
-                    'message' => $exception->getMessage(),
-                ];
+                if ($published['error']) {
+                    return $published;
+                }
             }
 
+            $activatedPlugins = array_merge($activatedPlugins, [$plugin]);
+
+            $this->saveActivatedPlugins($activatedPlugins);
+
+            if (class_exists($content['namespace'] . 'Plugin')) {
+                call_user_func([$content['namespace'] . 'Plugin', 'activated']);
+            }
+
+            Helper::clearCache();
+
+            $this->pluginManifest->generateManifest();
+
+            event(new ActivatedPluginEvent($plugin));
+
             return [
-                'error'   => false,
+                'error' => false,
                 'message' => trans('packages/plugin-management::plugin.activate_success'),
             ];
         }
 
         return [
-            'error'   => true,
+            'error' => true,
             'message' => trans('packages/plugin-management::plugin.activated_already'),
         ];
     }
 
-    /**
-     * @param string $plugin
-     * @return array
-     */
     protected function validate(string $plugin): array
     {
         $location = plugin_path($plugin);
 
-        if (!$this->files->isDirectory($location)) {
+        if (! $this->files->isDirectory($location)) {
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => trans('packages/plugin-management::plugin.plugin_not_exist'),
             ];
         }
 
-        if (!$this->files->exists($location . '/plugin.json')) {
+        if (! $this->files->exists($location . '/plugin.json')) {
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => trans('packages/plugin-management::plugin.missing_json_file'),
             ];
         }
 
         return [
-            'error'   => false,
+            'error' => false,
             'message' => trans('packages/plugin-management::plugin.plugin_invalid'),
         ];
     }
 
-    /**
-     * @param string $plugin
-     * @return array
-     */
     public function publishAssets(string $plugin): array
     {
         $validate = $this->validate($plugin);
@@ -188,13 +156,13 @@ class PluginService
 
         $pluginPath = public_path('vendor/core/plugins');
 
-        if (!$this->files->isDirectory($pluginPath)) {
+        if (! $this->files->isDirectory($pluginPath)) {
             $this->files->makeDirectory($pluginPath, 0755, true);
         }
 
-        if (!$this->files->isWritable($pluginPath)) {
+        if (! $this->files->isWritable($pluginPath)) {
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => trans(
                     'packages/plugin-management::plugin.folder_is_not_writeable',
                     ['name' => $pluginPath]
@@ -208,16 +176,11 @@ class PluginService
         }
 
         return [
-            'error'   => false,
+            'error' => false,
             'message' => trans('packages/plugin-management::plugin.published_assets_success', ['name' => $plugin]),
         ];
     }
 
-    /**
-     * @param string $plugin
-     * @return array
-     * @throws FileNotFoundException
-     */
     public function remove(string $plugin): array
     {
         $validate = $this->validate($plugin);
@@ -235,8 +198,8 @@ class PluginService
         if ($this->files->exists($location . '/plugin.json')) {
             $content = BaseHelper::getFileData($location . '/plugin.json');
 
-            if (!empty($content)) {
-                if (!class_exists($content['provider'])) {
+            if (! empty($content)) {
+                if (! class_exists($content['provider'])) {
                     $loader = new ClassLoader();
                     $loader->setPsr4($content['namespace'], plugin_path($plugin . '/src'));
                     $loader->register(true);
@@ -277,17 +240,14 @@ class PluginService
 
         Helper::clearCache();
 
+        $this->pluginManifest->generateManifest();
+
         return [
-            'error'   => false,
+            'error' => false,
             'message' => trans('packages/plugin-management::plugin.plugin_removed'),
         ];
     }
 
-    /**
-     * @param string $plugin
-     * @return array
-     * @throws FileNotFoundException
-     */
     public function deactivate(string $plugin): array
     {
         $validate = $this->validate($plugin);
@@ -299,12 +259,12 @@ class PluginService
         $content = BaseHelper::getFileData(plugin_path($plugin) . '/plugin.json');
         if (empty($content)) {
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => trans('packages/plugin-management::plugin.invalid_json'),
             ];
         }
 
-        if (!class_exists($content['provider'])) {
+        if (! class_exists($content['provider'])) {
             $loader = new ClassLoader();
             $loader->setPsr4($content['namespace'], plugin_path($plugin . '/src'));
             $loader->register(true);
@@ -320,8 +280,7 @@ class PluginService
                 unset($activatedPlugins[$key]);
             }
 
-            Setting::set('activated_plugins', json_encode(array_values($activatedPlugins)))
-                ->save();
+            $this->saveActivatedPlugins($activatedPlugins);
 
             if (class_exists($content['namespace'] . 'Plugin')) {
                 call_user_func([$content['namespace'] . 'Plugin', 'deactivated']);
@@ -329,24 +288,35 @@ class PluginService
 
             Helper::clearCache();
 
+            $this->pluginManifest->generateManifest();
+
             return [
-                'error'   => false,
+                'error' => false,
                 'message' => trans('packages/plugin-management::plugin.deactivated_success'),
             ];
         }
 
         return [
-            'error'   => true,
+            'error' => true,
             'message' => trans('packages/plugin-management::plugin.deactivated_already'),
         ];
     }
 
-    /**
-     * @param string $plugin
-     * @return string
-     */
     public function getPluginNamespace(string $plugin): string
     {
         return $this->app['config']->get('core.base.general.plugin_namespaces.' . $plugin, $plugin);
+    }
+
+    protected function saveActivatedPlugins(array $plugins): array
+    {
+        $plugins = array_values($plugins);
+
+        $availablePlugins = BaseHelper::scanFolder(plugin_path());
+
+        $plugins = array_intersect($plugins, $availablePlugins);
+
+        Setting::set('activated_plugins', json_encode($plugins))->save();
+
+        return $plugins;
     }
 }

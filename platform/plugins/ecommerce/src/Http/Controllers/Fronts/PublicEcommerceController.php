@@ -8,33 +8,20 @@ use Illuminate\Http\Request;
 
 class PublicEcommerceController
 {
-    /**
-     * @var CurrencyInterface
-     */
-    protected $currencyRepository;
+    protected CurrencyInterface $currencyRepository;
 
-    /**
-     * PublicEcommerceController constructor.
-     * @param CurrencyInterface $currencyRepository
-     */
     public function __construct(CurrencyInterface $currencyRepository)
     {
         $this->currencyRepository = $currencyRepository;
     }
 
-    /**
-     * @param string $title
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function changeCurrency(Request $request, BaseHttpResponse $response, $title = null)
+    public function changeCurrency(Request $request, BaseHttpResponse $response, ?string $title = null)
     {
         if (empty($title)) {
             $title = $request->input('currency');
         }
 
-        if (!$title) {
+        if (! $title) {
             return $response;
         }
 

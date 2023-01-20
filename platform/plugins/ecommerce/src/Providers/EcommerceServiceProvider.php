@@ -22,8 +22,11 @@ use Botble\Ecommerce\Models\Customer;
 use Botble\Ecommerce\Models\Discount;
 use Botble\Ecommerce\Models\FlashSale;
 use Botble\Ecommerce\Models\GlobalOption;
+use Botble\Ecommerce\Models\GlobalOptionValue;
 use Botble\Ecommerce\Models\GroupedProduct;
 use Botble\Ecommerce\Models\Invoice;
+use Botble\Ecommerce\Models\Option;
+use Botble\Ecommerce\Models\OptionValue;
 use Botble\Ecommerce\Models\Order;
 use Botble\Ecommerce\Models\OrderAddress;
 use Botble\Ecommerce\Models\OrderHistory;
@@ -155,6 +158,7 @@ use Botble\Ecommerce\Services\Footprints\TrackingLogger;
 use Botble\Ecommerce\Services\Footprints\TrackingLoggerInterface;
 use Botble\Ecommerce\Services\HandleApplyCouponService;
 use Botble\Ecommerce\Services\HandleRemoveCouponService;
+use Botble\Ecommerce\Supports\EcommerceWidget;
 use Botble\LanguageAdvanced\Supports\LanguageAdvancedManager;
 use Botble\Payment\Models\Payment;
 use Cart;
@@ -177,21 +181,21 @@ class EcommerceServiceProvider extends ServiceProvider
 {
     use LoadAndPublishDataTrait;
 
-    public function register()
+    public function register(): void
     {
         config([
-            'auth.guards.customer'     => [
-                'driver'   => 'session',
+            'auth.guards.customer' => [
+                'driver' => 'session',
                 'provider' => 'customers',
             ],
             'auth.providers.customers' => [
                 'driver' => 'eloquent',
-                'model'  => Customer::class,
+                'model' => Customer::class,
             ],
             'auth.passwords.customers' => [
                 'provider' => 'customers',
-                'table'    => 'ec_customer_password_resets',
-                'expire'   => 60,
+                'table' => 'ec_customer_password_resets',
+                'expire' => 60,
             ],
         ]);
 
@@ -431,7 +435,7 @@ class EcommerceServiceProvider extends ServiceProvider
         $loader->alias('InvoiceHelper', InvoiceHelperFacade::class);
     }
 
-    public function boot()
+    public function boot(): void
     {
         SlugHelper::registerModule(Product::class, 'Products');
         SlugHelper::registerModule(Brand::class, 'Brands');
@@ -459,6 +463,7 @@ class EcommerceServiceProvider extends ServiceProvider
                 'wishlist',
                 'compare',
                 'invoice',
+                'invoice-template',
             ])
             ->loadAndPublishConfigurations([
                 'general',
@@ -473,10 +478,10 @@ class EcommerceServiceProvider extends ServiceProvider
 
         if (class_exists('ApiHelper') && ApiHelper::enabled()) {
             ApiHelper::setConfig([
-                'model'           => Customer::class,
-                'guard'           => 'customer',
+                'model' => Customer::class,
+                'guard' => 'customer',
                 'password_broker' => 'customers',
-                'verify_email'    => true,
+                'verify_email' => true,
             ]);
         }
 
@@ -544,17 +549,81 @@ class EcommerceServiceProvider extends ServiceProvider
                 'name',
             ]);
 
+            LanguageAdvancedManager::registerModule(GlobalOption::class, [
+                'name',
+            ]);
+
+            LanguageAdvancedManager::registerModule(Option::class, [
+                'name',
+            ]);
+
+            LanguageAdvancedManager::registerModule(GlobalOptionValue::class, [
+                'option_value',
+            ]);
+
+            LanguageAdvancedManager::registerModule(OptionValue::class, [
+                'option_value',
+            ]);
+
+            LanguageAdvancedManager::addTranslatableMetaBox('product_options_box');
+
             add_action(LANGUAGE_ADVANCED_ACTION_SAVED, function ($data, $request) {
                 switch (get_class($data)) {
                     case Product::class:
                         $variations = $data->variations()->get();
 
                         foreach ($variations as $variation) {
-                            if (!$variation->product->id) {
+                            if (! $variation->product->id) {
                                 continue;
                             }
 
                             LanguageAdvancedManager::save($variation->product, $request);
+                        }
+
+                        $options = $request->input('options', []) ?: [];
+
+                        if (! $options) {
+                            return;
+                        }
+
+                        $newRequest = new Request();
+
+                        $newRequest->replace([
+                            'language' => $request->input('language'),
+                            'ref_lang' => $request->input('ref_lang'),
+                        ]);
+
+                        foreach ($options as $item) {
+                            $option = Option::find($item['id']);
+
+                            $newRequest->merge(['name' => $item['name']]);
+
+                            if ($option) {
+                                LanguageAdvancedManager::save($option, $newRequest);
+                            }
+
+                            $newRequest = new Request();
+
+                            $newRequest->replace([
+                                'language' => $request->input('language'),
+                                'ref_lang' => $request->input('ref_lang'),
+                            ]);
+
+                            foreach ($item['values'] as $value) {
+                                if (! $value['id']) {
+                                    continue;
+                                }
+
+                                $optionValue = OptionValue::find($value['id']);
+
+                                $newRequest->merge([
+                                    'option_value' => $value['option_value'],
+                                ]);
+
+                                if ($optionValue) {
+                                    LanguageAdvancedManager::save($optionValue, $newRequest);
+                                }
+                            }
                         }
 
                         break;
@@ -562,7 +631,7 @@ class EcommerceServiceProvider extends ServiceProvider
 
                         $attributes = json_decode($request->input('attributes', '[]'), true) ?: [];
 
-                        if (!$attributes) {
+                        if (! $attributes) {
                             break;
                         }
 
@@ -583,6 +652,45 @@ class EcommerceServiceProvider extends ServiceProvider
                                 LanguageAdvancedManager::save($attribute, $request);
                             }
                         }
+
+                        break;
+                    case GlobalOption::class:
+
+                        $option = GlobalOption::find($request->input('id'));
+
+                        if ($option) {
+                            LanguageAdvancedManager::save($option, $request);
+                        }
+
+                        $options = $request->input('options', []) ?: [];
+
+                        if (! $options) {
+                            return;
+                        }
+
+                        $newRequest = new Request();
+
+                        $newRequest->replace([
+                            'language' => $request->input('language'),
+                            'ref_lang' => $request->input('ref_lang'),
+                        ]);
+
+                        foreach ($options as $value) {
+                            if (! $value['id']) {
+                                continue;
+                            }
+
+                            $optionValue = GlobalOptionValue::find($value['id']);
+
+                            $newRequest->merge([
+                                'option_value' => $value['option_value'],
+                            ]);
+
+                            if ($optionValue) {
+                                LanguageAdvancedManager::save($optionValue, $newRequest);
+                            }
+                        }
+
                         break;
                 }
             }, 1234, 2);
@@ -595,263 +703,263 @@ class EcommerceServiceProvider extends ServiceProvider
         Event::listen(RouteMatched::class, function () {
             dashboard_menu()
                 ->registerItem([
-                    'id'          => 'cms-plugins-ecommerce',
-                    'priority'    => 8,
-                    'parent_id'   => null,
-                    'name'        => 'plugins/ecommerce::ecommerce.name',
-                    'icon'        => 'fa fa-shopping-cart',
-                    'url'         => route('products.index'),
+                    'id' => 'cms-plugins-ecommerce',
+                    'priority' => 8,
+                    'parent_id' => null,
+                    'name' => 'plugins/ecommerce::ecommerce.name',
+                    'icon' => 'fa fa-shopping-cart',
+                    'url' => route('products.index'),
                     'permissions' => ['plugins.ecommerce'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-ecommerce-report',
-                    'priority'    => 0,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::reports.name',
-                    'icon'        => 'far fa-chart-bar',
-                    'url'         => route('ecommerce.report.index'),
+                    'id' => 'cms-plugins-ecommerce-report',
+                    'priority' => 0,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::reports.name',
+                    'icon' => 'far fa-chart-bar',
+                    'url' => route('ecommerce.report.index'),
                     'permissions' => ['ecommerce.report.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-flash-sale',
-                    'priority'    => 0,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::flash-sale.name',
-                    'icon'        => 'fa fa-bolt',
-                    'url'         => route('flash-sale.index'),
+                    'id' => 'cms-plugins-flash-sale',
+                    'priority' => 0,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::flash-sale.name',
+                    'icon' => 'fa fa-bolt',
+                    'url' => route('flash-sale.index'),
                     'permissions' => ['flash-sale.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-ecommerce-order',
-                    'priority'    => 1,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::order.menu',
-                    'icon'        => 'fa fa-shopping-bag',
-                    'url'         => route('orders.index'),
+                    'id' => 'cms-plugins-ecommerce-order',
+                    'priority' => 1,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::order.menu',
+                    'icon' => 'fa fa-shopping-bag',
+                    'url' => route('orders.index'),
                     'permissions' => ['orders.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-ecommerce-invoice',
-                    'priority'    => 2,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::invoice.name',
-                    'icon'        => 'fas fa-book',
-                    'url'         => route('ecommerce.invoice.index'),
+                    'id' => 'cms-plugins-ecommerce-invoice',
+                    'priority' => 2,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::invoice.name',
+                    'icon' => 'fas fa-book',
+                    'url' => route('ecommerce.invoice.index'),
                     'permissions' => ['ecommerce.invoice.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-ecommerce-incomplete-order',
-                    'priority'    => 2,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::order.incomplete_order',
-                    'icon'        => 'fas fa-shopping-basket',
-                    'url'         => route('orders.incomplete-list'),
+                    'id' => 'cms-plugins-invoice-template',
+                    'priority' => 2,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::invoice-template.name',
+                    'icon' => 'fas fa-book',
+                    'url' => route('invoice-template.index'),
+                    'permissions' => ['ecommerce.invoice-template.index'],
+                ])
+                ->registerItem([
+                    'id' => 'cms-plugins-ecommerce-incomplete-order',
+                    'priority' => 2,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::order.incomplete_order',
+                    'icon' => 'fas fa-shopping-basket',
+                    'url' => route('orders.incomplete-list'),
                     'permissions' => ['orders.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-ecommerce-order-return',
-                    'priority'    => 3,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::order.order_return',
-                    'icon'        => 'fa fa-cart-arrow-down',
-                    'url'         => route('order_returns.index'),
+                    'id' => 'cms-plugins-ecommerce-order-return',
+                    'priority' => 3,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::order.order_return',
+                    'icon' => 'fa fa-cart-arrow-down',
+                    'url' => route('order_returns.index'),
                     'permissions' => ['orders.edit'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-ecommerce.product',
-                    'priority'    => 3,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::products.name',
-                    'icon'        => 'fa fa-camera',
-                    'url'         => route('products.index'),
+                    'id' => 'cms-plugins-ecommerce.product',
+                    'priority' => 3,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::products.name',
+                    'icon' => 'fa fa-camera',
+                    'url' => route('products.index'),
                     'permissions' => ['products.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-product-categories',
-                    'priority'    => 4,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::product-categories.name',
-                    'icon'        => 'fa fa-archive',
-                    'url'         => route('product-categories.index'),
+                    'id' => 'cms-plugins-product-categories',
+                    'priority' => 4,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::product-categories.name',
+                    'icon' => 'fa fa-archive',
+                    'url' => route('product-categories.index'),
                     'permissions' => ['product-categories.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-product-tag',
-                    'priority'    => 4,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::product-tag.name',
-                    'icon'        => 'fa fa-tag',
-                    'url'         => route('product-tag.index'),
+                    'id' => 'cms-plugins-product-tag',
+                    'priority' => 4,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::product-tag.name',
+                    'icon' => 'fa fa-tag',
+                    'url' => route('product-tag.index'),
                     'permissions' => ['product-tag.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-product-attribute',
-                    'priority'    => 5,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::product-attributes.name',
-                    'icon'        => 'fas fa-glass-martini',
-                    'url'         => route('product-attribute-sets.index'),
+                    'id' => 'cms-plugins-product-attribute',
+                    'priority' => 5,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::product-attributes.name',
+                    'icon' => 'fas fa-glass-martini',
+                    'url' => route('product-attribute-sets.index'),
                     'permissions' => ['product-attribute-sets.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-ecommerce-global-options',
-                    'priority'    => 3,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::product-option.name',
-                    'icon'        => 'fa fa-database',
-                    'url'         => route('global-option.index'),
+                    'id' => 'cms-plugins-ecommerce-global-options',
+                    'priority' => 3,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::product-option.name',
+                    'icon' => 'fa fa-database',
+                    'url' => route('global-option.index'),
                     'permissions' => ['global-option.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-brands',
-                    'priority'    => 6,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::brands.name',
-                    'icon'        => 'fa fa-registered',
-                    'url'         => route('brands.index'),
+                    'id' => 'cms-plugins-brands',
+                    'priority' => 6,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::brands.name',
+                    'icon' => 'fa fa-registered',
+                    'url' => route('brands.index'),
                     'permissions' => ['brands.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-product-collections',
-                    'priority'    => 7,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::product-collections.name',
-                    'icon'        => 'fa fa-file-excel',
-                    'url'         => route('product-collections.index'),
+                    'id' => 'cms-plugins-product-collections',
+                    'priority' => 7,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::product-collections.name',
+                    'icon' => 'fa fa-file-excel',
+                    'url' => route('product-collections.index'),
                     'permissions' => ['product-collections.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-product-label',
-                    'priority'    => 8,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::product-label.name',
-                    'icon'        => 'fas fa-tags',
-                    'url'         => route('product-label.index'),
+                    'id' => 'cms-plugins-product-label',
+                    'priority' => 8,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::product-label.name',
+                    'icon' => 'fas fa-tags',
+                    'url' => route('product-label.index'),
                     'permissions' => ['product-label.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-ecommerce-review',
-                    'priority'    => 9,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::review.name',
-                    'icon'        => 'fa fa-comments',
-                    'url'         => route('reviews.index'),
+                    'id' => 'cms-ecommerce-review',
+                    'priority' => 9,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::review.name',
+                    'icon' => 'fa fa-comments',
+                    'url' => route('reviews.index'),
                     'permissions' => ['reviews.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-ecommerce-shipping-provider',
-                    'priority'    => 10,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::shipping.shipping',
-                    'icon'        => 'fas fa-shipping-fast',
-                    'url'         => route('shipping_methods.index'),
+                    'id' => 'cms-plugins-ecommerce-shipping-provider',
+                    'priority' => 10,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::shipping.shipping',
+                    'icon' => 'fas fa-shipping-fast',
+                    'url' => route('shipping_methods.index'),
                     'permissions' => ['shipping_methods.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-ecommerce-shipping-shipments',
-                    'priority'    => 11,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::shipping.shipments',
-                    'icon'        => 'fas fa-people-carry',
-                    'url'         => route('ecommerce.shipments.index'),
+                    'id' => 'cms-plugins-ecommerce-shipping-shipments',
+                    'priority' => 11,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::shipping.shipments',
+                    'icon' => 'fas fa-people-carry',
+                    'url' => route('ecommerce.shipments.index'),
                     'permissions' => ['orders.edit'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-ecommerce-discount',
-                    'priority'    => 12,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::discount.name',
-                    'icon'        => 'fa fa-gift',
-                    'url'         => route('discounts.index'),
+                    'id' => 'cms-plugins-ecommerce-discount',
+                    'priority' => 12,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::discount.name',
+                    'icon' => 'fa fa-gift',
+                    'url' => route('discounts.index'),
                     'permissions' => ['discounts.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-ecommerce-customer',
-                    'priority'    => 13,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::customer.name',
-                    'icon'        => 'fa fa-users',
-                    'url'         => route('customers.index'),
+                    'id' => 'cms-plugins-ecommerce-customer',
+                    'priority' => 13,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::customer.name',
+                    'icon' => 'fa fa-users',
+                    'url' => route('customers.index'),
                     'permissions' => ['customers.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-ecommerce.basic-settings',
-                    'priority'    => 998,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::ecommerce.basic_settings',
-                    'icon'        => 'fas fa-cogs',
-                    'url'         => route('ecommerce.settings'),
+                    'id' => 'cms-plugins-ecommerce.basic-settings',
+                    'priority' => 998,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::ecommerce.basic_settings',
+                    'icon' => 'fas fa-cogs',
+                    'url' => route('ecommerce.settings'),
                     'permissions' => ['ecommerce.settings'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-ecommerce.advanced-settings',
-                    'priority'    => 999,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::ecommerce.advanced_settings',
-                    'icon'        => 'fas fa-plus',
-                    'url'         => route('ecommerce.advanced-settings'),
+                    'id' => 'cms-plugins-ecommerce.advanced-settings',
+                    'priority' => 999,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::ecommerce.advanced_settings',
+                    'icon' => 'fas fa-plus',
+                    'url' => route('ecommerce.advanced-settings'),
                     'permissions' => ['ecommerce.settings'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-ecommerce.tracking-settings',
-                    'priority'    => 999,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::ecommerce.setting.tracking_settings',
-                    'icon'        => 'fa-solid fa-chart-pie',
-                    'url'         => route('ecommerce.tracking-settings'),
+                    'id' => 'cms-plugins-ecommerce.tracking-settings',
+                    'priority' => 999,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::ecommerce.setting.tracking_settings',
+                    'icon' => 'fa-solid fa-chart-pie',
+                    'url' => route('ecommerce.tracking-settings'),
                     'permissions' => ['ecommerce.settings'],
                 ]);
 
             if (EcommerceHelper::isTaxEnabled()) {
                 dashboard_menu()->registerItem([
-                    'id'          => 'cms-plugins-ecommerce-tax',
-                    'priority'    => 14,
-                    'parent_id'   => 'cms-plugins-ecommerce',
-                    'name'        => 'plugins/ecommerce::tax.name',
-                    'icon'        => 'fas fa-money-check-alt',
-                    'url'         => route('tax.index'),
+                    'id' => 'cms-plugins-ecommerce-tax',
+                    'priority' => 14,
+                    'parent_id' => 'cms-plugins-ecommerce',
+                    'name' => 'plugins/ecommerce::tax.name',
+                    'icon' => 'fas fa-money-check-alt',
+                    'url' => route('tax.index'),
                     'permissions' => ['tax.index'],
                 ]);
             }
 
-            if (!dashboard_menu()->hasItem('cms-core-tools')) {
+            if (! dashboard_menu()->hasItem('cms-core-tools')) {
                 dashboard_menu()->registerItem([
-                    'id'          => 'cms-core-tools',
-                    'priority'    => 96,
-                    'parent_id'   => null,
-                    'name'        => 'core/base::base.tools',
-                    'icon'        => 'fas fa-tools',
-                    'url'         => '',
+                    'id' => 'cms-core-tools',
+                    'priority' => 96,
+                    'parent_id' => null,
+                    'name' => 'core/base::base.tools',
+                    'icon' => 'fas fa-tools',
+                    'url' => '',
                     'permissions' => [],
                 ]);
             }
 
             dashboard_menu()
                 ->registerItem([
-                    'id'          => 'cms-core-tools-ecommerce-export-products-discount',
-                    'priority'    => 2,
-                    'parent_id'   => 'cms-core-tools',
-                    'name'        => 'Import discount',
-                    'icon'        => 'fas fa-file-import',
-                    'url'         => route('ecommerce.discount-import.index'),
-                    'permissions' => ['ecommerce.export.products.index'],
-                ])
-                ->registerItem([
-                    'id'          => 'cms-core-tools-ecommerce-bulk-import',
-                    'priority'    => 1,
-                    'parent_id'   => 'cms-core-tools',
-                    'name'        => 'plugins/ecommerce::bulk-import.menu',
-                    'icon'        => 'fas fa-file-import',
-                    'url'         => route('ecommerce.bulk-import.index'),
+                    'id' => 'cms-core-tools-ecommerce-bulk-import',
+                    'priority' => 1,
+                    'parent_id' => 'cms-core-tools',
+                    'name' => 'plugins/ecommerce::bulk-import.menu',
+                    'icon' => 'fas fa-file-import',
+                    'url' => route('ecommerce.bulk-import.index'),
                     'permissions' => ['ecommerce.bulk-import.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-core-tools-ecommerce-export-products',
-                    'priority'    => 2,
-                    'parent_id'   => 'cms-core-tools',
-                    'name'        => 'plugins/ecommerce::export.products.name',
-                    'icon'        => 'fas fa-file-export',
-                    'url'         => route('ecommerce.export.products.index'),
+                    'id' => 'cms-core-tools-ecommerce-export-products',
+                    'priority' => 2,
+                    'parent_id' => 'cms-core-tools',
+                    'name' => 'plugins/ecommerce::export.products.name',
+                    'icon' => 'fas fa-file-export',
+                    'url' => route('ecommerce.export.products.index'),
                     'permissions' => ['ecommerce.export.products.index'],
                 ]);
         });
@@ -874,9 +982,9 @@ class EcommerceServiceProvider extends ServiceProvider
 
             if (defined('SOCIAL_LOGIN_MODULE_SCREEN_NAME') && Route::has('customer.login')) {
                 SocialService::registerModule([
-                    'guard'        => 'customer',
-                    'model'        => Customer::class,
-                    'login_url'    => route('customer.login'),
+                    'guard' => 'customer',
+                    'model' => Customer::class,
+                    'login_url' => route('customer.login'),
                     'redirect_url' => route('public.index'),
                 ]);
             }

@@ -4,19 +4,15 @@ namespace Botble\Optimize\Http\Middleware;
 
 class CollapseWhitespace extends PageSpeed
 {
-    /**
-     * @param string $buffer
-     * @return string
-     */
-    public function apply($buffer)
+    public function apply(string $buffer): string
     {
         $replace = [
             "/\n([\S])/" => '$1',
-            "/\r/"       => '',
-            "/\n/"       => '',
-            "/\t/"       => '',
-            '/ +/'       => ' ',
-            '/> +</'     => '><',
+            "/\r/" => '',
+            "/\n/" => '',
+            "/\t/" => '',
+            '/ +/' => ' ',
+            '/> +</' => '><',
         ];
 
         return $this->replace($replace, $buffer);

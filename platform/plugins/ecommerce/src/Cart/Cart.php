@@ -13,6 +13,7 @@ use EcommerceHelper;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\Collection;
 
@@ -20,45 +21,16 @@ class Cart
 {
     public const DEFAULT_INSTANCE = 'default';
 
-    /**
-     * Instance of the session manager.
-     *
-     * @var SessionManager
-     */
-    protected $session;
+    protected SessionManager $session;
 
-    /**
-     * Instance of the event dispatcher.
-     *
-     * @var Dispatcher
-     */
-    protected $events;
+    protected Dispatcher $events;
 
-    /**
-     * Holds the current cart instance.
-     *
-     * @var string
-     */
-    protected $instance;
+    protected string $instance;
 
-    /**
-     *
-     * @var Collection
-     */
-    protected $products;
+    protected ?Collection $products = null;
 
-    /**
-     *
-     * @var float
-     */
-    protected $weight;
+    protected float $weight = 0;
 
-    /**
-     * Cart constructor.
-     *
-     * @param SessionManager $session
-     * @param Dispatcher $events
-     */
     public function __construct(SessionManager $session, Dispatcher $events)
     {
         $this->session = $session;
@@ -67,13 +39,7 @@ class Cart
         $this->instance(self::DEFAULT_INSTANCE);
     }
 
-    /**
-     * Set the current cart instance.
-     *
-     * @param string|null $instance
-     * @return Cart
-     */
-    public function instance($instance = null)
+    public function instance(string $instance = null): self
     {
         $instance = $instance ?: self::DEFAULT_INSTANCE;
 
@@ -135,7 +101,7 @@ class Cart
      */
     protected function isMulti($item)
     {
-        if (!is_array($item)) {
+        if (! is_array($item)) {
             return false;
         }
 
@@ -157,18 +123,18 @@ class Cart
     protected function createCartItem($id, $name, $qty, $price, array $options)
     {
         $basePrice = $price;
-        if(!empty($options['options'])) {
-            foreach($options['options']['optionCartValue'] as $value) {
-                if(is_array($value)) {
-                    foreach($value as $_value) {
-                        if ($_value['affect_type'] == 1) {
-                            $_value['affect_price'] = ($basePrice * $_value['affect_price']) / 100;
+        if (! empty($options['options'])) {
+            foreach ($options['options']['optionCartValue'] as $value) {
+                if (is_array($value)) {
+                    foreach ($value as $valueItem) {
+                        if ($valueItem['affect_type'] == 1) {
+                            $valueItem['affect_price'] = ($basePrice * $valueItem['affect_price']) / 100;
                         }
-                        $price = $price + $_value['affect_price'];
+                        $price = $price + $valueItem['affect_price'];
                     }
                 } else {
-                    if ($_value['affect_type'] == 1) {
-                        $_value['affect_price'] = ($basePrice * $_value['affect_price']) / 100;
+                    if ($value['affect_type'] == 1) {
+                        $value['affect_price'] = ($basePrice * $value['affect_price']) / 100;
                     }
                     $price = $price + $value['affect_price'];
                 }
@@ -221,7 +187,7 @@ class Cart
      */
     public function setLastUpdatedAt()
     {
-        return $this->session->put($this->instance . '_updated_at', Carbon::now());
+        $this->session->put($this->instance . '_updated_at', Carbon::now());
     }
 
     /**
@@ -256,6 +222,7 @@ class Cart
 
         if ($cartItem->qty <= 0) {
             $this->remove($cartItem->rowId);
+
             return false;
         }
 
@@ -280,7 +247,7 @@ class Cart
     {
         $content = $this->getContent();
 
-        if (!$content->has($rowId)) {
+        if (! $content->has($rowId)) {
             return null;
         }
 
@@ -345,8 +312,12 @@ class Cart
     {
         $content = $this->getContent();
 
-        return $content->reduce(function ($total, CartItem $cartItem) {
-            if (!EcommerceHelper::isTaxEnabled()) {
+        return $content->reduce(function ($total, ?CartItem $cartItem) {
+            if (! $cartItem) {
+                return 0;
+            }
+
+            if (! EcommerceHelper::isTaxEnabled()) {
                 return $total + $cartItem->qty * $cartItem->price;
             }
 
@@ -359,8 +330,12 @@ class Cart
      */
     public function rawTotalByItems($content)
     {
-        return $content->reduce(function ($total, CartItem $cartItem) {
-            if (!EcommerceHelper::isTaxEnabled()) {
+        return $content->reduce(function ($total, ?CartItem $cartItem) {
+            if (! $cartItem) {
+                return 0;
+            }
+
+            if (! EcommerceHelper::isTaxEnabled()) {
                 return $total + $cartItem->qty * $cartItem->price;
             }
 
@@ -375,7 +350,7 @@ class Cart
      */
     public function rawTaxByItems($content)
     {
-        if (!EcommerceHelper::isTaxEnabled()) {
+        if (! EcommerceHelper::isTaxEnabled()) {
             return 0;
         }
 
@@ -428,7 +403,7 @@ class Cart
      */
     public function associate($rowId, $model)
     {
-        if (is_string($model) && !class_exists($model)) {
+        if (is_string($model) && ! class_exists($model)) {
             throw new UnknownModelException('The supplied model ' . $model . ' does not exist.');
         }
 
@@ -481,8 +456,8 @@ class Cart
 
         $this->getConnection()->table($this->getTableName())->insert([
             'identifier' => $identifier,
-            'instance'   => $this->currentInstance(),
-            'content'    => serialize($content),
+            'instance' => $this->currentInstance(),
+            'content' => serialize($content),
         ]);
 
         $this->events->dispatch('cart.stored');
@@ -549,7 +524,7 @@ class Cart
      */
     public function restore($identifier)
     {
-        if (!$this->storedCartWithIdentifierExists($identifier)) {
+        if (! $this->storedCartWithIdentifierExists($identifier)) {
             return;
         }
 
@@ -610,7 +585,11 @@ class Cart
     {
         $content = $this->getContent();
 
-        $total = $content->reduce(function ($total, CartItem $cartItem) {
+        $total = $content->reduce(function ($total, ?CartItem $cartItem) {
+            if (! $cartItem) {
+                return 0;
+            }
+
             return $total + ($cartItem->qty * ($cartItem->priceTax == 0 ? $cartItem->price : $cartItem->priceTax));
         }, 0);
 
@@ -624,7 +603,7 @@ class Cart
      */
     public function tax()
     {
-        if (!EcommerceHelper::isTaxEnabled()) {
+        if (! EcommerceHelper::isTaxEnabled()) {
             return 0;
         }
 
@@ -638,7 +617,7 @@ class Cart
      */
     public function rawTax()
     {
-        if (!EcommerceHelper::isTaxEnabled()) {
+        if (! EcommerceHelper::isTaxEnabled()) {
             return 0;
         }
 
@@ -678,7 +657,7 @@ class Cart
 
         $cartContent = $this->instance('cart')->content();
         $productIds = $cartContent->pluck('id')->toArray();
-        $products = collect([]);
+        $products = collect();
         $weight = 0;
         if ($productIds) {
             $with = [
@@ -699,17 +678,21 @@ class Cart
                 'condition' => [
                     ['ec_products.id', 'IN', $productIds],
                 ],
-                'with'      => $with,
+                'with' => $with,
             ]);
         }
+
+        $productsInCart = new EloquentCollection();
 
         if ($products->count()) {
             foreach ($cartContent as $cartItem) {
                 $product = $products->firstWhere('id', $cartItem->id);
-                if (!$product || $product->original_product->status != BaseStatusEnum::PUBLISHED) {
+                if (! $product || $product->original_product->status != BaseStatusEnum::PUBLISHED) {
                     $this->remove($cartItem->rowId);
                 } else {
-                    $product->cartItem = $cartItem;
+                    $productInCart = clone $product;
+                    $productInCart->cartItem = $cartItem;
+                    $productsInCart->push($productInCart);
                     $weight += $product->weight * $cartItem->qty;
                 }
             }
@@ -717,7 +700,7 @@ class Cart
 
         $weight = EcommerceHelper::validateOrderWeight($weight);
 
-        $this->products = $products;
+        $this->products = $productsInCart;
         $this->weight = $weight;
 
         if ($this->products->count() == 0) {
@@ -735,7 +718,7 @@ class Cart
     public function content()
     {
         if (empty($this->session->get($this->instance))) {
-            return collect([]);
+            return collect();
         }
 
         return $this->session->get($this->instance);

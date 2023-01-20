@@ -3,6 +3,10 @@
 namespace Botble\ACL\Tables;
 
 use BaseHelper;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Botble\ACL\Enums\UserStatusEnum;
 use Botble\ACL\Repositories\Interfaces\ActivationInterface;
@@ -18,28 +22,12 @@ use Yajra\DataTables\DataTables;
 
 class UserTable extends TableAbstract
 {
-    /**
-     * @var bool
-     */
     protected $hasActions = true;
 
-    /**
-     * @var bool
-     */
     protected $hasFilter = true;
 
-    /**
-     * @var ActivateUserService
-     */
-    protected $service;
+    protected ActivateUserService $service;
 
-    /**
-     * UserTable constructor.
-     * @param DataTables $table
-     * @param UrlGenerator $urlGenerator
-     * @param UserInterface $userRepository
-     * @param ActivateUserService $service
-     */
     public function __construct(
         DataTables $table,
         UrlGenerator $urlGenerator,
@@ -51,16 +39,13 @@ class UserTable extends TableAbstract
         $this->repository = $userRepository;
         $this->service = $service;
 
-        if (!Auth::user()->hasAnyPermission(['users.edit', 'users.destroy'])) {
+        if (! Auth::user()->hasAnyPermission(['users.edit', 'users.destroy'])) {
             $this->hasOperations = false;
             $this->hasActions = false;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function ajax()
+    public function ajax(): JsonResponse
     {
         $data = $this->table
             ->eloquent($this->query())
@@ -68,7 +53,7 @@ class UserTable extends TableAbstract
                 return $this->getCheckbox($item->id);
             })
             ->editColumn('username', function ($item) {
-                if (!Auth::user()->hasPermission('users.edit')) {
+                if (! Auth::user()->hasPermission('users.edit')) {
                     return $item->username;
                 }
 
@@ -78,7 +63,7 @@ class UserTable extends TableAbstract
                 return BaseHelper::formatDate($item->created_at);
             })
             ->editColumn('role_name', function ($item) {
-                if (!Auth::user()->hasPermission('users.edit')) {
+                if (! Auth::user()->hasPermission('users.edit')) {
                     return $item->role_name;
                 }
 
@@ -123,7 +108,7 @@ class UserTable extends TableAbstract
         return $this->toJson($data);
     }
 
-    public function query()
+    public function query(): Relation|Builder|QueryBuilder
     {
         $query = $this->repository->getModel()
             ->leftJoin('role_users', 'users.id', '=', 'role_users.user_id')
@@ -142,30 +127,27 @@ class UserTable extends TableAbstract
         return $this->applyScopes($query);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function columns(): array
     {
         return [
-            'username'   => [
+            'username' => [
                 'title' => trans('core/acl::users.username'),
                 'class' => 'text-start',
             ],
-            'email'      => [
+            'email' => [
                 'title' => trans('core/acl::users.email'),
                 'class' => 'text-start',
             ],
-            'role_name'  => [
-                'title'      => trans('core/acl::users.role'),
+            'role_name' => [
+                'title' => trans('core/acl::users.role'),
                 'searchable' => false,
             ],
             'created_at' => [
                 'title' => trans('core/base::tables.created_at'),
                 'width' => '100px',
             ],
-            'status'     => [
-                'name'  => 'users.updated_at',
+            'status' => [
+                'name' => 'users.updated_at',
                 'title' => trans('core/base::tables.status'),
                 'width' => '100px',
             ],
@@ -176,33 +158,21 @@ class UserTable extends TableAbstract
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function buttons(): array
     {
         return $this->addCreateButton(route('users.create'), 'users.create');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function htmlDrawCallbackFunction(): ?string
     {
         return parent::htmlDrawCallbackFunction() . '$(".editable").editable({mode: "inline"});';
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function bulkActions(): array
     {
         return $this->addDeleteAction(route('users.deletes'), 'users.destroy', parent::bulkActions());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getFilters(): array
     {
         $filters = $this->getBulkChanges();
@@ -211,57 +181,47 @@ class UserTable extends TableAbstract
         return $filters;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getBulkChanges(): array
     {
         return [
-            'username'   => [
-                'title'    => trans('core/acl::users.username'),
-                'type'     => 'text',
+            'username' => [
+                'title' => trans('core/acl::users.username'),
+                'type' => 'text',
                 'validate' => 'required|max:120',
             ],
-            'email'      => [
-                'title'    => trans('core/base::tables.email'),
-                'type'     => 'text',
+            'email' => [
+                'title' => trans('core/base::tables.email'),
+                'type' => 'text',
                 'validate' => 'required|max:120|email',
             ],
-            'status'     => [
-                'title'    => trans('core/base::tables.status'),
-                'type'     => 'customSelect',
-                'choices'  => UserStatusEnum::labels(),
+            'status' => [
+                'title' => trans('core/base::tables.status'),
+                'type' => 'customSelect',
+                'choices' => UserStatusEnum::labels(),
                 'validate' => 'required|in:' . implode(',', UserStatusEnum::values()),
             ],
             'created_at' => [
                 'title' => trans('core/base::tables.created_at'),
-                'type'  => 'date',
+                'type' => 'datePicker',
             ],
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getOperationsHeading(): array
     {
         return [
             'operations' => [
-                'title'      => trans('core/base::tables.operations'),
-                'width'      => '350px',
-                'class'      => 'text-end',
-                'orderable'  => false,
+                'title' => trans('core/base::tables.operations'),
+                'width' => '350px',
+                'class' => 'text-end',
+                'orderable' => false,
                 'searchable' => false,
                 'exportable' => false,
-                'printable'  => false,
+                'printable' => false,
             ],
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     * @throws Exception
-     */
     public function saveBulkChanges(array $ids, string $inputKey, ?string $inputValue): bool
     {
         if (app()->environment('demo')) {

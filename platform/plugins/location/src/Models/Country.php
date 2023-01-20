@@ -2,25 +2,15 @@
 
 namespace Botble\Location\Models;
 
-use Botble\Base\Traits\EnumCastable;
+use Botble\Base\Casts\SafeContent;
 use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Base\Models\BaseModel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Country extends BaseModel
 {
-    use EnumCastable;
-
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
     protected $table = 'countries';
 
-    /**
-     * @var array
-     */
     protected $fillable = [
         'name',
         'nationality',
@@ -30,16 +20,13 @@ class Country extends BaseModel
         'status',
     ];
 
-    /**
-     * @var array
-     */
     protected $casts = [
         'status' => BaseStatusEnum::class,
+        'name' => SafeContent::class,
+        'nationality' => SafeContent::class,
+        'code' => SafeContent::class,
     ];
 
-    /**
-     * @return HasMany
-     */
     public function states(): HasMany
     {
         return $this->hasMany(State::class);

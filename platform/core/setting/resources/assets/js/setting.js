@@ -1,11 +1,8 @@
-import LicenseComponent from './components/LicenseComponent';
-import Vue from 'vue';
+import LicenseComponent from './components/LicenseComponent.vue';
 
-if (document.getElementById('main-settings')) {
-    Vue.component('license-component', LicenseComponent);
-
-    new Vue({
-        el: '#main-settings',
+if (typeof vueApp !== 'undefined') {
+    vueApp.booting(vue => {
+        vue.component('license-component', LicenseComponent);
     });
 }
 
@@ -187,6 +184,29 @@ class SettingManagement {
             doc.replaceRange(key, pos);
         });
 
+        $(document).on('click', '.js-select-mail-function', event => {
+            event.preventDefault();
+            const $this = $(event.currentTarget);
+
+            const CodeMirror = $('.CodeMirror')[0].CodeMirror;
+
+            const key = $this.data('sample');
+
+            // If there's a selection, replace the selection.
+            if (CodeMirror.somethingSelected()) {
+                CodeMirror.replaceSelection(key);
+                return;
+            }
+
+            // Otherwise, we insert at the cursor position.
+            const cursor = CodeMirror.getCursor();
+            const position = {
+                line: cursor.line,
+                ch: cursor.ch
+            }
+            CodeMirror.replaceRange(key, position);
+        })
+
         $(document).on('click', '#reset-template-to-default-button', event => {
             event.preventDefault();
             let _self = $(event.currentTarget);
@@ -239,6 +259,7 @@ class SettingManagement {
             $(el).on('change', function () {
                 if ($(el).val() == '1') {
                     $settingContentContainer.removeClass('d-none');
+                    Botble.initResources();
                 } else {
                     $settingContentContainer.addClass('d-none');
                 }

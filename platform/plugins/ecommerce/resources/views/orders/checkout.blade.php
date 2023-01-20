@@ -5,10 +5,7 @@
 @section('content')
 
     @if (Cart::instance('cart')->count() > 0)
-        <link rel="stylesheet" href="{{ asset('vendor/core/plugins/payment/css/payment.css') }}?v=1.1.0">
-        <script src="{{ asset('vendor/core/plugins/payment/js/payment.js') }}?v=1.1.0"></script>
-
-        {!! apply_filters(PAYMENT_FILTER_HEADER_ASSETS, null) !!}
+        @include('plugins/payment::partials.header')
 
         {!! Form::open(['route' => ['public.checkout.process', $token], 'class' => 'checkout-form payment-checkout-form', 'id' => 'checkout-form']) !!}
         <input type="hidden" name="checkout-token" id="checkout-token" value="{{ $token }}">
@@ -27,7 +24,6 @@
                             </div>
                         </div>
 
-                        <!---------------------- RENDER PRODUCTS IN HERE ---------------- -->
                         {!! apply_filters(RENDER_PRODUCTS_IN_CHECKOUT_PAGE, $products) !!}
 
                         <div class="mt-2 p-2">
@@ -114,12 +110,14 @@
                         @include('plugins/ecommerce::orders.partials.logo')
                     </div>
                     <div class="form-checkout">
-                        <div>
-                            <h5 class="checkout-payment-title">{{ __('Shipping information') }}</h5>
-                            <input type="hidden" value="{{ route('public.checkout.save-information', $token) }}" id="save-shipping-information-url">
-                            @include('plugins/ecommerce::orders.partials.address-form', compact('sessionCheckoutData'))
-                        </div>
-                        <br>
+                        @if (Arr::get($sessionCheckoutData, 'is_available_shipping', true))
+                            <div>
+                                <h5 class="checkout-payment-title">{{ __('Shipping information') }}</h5>
+                                <input type="hidden" value="{{ route('public.checkout.save-information', $token) }}" id="save-shipping-information-url">
+                                @include('plugins/ecommerce::orders.partials.address-form', compact('sessionCheckoutData'))
+                            </div>
+                            <br>
+                        @endif
 
                         @if (EcommerceHelper::isBillingAddressEnabled())
                             <div>
@@ -142,13 +140,18 @@
                                         <div class="payment-checkout-form">
                                             <input type="hidden" name="shipping_option" value="{{ old('shipping_option', $defaultShippingOption) }}">
                                             <ul class="list-group list_payment_method">
-                                                @foreach ($shipping as $shippingKey => $shippingItem)
-                                                    @foreach($shippingItem as $subShippingKey => $subShippingItem)
+                                                @foreach ($shipping as $shippingKey => $shippingItems)
+                                                    @foreach($shippingItems as $shippingOption => $shippingItem)
                                                         @include('plugins/ecommerce::orders.partials.shipping-option', [
-                                                            'defaultShippingMethod' => $defaultShippingMethod,
-                                                            'defaultShippingOption' => $defaultShippingOption,
-                                                            'shippingOption'        => $subShippingKey,
-                                                            'shippingItem'          => $subShippingItem,
+                                                            'shippingItem' => $shippingItem,
+                                                            'attributes' =>[
+                                                                'id' => 'shipping-method-' . $shippingKey . '-' . $shippingOption,
+                                                                'name' => 'shipping_method',
+                                                                'class' => 'magic-radio',
+                                                                'checked' => old('shipping_method', $defaultShippingMethod) == $shippingKey && old('shipping_option', $defaultShippingOption) == $shippingOption,
+                                                                'disabled' => Arr::get($shippingItem, 'disabled'),
+                                                                'data-option' => $shippingOption,
+                                                            ],
                                                         ])
                                                     @endforeach
                                                 @endforeach
@@ -159,8 +162,6 @@
                                     @endif
                                 </div>
                                 <br>
-                            @else
-                                {{-- Can render text to show for customer --}}
                             @endif
                         @endif
 
@@ -175,16 +176,28 @@
                             <input type="hidden" name="currency" value="{{ strtoupper(get_application_currency()->title) }}">
                             {!! apply_filters(PAYMENT_FILTER_PAYMENT_PARAMETERS, null) !!}
                             <ul class="list-group list_payment_method">
+                                @php
+                                    $selected = session('selected_payment_method');
+                                    $default = \Botble\Payment\Supports\PaymentHelper::defaultPaymentMethod();
+                                    $selecting = $selected ?: $default;
+                                @endphp
 
-                                {!! apply_filters(PAYMENT_FILTER_ADDITIONAL_PAYMENT_METHODS, null, ['amount' => ($promotionDiscountAmount + $couponDiscountAmount - $shippingAmount) > Cart::instance('cart')->rawTotal() ? 0 : format_price(Cart::instance('cart')->rawTotal() - $promotionDiscountAmount - $couponDiscountAmount + $shippingAmount, null, true), 'currency' => strtoupper(get_application_currency()->title), 'name' => null]) !!}
+                                {!! apply_filters(PAYMENT_FILTER_ADDITIONAL_PAYMENT_METHODS, null, [
+                                        'amount'    => ($promotionDiscountAmount + $couponDiscountAmount - $shippingAmount) > Cart::instance('cart')->rawTotal() ? 0 : format_price(Cart::instance('cart')->rawTotal() - $promotionDiscountAmount - $couponDiscountAmount + $shippingAmount, null, true),
+                                        'currency'  => strtoupper(get_application_currency()->title),
+                                        'name'      => null,
+                                        'selected'  => $selected,
+                                        'default'   => $default,
+                                        'selecting' => $selecting,
+                                    ]) !!}
 
-                                @if (setting('payment_cod_status') == 1)
+                                @if (get_payment_setting('status', 'cod') == 1)
                                     <li class="list-group-item">
                                         <input class="magic-radio js_payment_method" type="radio" name="payment_method" id="payment_cod"
-                                               @if ((session('selected_payment_method') ?: setting('default_payment_method')) == \Botble\Payment\Enums\PaymentMethodEnum::COD) checked @endif
-                                               value="cod" data-bs-toggle="collapse" data-bs-target=".payment_cod_wrap" data-parent=".list_payment_method">
+                                            @if ($selecting == \Botble\Payment\Enums\PaymentMethodEnum::COD) checked @endif
+                                            value="cod" data-bs-toggle="collapse" data-bs-target=".payment_cod_wrap" data-parent=".list_payment_method">
                                         <label for="payment_cod" class="text-start">{{ setting('payment_cod_name', trans('plugins/payment::payment.payment_via_cod')) }}</label>
-                                        <div class="payment_cod_wrap payment_collapse_wrap collapse @if ((session('selected_payment_method') ?: setting('default_payment_method')) == \Botble\Payment\Enums\PaymentMethodEnum::COD) show @endif" style="padding: 15px 0;">
+                                        <div class="payment_cod_wrap payment_collapse_wrap collapse @if ($selecting == \Botble\Payment\Enums\PaymentMethodEnum::COD) show @endif" style="padding: 15px 0;">
                                             {!! BaseHelper::clean(setting('payment_cod_description')) !!}
 
                                             @php $minimumOrderAmount = setting('payment_cod_minimum_amount', 0); @endphp
@@ -197,13 +210,14 @@
                                     </li>
                                 @endif
 
-                                @if (setting('payment_bank_transfer_status') == 1)
+                                @if (get_payment_setting('status', 'bank_transfer') == 1)
                                     <li class="list-group-item">
                                         <input class="magic-radio js_payment_method" type="radio" name="payment_method" id="payment_bank_transfer"
-                                               @if ((session('selected_payment_method') ?: setting('default_payment_method')) == \Botble\Payment\Enums\PaymentMethodEnum::BANK_TRANSFER) checked @endif
-                                               value="bank_transfer" data-bs-toggle="collapse" data-bs-target=".payment_bank_transfer_wrap" data-parent=".list_payment_method">
+                                            @if ($selecting == \Botble\Payment\Enums\PaymentMethodEnum::BANK_TRANSFER) checked @endif
+                                            value="bank_transfer"
+                                            data-bs-toggle="collapse" data-bs-target=".payment_bank_transfer_wrap" data-parent=".list_payment_method">
                                         <label for="payment_bank_transfer" class="text-start">{{ setting('payment_bank_transfer_name', trans('plugins/payment::payment.payment_via_bank_transfer')) }}</label>
-                                        <div class="payment_bank_transfer_wrap payment_collapse_wrap collapse @if ((session('selected_payment_method') ?: setting('default_payment_method')) == \Botble\Payment\Enums\PaymentMethodEnum::BANK_TRANSFER) show @endif" style="padding: 15px 0;">
+                                        <div class="payment_bank_transfer_wrap payment_collapse_wrap collapse @if ($selecting == \Botble\Payment\Enums\PaymentMethodEnum::BANK_TRANSFER) show @endif" style="padding: 15px 0;">
                                             {!! BaseHelper::clean(setting('payment_bank_transfer_description')) !!}
                                         </div>
                                     </li>
@@ -247,7 +261,7 @@
             </div>
         </div>
 
-        {!! apply_filters(PAYMENT_FILTER_FOOTER_ASSETS, null) !!}
+        @include('plugins/payment::partials.footer')
     @else
         <div class="container">
             <div class="row">

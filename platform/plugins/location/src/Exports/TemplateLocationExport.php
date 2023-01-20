@@ -28,83 +28,71 @@ class TemplateLocationExport implements
 {
     use Exportable;
 
-    /**
-     * @var Collection
-     */
-    protected $results;
+    protected Collection $results;
 
-    /**
-     * @var string
-     */
-    protected $exportType;
+    protected string $exportType;
 
-    /**
-     * @var int
-     */
-    protected $totalRow;
+    protected int $totalRow;
 
-    /**
-     * @param string $exportType
-     */
     public function __construct(string $exportType = Excel::XLSX)
     {
         $this->exportType = $exportType;
 
         $locations = [
             [
-                'name'         => 'United States of America',
-                'slug'         => '',
+                'name' => 'United States of America',
+                'slug' => '',
                 'abbreviation' => '',
-                'state'        => '',
-                'country'      => '',
-                'import_type'  => 'country',
-                'status'       => BaseStatusEnum::PUBLISHED,
-                'order'        => 0,
-                'nationality'  => 'Americans',
+                'state' => '',
+                'country' => '',
+                'import_type' => 'country',
+                'status' => BaseStatusEnum::PUBLISHED,
+                'order' => 0,
+                'nationality' => 'Americans',
             ],
             [
-                'name'         => 'Texas',
-                'slug'         => '',
+                'name' => 'Texas',
+                'slug' => '',
                 'abbreviation' => 'TX',
-                'state'        => '',
-                'country'      => 'United States of America',
-                'import_type'  => 'state',
-                'status'       => BaseStatusEnum::PUBLISHED,
-                'order'        => 0,
-                'nationality'  => '',
+                'state' => '',
+                'country' => 'United States of America',
+                'import_type' => 'state',
+                'status' => BaseStatusEnum::PUBLISHED,
+                'order' => 0,
+                'nationality' => '',
             ],
             [
-                'name'         => 'Washington',
-                'slug'         => '',
+                'name' => 'Washington',
+                'slug' => '',
                 'abbreviation' => 'WA',
-                'state'        => '',
-                'country'      => 'United States of America',
-                'import_type'  => 'state',
-                'status'       => BaseStatusEnum::PUBLISHED,
-                'order'        => 0,
-                'nationality'  => '',
+                'state' => '',
+                'country' => 'United States of America',
+                'import_type' => 'state',
+                'status' => BaseStatusEnum::PUBLISHED,
+                'order' => 0,
+                'nationality' => '',
             ],
             [
-                'name'         => 'Houston',
-                'slug'         => 'houston',
+                'name' => 'Houston',
+                'slug' => 'houston',
                 'abbreviation' => '',
-                'state'        => 'Texas',
-                'country'      => 'United States of America',
-                'import_type'  => 'city',
-                'status'       => BaseStatusEnum::PUBLISHED,
-                'order'        => 0,
-                'nationality'  => '',
+                'state' => 'Texas',
+                'country' => 'United States of America',
+                'import_type' => 'city',
+                'status' => BaseStatusEnum::PUBLISHED,
+                'order' => 0,
+                'nationality' => '',
             ],
             [
-                'name'         => 'San Antonio',
-                'slug'         => 'san-antonio',
+                'name' => 'San Antonio',
+                'slug' => 'san-antonio',
                 'abbreviation' => '',
-                'state'        => 'Texas',
-                'country'      => 'United States of America',
-                'import_type'  => 'city',
-                'status'       => BaseStatusEnum::PUBLISHED,
-                'order'        => 0,
-                'nationality'  => '',
+                'state' => 'Texas',
+                'country' => 'United States of America',
+                'import_type' => 'city',
+                'status' => BaseStatusEnum::PUBLISHED,
+                'order' => 0,
+                'nationality' => '',
             ],
         ];
 
@@ -126,29 +114,23 @@ class TemplateLocationExport implements
         $this->totalRow = $exportType == Excel::XLSX ? 100 : ($this->results->count() + 1);
     }
 
-    /**
-     * @return Collection
-     */
-    public function collection()
+    public function collection(): Collection
     {
         return $this->results;
     }
 
-    /**
-     * @return array
-     */
     public function headings(): array
     {
         $headings = [
-            'name'         => 'Name', // 1 => A
-            'slug'         => 'Slug', // 2 => B
+            'name' => 'Name', // 1 => A
+            'slug' => 'Slug', // 2 => B
             'abbreviation' => 'Abbreviation', // 3 => C
-            'state'        => 'State', // 4 => D
-            'country'      => 'Country', // 5 => E
-            'import_type'  => 'Import Type', // 6 => F
-            'status'       => 'Status', // 7 => G
-            'order'        => 'Order', // 8 => H
-            'nationality'  => 'Nationality', // 9 => I
+            'state' => 'State', // 4 => D
+            'country' => 'Country', // 5 => E
+            'import_type' => 'Import Type', // 6 => F
+            'status' => 'Status', // 7 => G
+            'order' => 'Order', // 8 => H
+            'nationality' => 'Nationality', // 9 => I
         ];
         if (defined('LANGUAGE_MODULE_SCREEN_NAME')) {
             $defaultLanguage = Language::getDefaultLanguage(['lang_code'])->lang_code;
@@ -164,9 +146,6 @@ class TemplateLocationExport implements
         return $headings;
     }
 
-    /**
-     * @return array
-     */
     public function registerEvents(): array
     {
         return [
@@ -201,19 +180,12 @@ class TemplateLocationExport implements
         ];
     }
 
-    /**
-     * @return DataValidation
-     */
-    protected function getStatusValidation()
+    protected function getStatusValidation(): DataValidation
     {
         return $this->getDropDownListValidation(BaseStatusEnum::values());
     }
 
-    /**
-     * @param array $options
-     * @return DataValidation
-     */
-    protected function getDropDownListValidation($options)
+    protected function getDropDownListValidation(array $options): DataValidation
     {
         // set dropdown list for first data row
         $validation = new DataValidation();
@@ -232,19 +204,12 @@ class TemplateLocationExport implements
         return $validation;
     }
 
-    /**
-     * @return DataValidation
-     */
-    protected function getImportTypeValidation()
+    protected function getImportTypeValidation(): DataValidation
     {
         return $this->getDropDownListValidation(['country', 'state', 'city']);
     }
 
-    /**
-     * @param int $max
-     * @return DataValidation
-     */
-    protected function getTextLengthValidation($max = 2)
+    protected function getTextLengthValidation(int $max = 2): DataValidation
     {
         $validation = new DataValidation();
         $validation->setType(DataValidation::TYPE_TEXTLENGTH)
@@ -262,9 +227,6 @@ class TemplateLocationExport implements
         return $validation;
     }
 
-    /**
-     * @return array
-     */
     public function columnFormats(): array
     {
         if ($this->exportType != Excel::XLSX) {
@@ -283,9 +245,6 @@ class TemplateLocationExport implements
         ];
     }
 
-    /**
-     * @return array
-     */
     public function columnWidths(): array
     {
         return [
@@ -294,10 +253,7 @@ class TemplateLocationExport implements
         ];
     }
 
-    /**
-     * @return DataValidation
-     */
-    protected function getBooleanValidation()
+    protected function getBooleanValidation(): DataValidation
     {
         return $this->getDropDownListValidation(['No', 'Yes']);
     }

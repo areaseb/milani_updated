@@ -9,32 +9,21 @@ use Botble\Ecommerce\Repositories\Interfaces\ProductInterface;
 use Cart;
 use EcommerceHelper;
 use Illuminate\Routing\Controller;
-use Response;
 use SeoHelper;
 use Theme;
 
 class CompareController extends Controller
 {
-    /**
-     * @var ProductInterface
-     */
-    protected $productRepository;
+    protected ProductInterface $productRepository;
 
-    /**
-     * CompareController constructor.
-     * @param ProductInterface $productRepository
-     */
     public function __construct(ProductInterface $productRepository)
     {
         $this->productRepository = $productRepository;
     }
 
-    /**
-     * @return Response
-     */
     public function index()
     {
-        if (!EcommerceHelper::isCompareEnabled()) {
+        if (! EcommerceHelper::isCompareEnabled()) {
             abort(404);
         }
 
@@ -52,16 +41,15 @@ class CompareController extends Controller
         $attributeSets = collect();
         if ($itemIds->count()) {
             $products = $this->productRepository
-                ->getProductsByIds($itemIds->toArray(), [
-                    'take'      => 10,
-                    'with'      => [
+                ->getProductsByIds($itemIds->toArray(), array_merge([
+                    'take' => 10,
+                    'with' => [
                         'slugable',
                         'variations',
                         'productCollections',
                         'variationAttributeSwatchesForProductList',
                     ],
-                    'withCount' => EcommerceHelper::withReviewsCount(),
-                ]);
+                ], EcommerceHelper::withReviewsParams()));
 
             $attributeSets = app(ProductAttributeSetInterface::class)->getAllWithSelected($itemIds);
         }
@@ -73,14 +61,9 @@ class CompareController extends Controller
         )->render();
     }
 
-    /**
-     * @param int $productId
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function store($productId, BaseHttpResponse $response)
+    public function store(int $productId, BaseHttpResponse $response)
     {
-        if (!EcommerceHelper::isCompareEnabled()) {
+        if (! EcommerceHelper::isCompareEnabled()) {
             abort(404);
         }
 
@@ -90,10 +73,10 @@ class CompareController extends Controller
             return $cartItem->id == $productId;
         });
 
-        if (!$duplicates->isEmpty()) {
+        if (! $duplicates->isEmpty()) {
             return $response
                 ->setMessage(__(':product is already in your compare list!', ['product' => $product->name]))
-                ->setError(true);
+                ->setError();
         }
 
         Cart::instance('compare')->add($productId, $product->name, 1, $product->front_sale_price)
@@ -104,14 +87,9 @@ class CompareController extends Controller
             ->setData(['count' => Cart::instance('compare')->count()]);
     }
 
-    /**
-     * @param int $productId
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function destroy($productId, BaseHttpResponse $response)
+    public function destroy(int $productId, BaseHttpResponse $response)
     {
-        if (!EcommerceHelper::isCompareEnabled()) {
+        if (! EcommerceHelper::isCompareEnabled()) {
             abort(404);
         }
 
@@ -120,8 +98,10 @@ class CompareController extends Controller
         Cart::instance('compare')->search(function ($cartItem, $rowId) use ($productId) {
             if ($cartItem->id == $productId) {
                 Cart::instance('compare')->remove($rowId);
+
                 return true;
             }
+
             return false;
         });
 

@@ -2,59 +2,32 @@
 
 namespace Botble\Base\Supports;
 
-use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 class SortItemsWithChildrenHelper
 {
-    /**
-     * @var Collection
-     */
-    protected $items;
+    protected Collection $items;
 
-    /**
-     * @var string
-     */
-    protected $parentField = 'parent_id';
+    protected string $parentField = 'parent_id';
 
-    /**
-     * @var string
-     */
-    protected $compareKey = 'id';
+    protected string $compareKey = 'id';
 
-    /**
-     * @var string
-     */
-    protected $childrenProperty = 'children_items';
+    protected string $childrenProperty = 'children_items';
 
-    /**
-     * @var array
-     */
-    protected $result = [];
+    protected array $result = [];
 
-    /**
-     * @param array|Collection $items
-     * @return $this
-     * @throws Exception
-     */
-    public function setItems($items): SortItemsWithChildrenHelper
+    public function setItems(array|Collection $items): self
     {
-        if (is_array($items)) {
-            $this->items = collect($items);
-            return $this;
-        } elseif ($items instanceof Collection) {
-            $this->items = $items;
-            return $this;
+        if (! $items instanceof Collection) {
+            $items = collect($items);
         }
 
-        throw new Exception('Items must be array or collection');
+        $this->items = $items;
+
+        return $this;
     }
 
-    /**
-     * @param string $string
-     * @return $this
-     */
     public function setParentField(string $string): self
     {
         $this->parentField = $string;
@@ -62,10 +35,6 @@ class SortItemsWithChildrenHelper
         return $this;
     }
 
-    /**
-     * @param string $key
-     * @return $this
-     */
     public function setCompareKey(string $key): self
     {
         $this->compareKey = $key;
@@ -73,10 +42,6 @@ class SortItemsWithChildrenHelper
         return $this;
     }
 
-    /**
-     * @param string $string
-     * @return $this
-     */
     public function setChildrenProperty(string $string): self
     {
         $this->childrenProperty = $string;
@@ -84,18 +49,11 @@ class SortItemsWithChildrenHelper
         return $this;
     }
 
-    /**
-     * @return array
-     */
     public function sort(): array
     {
         return $this->processSort();
     }
 
-    /**
-     * @param int $parentId
-     * @return array
-     */
     protected function processSort(int $parentId = 0): array
     {
         $result = [];

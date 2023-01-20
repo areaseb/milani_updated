@@ -3,62 +3,57 @@
 namespace Botble\Base\Supports;
 
 use BaseHelper;
-use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use Psr\SimpleCache\InvalidArgumentException;
 use RuntimeException;
 use Illuminate\Support\Facades\URL;
 
 class DashboardMenu
 {
-    /**
-     * Get all registered links from package
-     * @var array
-     */
-    protected $links = [];
+    protected array $links = [];
 
-    /**
-     * Add link
-     * @param array $options
-     * @return $this
-     */
     public function registerItem(array $options): self
     {
+        if (! is_in_admin(true)) {
+            return $this;
+        }
+
         if (isset($options['children'])) {
             unset($options['children']);
         }
 
         $defaultOptions = [
-            'id'          => '',
-            'priority'    => 99,
-            'parent_id'   => null,
-            'name'        => '',
-            'icon'        => null,
-            'url'         => '',
-            'children'    => [],
+            'id' => '',
+            'priority' => 99,
+            'parent_id' => null,
+            'name' => '',
+            'icon' => null,
+            'url' => '',
+            'children' => [],
             'permissions' => [],
-            'active'      => false,
+            'active' => false,
         ];
 
         $options = array_merge($defaultOptions, $options);
         $id = $options['id'];
 
-        if (!$id && !app()->runningInConsole() && app()->isLocal()) {
+        if (! $id && ! app()->runningInConsole() && app()->isLocal()) {
             $calledClass = isset(debug_backtrace()[1]) ?
                 debug_backtrace()[1]['class'] . '@' . debug_backtrace()[1]['function']
                 :
                 null;
+
             throw new RuntimeException('Menu id not specified: ' . $calledClass);
         }
 
-        if (isset($this->links[$id]) && $this->links[$id]['name'] && !app()->runningInConsole() && app()->isLocal()) {
+        if (isset($this->links[$id]) && $this->links[$id]['name'] && ! app()->runningInConsole() && app()->isLocal()) {
             $calledClass = isset(debug_backtrace()[1]) ?
                 debug_backtrace()[1]['class'] . '@' . debug_backtrace()[1]['function']
                 :
                 null;
+
             throw new RuntimeException('Menu id already exists: ' . $id . ' on class ' . $calledClass);
         }
 
@@ -72,7 +67,7 @@ class DashboardMenu
         }
 
         if ($options['parent_id']) {
-            if (!isset($this->links[$options['parent_id']])) {
+            if (! isset($this->links[$options['parent_id']])) {
                 $this->links[$options['parent_id']] = ['id' => $options['parent_id']] + $defaultOptions;
             }
 
@@ -87,27 +82,24 @@ class DashboardMenu
         return $this;
     }
 
-    /**
-     * @param array|string $id
-     * @param null $parentId
-     * @return $this
-     */
-    public function removeItem($id, $parentId = null): self
+    public function removeItem(string|array $id, $parentId = null): self
     {
-        if ($parentId && !isset($this->links[$parentId])) {
+        if ($parentId && ! isset($this->links[$parentId])) {
             return $this;
         }
 
         $id = is_array($id) ? $id : func_get_args();
         foreach ($id as $item) {
-            if (!$parentId) {
+            if (! $parentId) {
                 Arr::forget($this->links, $item);
+
                 break;
             }
 
             foreach ($this->links[$parentId]['children'] as $key => $child) {
                 if ($child['id'] === $item) {
                     Arr::forget($this->links[$parentId]['children'], $key);
+
                     break;
                 }
             }
@@ -116,15 +108,10 @@ class DashboardMenu
         return $this;
     }
 
-    /**
-     * @param string $id
-     * @param string|null $parentId
-     * @return bool
-     */
     public function hasItem(string $id, ?string $parentId = null): bool
     {
         if ($parentId) {
-            if (!isset($this->links[$parentId])) {
+            if (! isset($this->links[$parentId])) {
                 return false;
             }
 
@@ -134,13 +121,6 @@ class DashboardMenu
         return Arr::has($this->links, $id . '.name');
     }
 
-
-    /**
-     * Rearrange links
-     * @return Collection
-     * @throws Exception
-     * @throws InvalidArgumentException
-     */
     public function getAll(): Collection
     {
         do_action('render_dashboard_menu');
@@ -148,7 +128,7 @@ class DashboardMenu
         $currentUrl = URL::full();
 
         $prefix = request()->route()->getPrefix();
-        if (!$prefix || $prefix === BaseHelper::getAdminPrefix()) {
+        if (! $prefix || $prefix === BaseHelper::getAdminPrefix()) {
             $uri = explode('/', request()->route()->uri());
             $prefix = end($uri);
         }
@@ -157,7 +137,7 @@ class DashboardMenu
 
         if (setting('cache_admin_menu_enable', true) && Auth::check()) {
             $cacheKey = md5('cache-dashboard-menu-' . Auth::id());
-            if (!cache()->has($cacheKey)) {
+            if (! cache()->has($cacheKey)) {
                 $links = $this->links;
                 cache()->forever($cacheKey, $links);
             } else {
@@ -176,24 +156,29 @@ class DashboardMenu
         $protocol .= BaseHelper::getAdminPrefix();
 
         foreach ($links as $key => &$link) {
-            if ($link['permissions'] && !Auth::user()->hasAnyPermission($link['permissions'])) {
+            if ($link['permissions'] && ! Auth::user()->hasAnyPermission($link['permissions'])) {
                 Arr::forget($links, $key);
+
                 continue;
             }
 
             $link['active'] = $currentUrl == $link['url'] ||
                             (Str::contains((string) $link['url'], $routePrefix) &&
-                                !in_array($routePrefix, ['//', '/' . BaseHelper::getAdminPrefix()]) &&
-                                !Str::startsWith((string) $link['url'], $protocol));
-            if (!count($link['children'])) {
+                                ! in_array($routePrefix, ['//', '/' . BaseHelper::getAdminPrefix()]) &&
+                                ! Str::startsWith((string) $link['url'], $protocol));
+            if (! count($link['children'])) {
                 continue;
             }
 
-            $link['children'] = collect($link['children'])->sortBy('priority')->toArray();
+            $link['children'] = collect($link['children'])
+                ->unique(fn ($item) => $item['id'])
+                ->sortBy('priority')
+                ->toArray();
 
             foreach ($link['children'] as $subKey => $subMenu) {
-                if ($subMenu['permissions'] && !Auth::user()->hasAnyPermission($subMenu['permissions'])) {
+                if ($subMenu['permissions'] && ! Auth::user()->hasAnyPermission($subMenu['permissions'])) {
                     Arr::forget($link['children'], $subKey);
+
                     continue;
                 }
 

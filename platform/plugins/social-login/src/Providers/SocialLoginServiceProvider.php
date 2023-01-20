@@ -13,24 +13,24 @@ class SocialLoginServiceProvider extends ServiceProvider
 {
     use LoadAndPublishDataTrait;
 
-    public function boot()
+    public function boot(): void
     {
         $this->setNamespace('plugins/social-login')
             ->loadHelpers()
             ->loadAndPublishConfigurations(['permissions', 'general'])
             ->loadAndPublishViews()
             ->loadAndPublishTranslations()
-            ->loadRoutes(['web'])
+            ->loadRoutes()
             ->publishAssets();
 
         Event::listen(RouteMatched::class, function () {
             dashboard_menu()->registerItem([
-                'id'          => 'cms-plugins-social-login',
-                'priority'    => 5,
-                'parent_id'   => 'cms-core-settings',
-                'name'        => 'plugins/social-login::social-login.menu',
-                'icon'        => null,
-                'url'         => route('social-login.settings'),
+                'id' => 'cms-plugins-social-login',
+                'priority' => 5,
+                'parent_id' => 'cms-core-settings',
+                'name' => 'plugins/social-login::social-login.menu',
+                'icon' => null,
+                'url' => route('social-login.settings'),
                 'permissions' => ['social-login.settings'],
             ]);
         });

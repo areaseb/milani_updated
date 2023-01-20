@@ -3,6 +3,7 @@
 namespace Botble\Ecommerce\Http\Controllers\Customers;
 
 use Arr;
+use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Base\Http\Responses\BaseHttpResponse;
 use Botble\Ecommerce\Enums\OrderStatusEnum;
 use Botble\Ecommerce\Enums\ProductTypeEnum;
@@ -18,83 +19,52 @@ use Botble\Ecommerce\Repositories\Interfaces\OrderInterface;
 use Botble\Ecommerce\Repositories\Interfaces\OrderProductInterface;
 use Botble\Ecommerce\Repositories\Interfaces\OrderReturnInterface;
 use Botble\Ecommerce\Repositories\Interfaces\ProductInterface;
+use Botble\Ecommerce\Repositories\Interfaces\ReviewInterface;
 use Botble\Media\Services\ThumbnailService;
 use Botble\Media\Supports\Zipper;
 use Botble\Payment\Enums\PaymentStatusEnum;
 use Carbon\Carbon;
 use EcommerceHelper;
 use Exception;
-use Illuminate\Support\Facades\File;
 use Hash;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use InvoiceHelper;
 use OrderHelper;
 use OrderReturnHelper;
-use Response;
 use RvMedia;
 use SeoHelper;
 use Theme;
-use Throwable;
 
 class PublicController extends Controller
 {
-    /**
-     * @var CustomerInterface
-     */
-    protected $customerRepository;
+    protected CustomerInterface $customerRepository;
 
-    /**
-     * @var ProductInterface
-     */
-    protected $productRepository;
+    protected ProductInterface $productRepository;
 
-    /**
-     * @var AddressInterface
-     */
-    protected $addressRepository;
+    protected AddressInterface $addressRepository;
 
-    /**
-     * @var OrderInterface
-     */
-    protected $orderRepository;
+    protected OrderInterface $orderRepository;
 
-    /**
-     * @var OrderHistoryInterface
-     */
-    protected $orderHistoryRepository;
+    protected OrderHistoryInterface $orderHistoryRepository;
 
-    /**
-     * @var OrderReturnInterface
-     */
-    protected $orderReturnRepository;
+    protected OrderReturnInterface $orderReturnRepository;
 
-    /**
-     * @var OrderProductInterface
-     */
-    protected $orderProductRepository;
+    protected OrderProductInterface $orderProductRepository;
 
-    /**
-     * PublicController constructor.
-     *
-     * @param CustomerInterface $customerRepository
-     * @param ProductInterface $productRepository
-     * @param AddressInterface $addressRepository
-     * @param OrderInterface $orderRepository
-     * @param OrderHistoryInterface $orderHistoryRepository
-     * @param OrderReturnInterface $orderReturnRepository
-     * @param OrderProductInterface $orderProductRepository
-     */
+    protected ReviewInterface $reviewRepository;
+
     public function __construct(
-        CustomerInterface     $customerRepository,
-        ProductInterface      $productRepository,
-        AddressInterface      $addressRepository,
-        OrderInterface        $orderRepository,
+        CustomerInterface $customerRepository,
+        ProductInterface $productRepository,
+        AddressInterface $addressRepository,
+        OrderInterface $orderRepository,
         OrderHistoryInterface $orderHistoryRepository,
-        OrderReturnInterface  $orderReturnRepository,
-        OrderProductInterface $orderProductRepository
+        OrderReturnInterface $orderReturnRepository,
+        OrderProductInterface $orderProductRepository,
+        ReviewInterface $reviewRepository
     ) {
         $this->customerRepository = $customerRepository;
         $this->productRepository = $productRepository;
@@ -103,6 +73,7 @@ class PublicController extends Controller
         $this->orderHistoryRepository = $orderHistoryRepository;
         $this->orderReturnRepository = $orderReturnRepository;
         $this->orderProductRepository = $orderProductRepository;
+        $this->reviewRepository = $reviewRepository;
 
         Theme::asset()
             ->add('customer-style', 'vendor/core/plugins/ecommerce/css/customer.css');
@@ -120,9 +91,6 @@ class PublicController extends Controller
         }
     }
 
-    /**
-     * @return Response
-     */
     public function getOverview()
     {
         SeoHelper::setTitle(__('Account information'));
@@ -135,9 +103,6 @@ class PublicController extends Controller
             ->render();
     }
 
-    /**
-     * @return Response
-     */
     public function getEditAccount()
     {
         SeoHelper::setTitle(__('Profile'));
@@ -164,11 +129,6 @@ class PublicController extends Controller
             ->render();
     }
 
-    /**
-     * @param EditAccountRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function postEditAccount(EditAccountRequest $request, BaseHttpResponse $response)
     {
         $customer = $this->customerRepository->createOrUpdate(
@@ -185,9 +145,6 @@ class PublicController extends Controller
             ->setMessage(__('Update profile successfully!'));
     }
 
-    /**
-     * @return Response
-     */
     public function getChangePassword()
     {
         SeoHelper::setTitle(__('Change Password'));
@@ -202,47 +159,38 @@ class PublicController extends Controller
         )->render();
     }
 
-    /**
-     * @param UpdatePasswordRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function postChangePassword(UpdatePasswordRequest $request, BaseHttpResponse $response)
     {
         $currentUser = auth('customer')->user();
 
-        if (!Hash::check($request->input('old_password'), $currentUser->getAuthPassword())) {
+        if (! Hash::check($request->input('old_password'), $currentUser->getAuthPassword())) {
             return $response
                 ->setError()
                 ->setMessage(trans('acl::users.current_password_not_valid'));
         }
 
         $this->customerRepository->update(['id' => auth('customer')->id()], [
-            'password' => bcrypt($request->input('password')),
+            'password' => Hash::make($request->input('password')),
         ]);
 
         return $response->setMessage(trans('acl::users.password_update_success'));
     }
 
-    /**
-     * @param Request $request
-     * @return Response
-     */
     public function getListOrders(Request $request)
     {
         SeoHelper::setTitle(__('Orders'));
 
         $orders = $this->orderRepository->advancedGet([
             'condition' => [
-                'user_id'     => auth('customer')->id(),
+                'user_id' => auth('customer')->id(),
                 'is_finished' => 1,
             ],
-            'paginate'  => [
-                'per_page'      => 10,
+            'paginate' => [
+                'per_page' => 10,
                 'current_paged' => (int)$request->input('page'),
             ],
             'withCount' => ['products'],
-            'order_by'  => ['created_at' => 'DESC'],
+            'order_by' => ['created_at' => 'DESC'],
         ]);
 
         Theme::breadcrumb()
@@ -256,22 +204,18 @@ class PublicController extends Controller
         )->render();
     }
 
-    /**
-     * @param int $id
-     * @return Response
-     */
-    public function getViewOrder($id)
+    public function getViewOrder(int $id)
     {
         $order = $this->orderRepository->getFirstBy(
             [
-                'id'      => $id,
+                'id' => $id,
                 'user_id' => auth('customer')->id(),
             ],
             ['ec_orders.*'],
             ['address', 'products']
         );
 
-        if (!$order) {
+        if (! $order) {
             abort(404);
         }
 
@@ -290,25 +234,18 @@ class PublicController extends Controller
         )->render();
     }
 
-    /**
-     * @param int $id
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     * @throws FileNotFoundException
-     * @throws Throwable
-     */
-    public function getCancelOrder($id, BaseHttpResponse $response)
+    public function getCancelOrder(int $id, BaseHttpResponse $response)
     {
         $order = $this->orderRepository->getFirstBy([
-            'id'      => $id,
+            'id' => $id,
             'user_id' => auth('customer')->id(),
         ], ['*']);
 
-        if (!$order) {
+        if (! $order) {
             abort(404);
         }
 
-        if (!$order->canBeCanceled()) {
+        if (! $order->canBeCanceled()) {
             return $response->setError()
                 ->setMessage(trans('plugins/ecommerce::order.cancel_error'));
         }
@@ -316,18 +253,14 @@ class PublicController extends Controller
         OrderHelper::cancelOrder($order);
 
         $this->orderHistoryRepository->createOrUpdate([
-            'action'      => 'cancel_order',
+            'action' => 'cancel_order',
             'description' => __('Order was cancelled by custom :customer', ['customer' => $order->address->name]),
-            'order_id'    => $order->id,
+            'order_id' => $order->id,
         ]);
 
         return $response->setMessage(trans('plugins/ecommerce::order.cancel_success'));
     }
 
-    /**
-     * @param Request $request
-     * @return Response
-     */
     public function getListAddresses(Request $request)
     {
         SeoHelper::setTitle(__('Address books'));
@@ -336,12 +269,12 @@ class PublicController extends Controller
             'condition' => [
                 'customer_id' => auth('customer')->id(),
             ],
-            'order_by'  => [
+            'order_by' => [
                 'is_default' => 'DESC',
                 'created_at' => 'DESC',
             ],
-            'paginate'  => [
-                'per_page'      => 10,
+            'paginate' => [
+                'per_page' => 10,
                 'current_paged' => (int)$request->input('page', 1),
             ],
         ]);
@@ -357,9 +290,6 @@ class PublicController extends Controller
         )->render();
     }
 
-    /**
-     * @return Response
-     */
     public function getCreateAddress()
     {
         SeoHelper::setTitle(__('Create Address'));
@@ -376,31 +306,25 @@ class PublicController extends Controller
         )->render();
     }
 
-    /**
-     * @param AddressRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     * @throws Throwable
-     */
     public function postCreateAddress(AddressRequest $request, BaseHttpResponse $response)
     {
         if ($request->input('is_default') == 1) {
             $this->addressRepository->update([
-                'is_default'  => 1,
+                'is_default' => 1,
                 'customer_id' => auth('customer')->id(),
             ], ['is_default' => 0]);
         }
 
         $request->merge([
             'customer_id' => auth('customer')->id(),
-            'is_default'  => $request->input('is_default', 0),
+            'is_default' => $request->input('is_default', 0),
         ]);
 
         $address = $this->addressRepository->createOrUpdate($request->input());
 
         return $response
             ->setData([
-                'id'   => $address->id,
+                'id' => $address->id,
                 'html' => view(
                     'plugins/ecommerce::orders.partials.address-item',
                     compact('address')
@@ -410,20 +334,16 @@ class PublicController extends Controller
             ->setMessage(trans('core/base::notices.create_success_message'));
     }
 
-    /**
-     * @param int $id
-     * @return Response
-     */
-    public function getEditAddress($id)
+    public function getEditAddress(int $id)
     {
         SeoHelper::setTitle(__('Edit Address #:id', ['id' => $id]));
 
         $address = $this->addressRepository->getFirstBy([
-            'id'          => $id,
+            'id' => $id,
             'customer_id' => auth('customer')->id(),
         ]);
 
-        if (!$address) {
+        if (! $address) {
             abort(404);
         }
 
@@ -437,65 +357,48 @@ class PublicController extends Controller
         )->render();
     }
 
-    /**
-     * @param int $id
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     * @throws Exception
-     */
-    public function getDeleteAddress($id, BaseHttpResponse $response)
+    public function getDeleteAddress(int $id, BaseHttpResponse $response)
     {
         $this->addressRepository->deleteBy([
-            'id'          => $id,
+            'id' => $id,
             'customer_id' => auth('customer')->id(),
         ]);
+
         return $response->setNextUrl(route('customer.address'))
             ->setMessage(trans('core/base::notices.delete_success_message'));
     }
 
-    /**
-     * @param int $id
-     * @param AddressRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     * @throws Throwable
-     */
-    public function postEditAddress($id, AddressRequest $request, BaseHttpResponse $response)
+    public function postEditAddress(int $id, AddressRequest $request, BaseHttpResponse $response)
     {
         if ($request->input('is_default')) {
             $this->addressRepository->update([
-                'is_default'  => 1,
+                'is_default' => 1,
                 'customer_id' => auth('customer')->id(),
             ], ['is_default' => 0]);
         }
 
         $address = $this->addressRepository->createOrUpdate($request->input(), [
-            'id'          => $id,
+            'id' => $id,
             'customer_id' => auth('customer')->id(),
         ]);
 
         return $response
             ->setData([
-                'id'   => $address->id,
+                'id' => $address->id,
                 'html' => view('plugins/ecommerce::orders.partials.address-item', compact('address'))
                     ->render(),
             ])
             ->setMessage(trans('core/base::notices.update_success_message'));
     }
 
-    /**
-     * @param int $id
-     * @param Request $request
-     * @return Response
-     */
-    public function getPrintOrder($id, Request $request)
+    public function getPrintOrder(int $id, Request $request)
     {
         $order = $this->orderRepository->getFirstBy([
-            'id'      => $id,
+            'id' => $id,
             'user_id' => auth('customer')->id(),
         ]);
 
-        if (!$order || !$order->isInvoiceAvailable()) {
+        if (! $order || ! $order->isInvoiceAvailable()) {
             abort(404);
         }
 
@@ -506,12 +409,6 @@ class PublicController extends Controller
         return InvoiceHelper::downloadInvoice($order->invoice);
     }
 
-    /**
-     * @param AvatarRequest $request
-     * @param ThumbnailService $thumbnailService
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function postAvatar(AvatarRequest $request, ThumbnailService $thumbnailService, BaseHttpResponse $response)
     {
         try {
@@ -549,24 +446,19 @@ class PublicController extends Controller
         }
     }
 
-
-    /**
-     * @param int $orderId
-     * @return Response
-     */
-    public function getReturnOrder($orderId)
+    public function getReturnOrder(int $orderId)
     {
         $order = $this->orderRepository->getFirstBy(
             [
-                'id'      => $orderId,
+                'id' => $orderId,
                 'user_id' => auth('customer')->id(),
-                'status'  => OrderStatusEnum::COMPLETED,
+                'status' => OrderStatusEnum::COMPLETED,
             ],
             ['ec_orders.*'],
             ['products']
         );
 
-        if (!$order || !$order->canBeReturned()) {
+        if (! $order || ! $order->canBeReturned()) {
             abort(404);
         }
 
@@ -578,6 +470,13 @@ class PublicController extends Controller
                 route('customer.order_returns.request_view', $orderId)
             );
 
+        Theme::asset()->container('footer')->add(
+            'order-return-js',
+            'vendor/core/plugins/ecommerce/js/order-return.js',
+            ['jquery']
+        );
+        Theme::asset()->add('order-return-css', 'vendor/core/plugins/ecommerce/css/order-return.css');
+
         return Theme::scope(
             'ecommerce.customers.order-returns.view',
             compact('order'),
@@ -585,23 +484,18 @@ class PublicController extends Controller
         )->render();
     }
 
-    /**
-     * @param OrderReturnRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function postReturnOrder(OrderReturnRequest $request, BaseHttpResponse $response)
     {
         $order = $this->orderRepository->getFirstBy([
-            'id'      => $request->input('order_id'),
+            'id' => $request->input('order_id'),
             'user_id' => auth('customer')->id(),
         ]);
 
-        if (!$order) {
+        if (! $order) {
             abort(404);
         }
 
-        if (!$order->canBeReturned()) {
+        if (! $order->canBeReturned()) {
             return $response
                 ->setError()
                 ->withInput()
@@ -614,9 +508,16 @@ class PublicController extends Controller
             return isset($value['is_return']);
         });
 
+        if (empty($orderReturnData['items'])) {
+            return $response
+                ->setError()
+                ->withInput()
+                ->setMessage(__('Please select at least 1 product to return!'));
+        }
+
         [$status, $data, $message] = OrderReturnHelper::returnOrder($order, $orderReturnData);
 
-        if (!$status) {
+        if (! $status) {
             return $response
                 ->setError()
                 ->withInput()
@@ -624,9 +525,9 @@ class PublicController extends Controller
         }
 
         $this->orderHistoryRepository->createOrUpdate([
-            'action'      => 'return_order',
+            'action' => 'return_order',
             'description' => __(':customer has requested return product(s)', ['customer' => $order->address->name]),
-            'order_id'    => $order->id,
+            'order_id' => $order->id,
         ]);
 
         return $response
@@ -634,10 +535,6 @@ class PublicController extends Controller
             ->setNextUrl(route('customer.order_returns.detail', ['id' => $data->id]));
     }
 
-    /**
-     * @param Request $request
-     * @return Response
-     */
     public function getListReturnOrders(Request $request)
     {
         SeoHelper::setTitle(__('Order Return Requests'));
@@ -646,12 +543,12 @@ class PublicController extends Controller
             'condition' => [
                 'user_id' => auth('customer')->id(),
             ],
-            'paginate'  => [
-                'per_page'      => 10,
+            'paginate' => [
+                'per_page' => 10,
                 'current_paged' => (int)$request->input('page'),
             ],
             'withCount' => ['items'],
-            'order_by'  => ['created_at' => 'DESC'],
+            'order_by' => ['created_at' => 'DESC'],
         ]);
 
         Theme::breadcrumb()
@@ -665,27 +562,26 @@ class PublicController extends Controller
         )->render();
     }
 
-    /**
-     * @param $id
-     * @return Response
-     */
-    public function getDetailReturnOrder($id)
+    public function getDetailReturnOrder(int $id)
     {
         SeoHelper::setTitle(__('Order Return Requests'));
 
         $orderReturn = $this->orderReturnRepository->getFirstBy([
-            'id'      => $id,
+            'id' => $id,
             'user_id' => auth('customer')->id(),
         ]);
 
-        if (!$orderReturn) {
+        if (! $orderReturn) {
             abort(404);
         }
 
         Theme::breadcrumb()
             ->add(__('Home'), route('public.index'))
             ->add(__('Order Return Requests'), route('customer.order_returns'))
-            ->add(__('Order Return Requests :id', ['id' => $orderReturn->id]), route('customer.order_returns.detail', $orderReturn->id));
+            ->add(
+                __('Order Return Requests :id', ['id' => $orderReturn->id]),
+                route('customer.order_returns.detail', $orderReturn->id)
+            );
 
         return Theme::scope(
             'ecommerce.customers.order-returns.detail',
@@ -694,13 +590,9 @@ class PublicController extends Controller
         )->render();
     }
 
-    /**
-     * @param Request $request
-     * @return Response
-     */
-    public function getDownloads(Request $request)
+    public function getDownloads()
     {
-        if (!EcommerceHelper::isEnabledSupportDigitalProducts()) {
+        if (! EcommerceHelper::isEnabledSupportDigitalProducts()) {
             abort(404);
         }
 
@@ -709,7 +601,7 @@ class PublicController extends Controller
         $orderProducts = $this->orderProductRepository->getModel()
             ->whereHas('order', function ($query) {
                 $query->where([
-                    'user_id'     => auth('customer')->id(),
+                    'user_id' => auth('customer')->id(),
                     'is_finished' => 1,
                 ]);
             })
@@ -732,25 +624,20 @@ class PublicController extends Controller
         )->render();
     }
 
-    /**
-     * @param int $id
-     * @param BaseHttpResponse $response
-     * @return Response|BaseHttpResponse
-     */
-    public function getDownload($id, BaseHttpResponse $response)
+    public function getDownload(int $id, BaseHttpResponse $response)
     {
-        if (!EcommerceHelper::isEnabledSupportDigitalProducts()) {
+        if (! EcommerceHelper::isEnabledSupportDigitalProducts()) {
             abort(404);
         }
 
         $orderProduct = $this->orderProductRepository->getModel()
             ->where([
-                'id'           => $id,
-                'product_type' => ProductTypeEnum::DIGITAL
+                'id' => $id,
+                'product_type' => ProductTypeEnum::DIGITAL,
             ])
             ->whereHas('order', function ($query) {
                 $query->where([
-                    'user_id'     => auth('customer')->id(),
+                    'user_id' => auth('customer')->id(),
                     'is_finished' => 1,
                 ]);
             })
@@ -760,23 +647,24 @@ class PublicController extends Controller
             ->with(['order', 'product'])
             ->first();
 
-        if (!$orderProduct) {
+        if (! $orderProduct) {
             abort(404);
         }
 
-        $zipName = 'digital-product-' . Str::slug($orderProduct->product_name) . Str::random(5) . '-' . Carbon::now()->format('Y-m-d-h-i-s') . '.zip';
+        $zipName = 'digital-product-' . Str::slug($orderProduct->product_name) . Str::random(5) . '-' . Carbon::now(
+        )->format('Y-m-d-h-i-s') . '.zip';
         $fileName = RvMedia::getRealPath($zipName);
         $zip = new Zipper();
         $zip->make($fileName);
         $product = $orderProduct->product;
         $productFiles = $product->id ? $product->productFiles : $orderProduct->productFiles;
 
-        if (!$productFiles->count()) {
+        if (! $productFiles->count()) {
             return $response->setError()->setMessage(__('Cannot found files'));
         }
         foreach ($productFiles as $file) {
             $filePath = RvMedia::getRealPath($file->url);
-            if (!RvMedia::isUsingCloud()) {
+            if (! RvMedia::isUsingCloud()) {
                 if (File::exists($filePath)) {
                     $zip->add($filePath);
                 }
@@ -796,9 +684,48 @@ class PublicController extends Controller
 
         if (File::exists($fileName)) {
             $orderProduct->increment('times_downloaded');
+
             return response()->download($fileName)->deleteFileAfterSend();
         }
 
         return $response->setError()->setMessage(__('Cannot download files'));
+    }
+
+    public function getProductReviews()
+    {
+        if (! EcommerceHelper::isReviewEnabled()) {
+            abort(404);
+        }
+
+        SeoHelper::setTitle(__('Product Reviews'));
+
+        Theme::asset()
+            ->add('ecommerce-review-css', 'vendor/core/plugins/ecommerce/css/review.css');
+        Theme::asset()->container('footer')
+            ->add('ecommerce-review-js', 'vendor/core/plugins/ecommerce/js/review.js', ['jquery']);
+
+        $customerId = auth('customer')->id();
+
+        $reviews = $this->reviewRepository
+            ->getModel()
+            ->where('customer_id', $customerId)
+            ->whereHas('product', function ($query) {
+                $query->where('status', BaseStatusEnum::PUBLISHED);
+            })
+            ->with(['product', 'product.slugable'])
+            ->orderBy('ec_reviews.created_at', 'desc')
+            ->paginate(12);
+
+        $products = $this->productRepository->productsNeedToReviewByCustomer($customerId);
+
+        Theme::breadcrumb()
+            ->add(__('Home'), route('public.index'))
+            ->add(__('Product Reviews'), route('customer.product-reviews'));
+
+        return Theme::scope(
+            'ecommerce.customers.product-reviews.list',
+            compact('products', 'reviews'),
+            'plugins/ecommerce::themes.customers.product-reviews.list'
+        )->render();
     }
 }

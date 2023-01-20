@@ -2,46 +2,42 @@
 
 namespace Botble\Location\Imports;
 
+use Botble\Location\Models\City;
+use Botble\Location\Models\Country;
 use Botble\Location\Models\State;
 
 class ValidateLocationImport extends LocationImport
 {
-    /**
-     * @return null
-     */
-    public function storeCountry()
+    public function storeCountry(): ?Country
     {
         $country = collect($this->request->input());
 
         $collect = collect([
-            'name'        => $country['name'],
-            'country'     => $country['country_temp'],
+            'name' => $country['name'],
+            'country' => $country['country_temp'],
             'import_type' => 'country',
-            'model'       => $country,
+            'model' => $country,
         ]);
 
         $this->onSuccess($collect);
 
         $this->countries->push([
-            'keyword'    => $country['name'],
+            'keyword' => $country['name'],
             'country_id' => 1,
         ]);
 
         return null;
     }
 
-    /**
-     * @return null
-     */
-    public function storeState()
+    public function storeState(): ?State
     {
         $state = collect($this->request->input());
 
         $collect = collect([
-            'name'        => $state['name'],
-            'country'     => $state['country_temp'],
+            'name' => $state['name'],
+            'country' => $state['country_temp'],
             'import_type' => 'state',
-            'model'       => $state,
+            'model' => $state,
         ]);
 
         $this->onSuccess($collect);
@@ -49,25 +45,22 @@ class ValidateLocationImport extends LocationImport
         return null;
     }
 
-    /**
-     * @return null
-     */
-    public function storeCity($state)
+    public function storeCity($state): ?City
     {
-        if (!$state) {
+        if (! $state) {
             $this->onStoreCityFailure();
         }
 
         return null;
     }
 
-    public function mapLocalization($row): array
+    public function mapLocalization(array $row): array
     {
         $row = parent::mapLocalization($row);
 
         if ($row['import_type'] == 'country') {
             $this->countries->push([
-                'keyword'    => $row['name'],
+                'keyword' => $row['name'],
                 'country_id' => 1,
             ]);
         }
@@ -75,21 +68,12 @@ class ValidateLocationImport extends LocationImport
         return $row;
     }
 
-    /**
-     * @param array $row
-     * @return array
-     */
     protected function setCountryToRow(array $row): array
     {
         return $row;
     }
 
-    /**
-     * @param string $name
-     * @param string $country
-     * @return \Illuminate\Database\Eloquent\Model
-     */
-    protected function getStateByName($name, $countryId)
+    protected function getStateByName($name, $countryId): ?State
     {
         return new State();
     }

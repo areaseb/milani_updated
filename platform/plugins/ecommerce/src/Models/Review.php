@@ -4,21 +4,13 @@ namespace Botble\Ecommerce\Models;
 
 use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Base\Models\BaseModel;
-use Botble\Base\Traits\EnumCastable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Review extends BaseModel
 {
-    use EnumCastable;
-
-    /**
-     * @var string
-     */
     protected $table = 'ec_reviews';
 
-    /**
-     * @var array
-     */
     protected $fillable = [
         'product_id',
         'customer_id',
@@ -28,63 +20,54 @@ class Review extends BaseModel
         'images',
     ];
 
-    /**
-     * @var array
-     */
     protected $casts = [
         'status' => BaseStatusEnum::class,
         'images' => 'array',
     ];
 
-    /**
-     * @return BelongsTo
-     */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'customer_id', 'id')->withDefault();
     }
 
-    /**
-     * @return BelongsTo
-     */
-    public function product()
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class)->withDefault();
     }
 
-    /**
-     * @return string
-     */
-    public function getProductNameAttribute()
+    public function getProductNameAttribute(): ?string
     {
         return $this->product->name;
     }
 
-    /**
-     * @return string
-     */
-    public function getUserNameAttribute()
+    public function getUserNameAttribute(): ?string
     {
         return $this->user->name;
     }
 
-    /**
-      * Register any events for your application.
-      *
-      * @return void
-      */
+    protected function orderCreatedAt(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                $order = $this->user->orders->first();
+
+                return $order?->created_at;
+            }
+        );
+    }
+
     protected static function boot()
     {
         parent::boot();
 
         self::creating(function (Review $review) {
-            if (!$review->images || !is_array($review->images) || !count($review->images)) {
+            if (! $review->images || ! is_array($review->images) || ! count($review->images)) {
                 $review->images = null;
             }
         });
 
         self::updating(function (Review $review) {
-            if (!$review->images || !is_array($review->images) || !count($review->images)) {
+            if (! $review->images || ! is_array($review->images) || ! count($review->images)) {
                 $review->images = null;
             }
         });

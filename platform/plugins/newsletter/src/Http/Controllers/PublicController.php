@@ -16,46 +16,35 @@ use Illuminate\Support\Facades\URL;
 
 class PublicController extends Controller
 {
-    /**
-     * @var NewsletterInterface
-     */
-    protected $newsletterRepository;
+    protected NewsletterInterface $newsletterRepository;
 
-    /**
-     * PublicController constructor.
-     * @param NewsletterInterface $newsletterRepository
-     */
     public function __construct(NewsletterInterface $newsletterRepository)
     {
         $this->newsletterRepository = $newsletterRepository;
     }
 
-    /**
-     * @param NewsletterRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function postSubscribe(NewsletterRequest $request, BaseHttpResponse $response)
     {
         $newsletter = $this->newsletterRepository->getFirstBy(['email' => $request->input('email')]);
-        if (!$newsletter) {
+        if (! $newsletter) {
             $newsletter = $this->newsletterRepository->createOrUpdate($request->input());
 
-            $mailchimpApiKey = setting('newsletter_mailchimp_api_key');
-            $mailchimpListId = setting('newsletter_mailchimp_list_id');
+            if (setting('enable_newsletter_contacts_list_api')) {
+                $mailchimpApiKey = setting('newsletter_mailchimp_api_key');
+                $mailchimpListId = setting('newsletter_mailchimp_list_id');
 
-            if ($mailchimpApiKey && $mailchimpListId) {
-                Newsletter::subscribe($newsletter->email);
-            }
+                if ($mailchimpApiKey && $mailchimpListId) {
+                    Newsletter::subscribe($newsletter->email);
+                }
 
-            $sendgridApiKey = setting('newsletter_sendgrid_api_key');
-            $sendgridListId = setting('newsletter_sendgrid_list_id');
+                $sendgridApiKey = setting('newsletter_sendgrid_api_key');
+                $sendgridListId = setting('newsletter_sendgrid_list_id');
 
-            if ($sendgridApiKey && $sendgridListId) {
-                $sg = new SendGrid($sendgridApiKey);
+                if ($sendgridApiKey && $sendgridListId) {
+                    $sg = new SendGrid($sendgridApiKey);
 
-                $requestBody = json_decode(
-                    '{
+                    $requestBody = json_decode(
+                        '{
                         "list_ids": [
                             "' . $sendgridListId . '"
                         ],
@@ -67,12 +56,13 @@ class PublicController extends Controller
                             }
                         ]
                     }'
-                );
+                    );
 
-                try {
-                    $sg->client->marketing()->contacts()->put($requestBody);
-                } catch (Exception $exception) {
-                    info('Caught exception: ' . $exception->getMessage());
+                    try {
+                        $sg->client->marketing()->contacts()->put($requestBody);
+                    } catch (Exception $exception) {
+                        info('Caught exception: ' . $exception->getMessage());
+                    }
                 }
             }
         }
@@ -82,21 +72,14 @@ class PublicController extends Controller
         return $response->setMessage(__('Subscribe to newsletter successfully!'));
     }
 
-    /**
-     * Unsubscribe newsletter with token. change status to false
-     * @param int $id
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function getUnsubscribe($id, Request $request, BaseHttpResponse $response)
+    public function getUnsubscribe(int $id, Request $request, BaseHttpResponse $response)
     {
-        if (!URL::hasValidSignature($request)) {
+        if (! URL::hasValidSignature($request)) {
             abort(404);
         }
 
         $newsletter = $this->newsletterRepository->getFirstBy([
-            'id'     => $id,
+            'id' => $id,
             'status' => NewsletterStatusEnum::SUBSCRIBED,
         ]);
 
@@ -104,11 +87,13 @@ class PublicController extends Controller
             $newsletter->status = NewsletterStatusEnum::UNSUBSCRIBED;
             $this->newsletterRepository->createOrUpdate($newsletter);
 
-            $mailchimpApiKey = setting('newsletter_mailchimp_api_key');
-            $mailchimpListId = setting('newsletter_mailchimp_list_id');
+            if (setting('enable_newsletter_contacts_list_api')) {
+                $mailchimpApiKey = setting('newsletter_mailchimp_api_key');
+                $mailchimpListId = setting('newsletter_mailchimp_list_id');
 
-            if ($mailchimpApiKey && $mailchimpListId) {
-                Newsletter::unsubscribe($newsletter->email);
+                if ($mailchimpApiKey && $mailchimpListId) {
+                    Newsletter::unsubscribe($newsletter->email);
+                }
             }
 
             return $response

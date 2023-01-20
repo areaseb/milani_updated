@@ -8,27 +8,19 @@ use Botble\Ecommerce\Repositories\Interfaces\ProductLabelInterface;
 use Botble\Table\Abstracts\TableAbstract;
 use Html;
 use Illuminate\Contracts\Routing\UrlGenerator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\DataTables;
 
 class ProductLabelTable extends TableAbstract
 {
-    /**
-     * @var bool
-     */
     protected $hasActions = true;
 
-    /**
-     * @var bool
-     */
     protected $hasFilter = true;
 
-    /**
-     * ProductLabelTable constructor.
-     * @param DataTables $table
-     * @param UrlGenerator $urlGenerator
-     * @param ProductLabelInterface $productLabelRepository
-     */
     public function __construct(
         DataTables $table,
         UrlGenerator $urlGenerator,
@@ -38,23 +30,21 @@ class ProductLabelTable extends TableAbstract
 
         $this->repository = $productLabelRepository;
 
-        if (!Auth::user()->hasAnyPermission(['product-label.edit', 'product-label.destroy'])) {
+        if (! Auth::user()->hasAnyPermission(['product-label.edit', 'product-label.destroy'])) {
             $this->hasOperations = false;
             $this->hasActions = false;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function ajax()
+    public function ajax(): JsonResponse
     {
         $data = $this->table
             ->eloquent($this->query())
             ->editColumn('name', function ($item) {
-                if (!Auth::user()->hasPermission('product-label.edit')) {
+                if (! Auth::user()->hasPermission('product-label.edit')) {
                     return BaseHelper::clean($item->name);
                 }
+
                 return Html::link(route('product-label.edit', $item->id), BaseHelper::clean($item->name));
             })
             ->editColumn('checkbox', function ($item) {
@@ -73,10 +63,7 @@ class ProductLabelTable extends TableAbstract
         return $this->toJson($data);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function query()
+    public function query(): Relation|Builder|QueryBuilder
     {
         $query = $this->repository->getModel()->select([
             'id',
@@ -88,17 +75,14 @@ class ProductLabelTable extends TableAbstract
         return $this->applyScopes($query);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function columns()
+    public function columns(): array
     {
         return [
-            'id'         => [
+            'id' => [
                 'title' => trans('core/base::tables.id'),
                 'width' => '20px',
             ],
-            'name'       => [
+            'name' => [
                 'title' => trans('core/base::tables.name'),
                 'class' => 'text-start',
             ],
@@ -106,56 +90,44 @@ class ProductLabelTable extends TableAbstract
                 'title' => trans('core/base::tables.created_at'),
                 'width' => '100px',
             ],
-            'status'     => [
+            'status' => [
                 'title' => trans('core/base::tables.status'),
                 'width' => '100px',
             ],
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function buttons()
+    public function buttons(): array
     {
         return $this->addCreateButton(route('product-label.create'), 'product-label.create');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function bulkActions(): array
     {
         return $this->addDeleteAction(route('product-label.deletes'), 'product-label.destroy', parent::bulkActions());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getBulkChanges(): array
     {
         return [
-            'name'       => [
-                'title'    => trans('core/base::tables.name'),
-                'type'     => 'text',
+            'name' => [
+                'title' => trans('core/base::tables.name'),
+                'type' => 'text',
                 'validate' => 'required|max:120',
             ],
-            'status'     => [
-                'title'    => trans('core/base::tables.status'),
-                'type'     => 'select',
-                'choices'  => BaseStatusEnum::labels(),
+            'status' => [
+                'title' => trans('core/base::tables.status'),
+                'type' => 'select',
+                'choices' => BaseStatusEnum::labels(),
                 'validate' => 'required|in:' . implode(',', BaseStatusEnum::values()),
             ],
             'created_at' => [
                 'title' => trans('core/base::tables.created_at'),
-                'type'  => 'date',
+                'type' => 'datePicker',
             ],
         ];
     }
 
-    /**
-     * @return array
-     */
     public function getFilters(): array
     {
         return $this->getBulkChanges();

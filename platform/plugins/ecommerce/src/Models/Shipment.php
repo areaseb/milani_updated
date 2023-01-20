@@ -3,7 +3,6 @@
 namespace Botble\Ecommerce\Models;
 
 use Botble\Base\Models\BaseModel;
-use Botble\Base\Traits\EnumCastable;
 use Botble\Ecommerce\Enums\ShippingCodStatusEnum;
 use Botble\Ecommerce\Enums\ShippingStatusEnum;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,21 +11,14 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Shipment extends BaseModel
 {
-    use EnumCastable;
-
-    /**
-     * @var string
-     */
     protected $table = 'ec_shipments';
 
-    /**
-     * @var array
-     */
     protected $fillable = [
         'order_id',
         'user_id',
         'weight',
         'shipment_id',
+        'rate_id',
         'note',
         'status',
         'cod_amount',
@@ -41,22 +33,12 @@ class Shipment extends BaseModel
         'date_shipped',
     ];
 
-    /**
-     * @var array
-     */
-    protected $dates = [
-        'created_at',
-        'updated_at',
-        'estimate_date_shipped',
-        'date_shipped',
-    ];
-
-    /**
-     * @var array
-     */
     protected $casts = [
-        'status'     => ShippingStatusEnum::class,
+        'status' => ShippingStatusEnum::class,
         'cod_status' => ShippingCodStatusEnum::class,
+        'metadata' => 'json',
+        'estimate_date_shipped' => 'datetime',
+        'date_shipped' => 'datetime',
     ];
 
     protected static function boot()
@@ -68,25 +50,16 @@ class Shipment extends BaseModel
         });
     }
 
-    /**
-     * @return HasOne
-     */
     public function store(): HasOne
     {
         return $this->hasOne(StoreLocator::class, 'id', 'store_id')->withDefault();
     }
 
-    /**
-     * @return HasMany
-     */
     public function histories(): HasMany
     {
         return $this->hasMany(ShipmentHistory::class, 'shipment_id');
     }
 
-    /**
-     * @return BelongsTo
-     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class)->withDefault();

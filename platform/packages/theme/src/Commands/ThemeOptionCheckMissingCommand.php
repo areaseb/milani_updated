@@ -8,31 +8,14 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Language;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Theme;
 use ThemeOption;
 
+#[AsCommand('cms:theme:options:check', 'Check difference theme options between database and option definitions')]
 class ThemeOptionCheckMissingCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'cms:theme:options:check {--R|reverse}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Check difference theme options between database and option definitions';
-
-    /**
-     * Execute the console command.
-     *
-     * @return int
-     */
-    public function handle()
+    public function handle(): int
     {
         $isReverse = $this->option('reverse');
 
@@ -56,8 +39,9 @@ class ThemeOptionCheckMissingCommand extends Command
             : $this->missingKeys($fields, $existsOptions);
 
         if ($missingKeys->isEmpty()) {
-            $this->info('No missing option found!');
-            return 0;
+            $this->components->info('No missing option found!');
+
+            return self::SUCCESS;
         }
 
         $missingKeysCount = $missingKeys->count();
@@ -69,20 +53,20 @@ class ThemeOptionCheckMissingCommand extends Command
         );
         $this->table(['#', 'Key'], $missingKeys->toArray());
 
-        return 0;
+        return self::SUCCESS;
     }
 
-    /**
-     * @param array $items
-     * @param array $origin
-     * @return Collection
-     */
     protected function missingKeys(array $items, array $origin): Collection
     {
         return collect($items)->filter(function ($item) use ($origin) {
-            return !in_array($item, $origin);
+            return ! in_array($item, $origin);
         })->values()->map(function ($item, $key) {
             return [$key, $item];
         });
+    }
+
+    protected function configure(): void
+    {
+        $this->addOption('reverse', 'R', null, 'Reverse results');
     }
 }

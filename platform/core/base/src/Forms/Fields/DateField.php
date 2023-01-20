@@ -6,11 +6,8 @@ use Kris\LaravelFormBuilder\Fields\FormField;
 
 class DateField extends FormField
 {
-    /**
-     * {@inheritDoc}
-     */
-    protected function getTemplate()
+    protected function getTemplate(): string
     {
-        return 'core/base::forms.fields.date';
+        return 'core/base::forms.fields.date-picker';
     }
 }

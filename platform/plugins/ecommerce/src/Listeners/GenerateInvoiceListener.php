@@ -2,20 +2,13 @@
 
 namespace Botble\Ecommerce\Listeners;
 
+use Botble\Ecommerce\Events\OrderCreated;
 use Botble\Ecommerce\Events\OrderPlacedEvent;
 use InvoiceHelper;
-use Throwable;
 
 class GenerateInvoiceListener
 {
-    /**
-     * Handle the event.
-     *
-     * @param OrderPlacedEvent $event
-     * @return void
-     * @throws Throwable
-     */
-    public function handle(OrderPlacedEvent $event)
+    public function handle(OrderPlacedEvent|OrderCreated $event): void
     {
         $order = $event->order;
 

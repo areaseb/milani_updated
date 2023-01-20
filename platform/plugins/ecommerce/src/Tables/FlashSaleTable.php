@@ -8,50 +8,40 @@ use Botble\Ecommerce\Repositories\Interfaces\FlashSaleInterface;
 use Botble\Table\Abstracts\TableAbstract;
 use Html;
 use Illuminate\Contracts\Routing\UrlGenerator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\DataTables;
 
 class FlashSaleTable extends TableAbstract
 {
-    /**
-     * @var bool
-     */
     protected $hasActions = true;
 
-    /**
-     * @var bool
-     */
     protected $hasFilter = true;
 
-    /**
-     * FlashSaleTable constructor.
-     * @param DataTables $table
-     * @param UrlGenerator $urlGenerator
-     * @param FlashSaleInterface $flashSaleRepository
-     */
     public function __construct(DataTables $table, UrlGenerator $urlGenerator, FlashSaleInterface $flashSaleRepository)
     {
         parent::__construct($table, $urlGenerator);
 
         $this->repository = $flashSaleRepository;
 
-        if (!Auth::user()->hasAnyPermission(['flash-sale.edit', 'flash-sale.destroy'])) {
+        if (! Auth::user()->hasAnyPermission(['flash-sale.edit', 'flash-sale.destroy'])) {
             $this->hasOperations = false;
             $this->hasActions = false;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function ajax()
+    public function ajax(): JsonResponse
     {
         $data = $this->table
             ->eloquent($this->query())
             ->editColumn('name', function ($item) {
-                if (!Auth::user()->hasPermission('flash-sale.edit')) {
+                if (! Auth::user()->hasPermission('flash-sale.edit')) {
                     return BaseHelper::clean($item->name);
                 }
+
                 return Html::link(route('flash-sale.edit', $item->id), BaseHelper::clean($item->name));
             })
             ->editColumn('checkbox', function ($item) {
@@ -70,10 +60,7 @@ class FlashSaleTable extends TableAbstract
         return $this->toJson($data);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function query()
+    public function query(): Relation|Builder|QueryBuilder
     {
         $query = $this->repository->getModel()->select([
             'id',
@@ -85,17 +72,14 @@ class FlashSaleTable extends TableAbstract
         return $this->applyScopes($query);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function columns()
+    public function columns(): array
     {
         return [
-            'id'         => [
+            'id' => [
                 'title' => trans('core/base::tables.id'),
                 'width' => '20px',
             ],
-            'name'       => [
+            'name' => [
                 'title' => trans('core/base::tables.name'),
                 'class' => 'text-start',
             ],
@@ -103,56 +87,44 @@ class FlashSaleTable extends TableAbstract
                 'title' => trans('core/base::tables.created_at'),
                 'width' => '100px',
             ],
-            'status'     => [
+            'status' => [
                 'title' => trans('core/base::tables.status'),
                 'width' => '100px',
             ],
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function buttons()
+    public function buttons(): array
     {
         return $this->addCreateButton(route('flash-sale.create'), 'flash-sale.create');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function bulkActions(): array
     {
         return $this->addDeleteAction(route('flash-sale.deletes'), 'flash-sale.destroy', parent::bulkActions());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getBulkChanges(): array
     {
         return [
-            'name'       => [
-                'title'    => trans('core/base::tables.name'),
-                'type'     => 'text',
+            'name' => [
+                'title' => trans('core/base::tables.name'),
+                'type' => 'text',
                 'validate' => 'required|max:120',
             ],
-            'status'     => [
-                'title'    => trans('core/base::tables.status'),
-                'type'     => 'select',
-                'choices'  => BaseStatusEnum::labels(),
+            'status' => [
+                'title' => trans('core/base::tables.status'),
+                'type' => 'select',
+                'choices' => BaseStatusEnum::labels(),
                 'validate' => 'required|in:' . implode(',', BaseStatusEnum::values()),
             ],
             'created_at' => [
                 'title' => trans('core/base::tables.created_at'),
-                'type'  => 'date',
+                'type' => 'datePicker',
             ],
         ];
     }
 
-    /**
-     * @return array
-     */
     public function getFilters(): array
     {
         return $this->getBulkChanges();

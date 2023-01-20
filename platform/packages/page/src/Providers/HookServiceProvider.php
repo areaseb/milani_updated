@@ -9,18 +9,16 @@ use Botble\Page\Repositories\Interfaces\PageInterface;
 use Botble\Page\Services\PageService;
 use Eloquent;
 use Html;
-use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use Menu;
 use RvMedia;
-use Throwable;
 
 class HookServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         if (defined('MENU_ACTION_SIDEBAR_OPTIONS')) {
             Menu::addMenuOptionModel(Page::class);
@@ -35,20 +33,20 @@ class HookServiceProvider extends ServiceProvider
         }
 
         if (defined('THEME_FRONT_HEADER')) {
-            add_action(BASE_ACTION_PUBLIC_RENDER_SINGLE, function ($screen, $page) {
-                add_filter(THEME_FRONT_HEADER, function ($html) use ($page) {
+            add_action(BASE_ACTION_PUBLIC_RENDER_SINGLE, function ($screen, $page): void {
+                add_filter(THEME_FRONT_HEADER, function (?string $html) use ($page): ?string {
                     if (get_class($page) != Page::class) {
                         return $html;
                     }
 
                     $schema = [
                         '@context' => 'https://schema.org',
-                        '@type'    => 'Organization',
-                        'name'     => theme_option('site_title'),
-                        'url'      => $page->url,
-                        'logo'     => [
+                        '@type' => 'Organization',
+                        'name' => theme_option('site_title'),
+                        'url' => $page->url,
+                        'logo' => [
                             '@type' => 'ImageObject',
-                            'url'   => RvMedia::getImageUrl(theme_option('logo')),
+                            'url' => RvMedia::getImageUrl(theme_option('logo')),
                         ],
                     ];
 
@@ -59,27 +57,27 @@ class HookServiceProvider extends ServiceProvider
         }
     }
 
-    public function addThemeOptions()
+    public function addThemeOptions(): void
     {
         $pages = $this->app->make(PageInterface::class)
             ->pluck('name', 'id', ['status' => BaseStatusEnum::PUBLISHED]);
 
         theme_option()
             ->setSection([
-                'title'      => 'Page',
-                'desc'       => 'Theme options for Page',
-                'id'         => 'opt-text-subsection-page',
+                'title' => 'Page',
+                'desc' => 'Theme options for Page',
+                'id' => 'opt-text-subsection-page',
                 'subsection' => true,
-                'icon'       => 'fa fa-book',
-                'fields'     => [
+                'icon' => 'fa fa-book',
+                'fields' => [
                     [
-                        'id'         => 'homepage_id',
-                        'type'       => 'customSelect',
-                        'label'      => trans('packages/page::pages.settings.show_on_front'),
+                        'id' => 'homepage_id',
+                        'type' => 'customSelect',
+                        'label' => trans('packages/page::pages.settings.show_on_front'),
                         'attributes' => [
-                            'name'    => 'homepage_id',
-                            'list'    => ['' => trans('packages/page::pages.settings.select')] + $pages,
-                            'value'   => '',
+                            'name' => 'homepage_id',
+                            'list' => ['' => trans('packages/page::pages.settings.select')] + $pages,
+                            'value' => '',
                             'options' => [
                                 'class' => 'form-control',
                             ],
@@ -89,24 +87,13 @@ class HookServiceProvider extends ServiceProvider
             ]);
     }
 
-    /**
-     * Register sidebar options in menu
-     * @throws Throwable
-     */
-    public function registerMenuOptions()
+    public function registerMenuOptions(): void
     {
         if (Auth::user()->hasPermission('pages.index')) {
             Menu::registerMenuOptions(Page::class, trans('packages/page::pages.menu'));
         }
     }
 
-    /**
-     * @param array $widgets
-     * @param Collection $widgetSettings
-     * @return array
-     * @throws BindingResolutionException
-     * @throws Throwable
-     */
     public function addPageStatsWidget(array $widgets, Collection $widgetSettings): array
     {
         $pages = $this->app->make(PageInterface::class)->count(['status' => BaseStatusEnum::PUBLISHED]);
@@ -123,11 +110,7 @@ class HookServiceProvider extends ServiceProvider
             ->init($widgets, $widgetSettings);
     }
 
-    /**
-     * @param Eloquent|Builder $slug
-     * @return array|Eloquent
-     */
-    public function handleSingleView($slug)
+    public function handleSingleView(Eloquent|array $slug): Eloquent|array|Builder
     {
         return (new PageService())->handleFrontRoutes($slug);
     }

@@ -106,6 +106,7 @@ abstract class MolliePaymentAbstract implements ProduceServiceInterface
             $response  = $this->client->payments->get($paymentId); // Returns a particular payment
         } catch (Exception $exception) {
             $this->setErrorMessageAndLogging($exception, 1);
+
             return false;
         }
 
@@ -130,27 +131,28 @@ abstract class MolliePaymentAbstract implements ProduceServiceInterface
                 $refund = $payment->refund([
                     'amount' => [
                         'currency' => $this->paymentCurrency,
-                        'value'    => number_format((float) $amount, 2, '.', ''), // You must send the correct number of decimals, thus we enforce the use of strings
+                        'value' => number_format((float) $amount, 2, '.', ''), // You must send the correct number of decimals, thus we enforce the use of strings
                     ],
                     'description' => Str::limit($description, 140),
-                    'metadata'    => $options,
+                    'metadata' => $options,
                 ]);
 
                 return [
-                    'error'   => false,
+                    'error' => false,
                     'message' => "{$refund->amount->currency} {$refund->amount->value} of payment {$paymentId} refunded.",
-                    'data'    => (array) $refund,
+                    'data' => (array) $refund,
                 ];
             }
 
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => "Payment {$paymentId} can not be refunded.",
             ];
         } catch (Exception $exception) {
             $this->setErrorMessageAndLogging($exception, 1);
+
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => $exception->getMessage(),
             ];
         }
@@ -169,6 +171,7 @@ abstract class MolliePaymentAbstract implements ProduceServiceInterface
             return $this->makePayment($request);
         } catch (Exception $exception) {
             $this->setErrorMessageAndLogging($exception, 1);
+
             return false;
         }
     }

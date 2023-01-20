@@ -10,62 +10,48 @@ use Botble\Ecommerce\Services\HandleApplyPromotionsService;
 use Cart;
 use EcommerceHelper;
 use Exception;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Arr;
 use OrderHelper;
-use Response;
 use SeoHelper;
 use Theme;
 
 class PublicCartController extends Controller
 {
-    /**
-     * @var ProductInterface
-     */
-    protected $productRepository;
+    protected ProductInterface $productRepository;
 
-    /**
-     * PublicCartController constructor.
-     * @param ProductInterface $productRepository
-     */
     public function __construct(ProductInterface $productRepository)
     {
         $this->productRepository = $productRepository;
     }
 
-    /**
-     * @param CartRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function store(CartRequest $request, BaseHttpResponse $response)
     {
-        if (!EcommerceHelper::isCartEnabled()) {
+        if (! EcommerceHelper::isCartEnabled()) {
             abort(404);
         }
 
         $product = $this->productRepository->findById($request->input('id'));
 
-        if (!$product) {
+        if (! $product) {
             return $response
                 ->setError()
                 ->setMessage(__('This product is out of stock or not exists!'));
         }
 
-        if ($product->variations->count() > 0 && !$product->is_variation) {
+        if ($product->variations->count() > 0 && ! $product->is_variation) {
             $product = $product->defaultVariation->product;
         }
 
         if ($product->isOutOfStock()) {
             return $response
                 ->setError()
-                ->setMessage(__('Product :product is out of stock!', ['product' => $product->original_product->name]));
+                ->setMessage(__('Product :product is out of stock!', ['product' => $product->original_product->name ?: $product->name]));
         }
 
         $maxQuantity = $product->quantity;
 
-        if (!$product->canAddToCart($request->input('qty', 1))) {
+        if (! $product->canAddToCart($request->input('qty', 1))) {
             return $response
                 ->setError()
                 ->setMessage(__('Maximum quantity is :max!', ['max' => $maxQuantity]));
@@ -85,6 +71,7 @@ class PublicCartController extends Controller
 
                 if ($product->isOutOfStock()) {
                     $outOfQuantity = true;
+
                     break;
                 }
 
@@ -93,7 +80,7 @@ class PublicCartController extends Controller
         }
 
         if ($product->original_product->options()->where('required', true)->exists()) {
-            if (!$request->input('options')) {
+            if (! $request->input('options')) {
                 return $response
                     ->setError()
                     ->setData(['next_url' => $product->original_product->url])
@@ -105,7 +92,7 @@ class PublicCartController extends Controller
             $message = null;
 
             foreach ($requiredOptions as $requiredOption) {
-                if (!$request->input('options.' . $requiredOption->id . '.values')) {
+                if (! $request->input('options.' . $requiredOption->id . '.values')) {
                     $message .= trans('plugins/ecommerce::product-option.add_to_cart_value_required', ['value' => $requiredOption->name]);
                 }
             }
@@ -120,7 +107,7 @@ class PublicCartController extends Controller
         if ($outOfQuantity) {
             return $response
                 ->setError()
-                ->setMessage(__('Product :product is out of stock!', ['product' => $product->original_product->name]));
+                ->setMessage(__('Product :product is out of stock!', ['product' => $product->original_product->name ?: $product->name]));
         }
 
         $cartItems = OrderHelper::handleAddCart($product, $request);
@@ -128,7 +115,7 @@ class PublicCartController extends Controller
         $response
             ->setMessage(__(
                 'Added product :product to cart successfully!',
-                ['product' => $product->original_product->name]
+                ['product' => $product->original_product->name ?: $product->name]
             ));
 
         $token = OrderHelper::getOrderSessionToken();
@@ -152,20 +139,16 @@ class PublicCartController extends Controller
 
         return $response
             ->setData([
-                'status'      => true,
-                'count'       => Cart::instance('cart')->count(),
+                'status' => true,
+                'count' => Cart::instance('cart')->count(),
                 'total_price' => format_price(Cart::instance('cart')->rawSubTotal()),
-                'content'     => $cartItems,
+                'content' => $cartItems,
             ]);
     }
 
-    /**
-     * @param HandleApplyPromotionsService $applyPromotionsService
-     * @return Response
-     */
     public function getView(HandleApplyPromotionsService $applyPromotionsService)
     {
-        if (!EcommerceHelper::isCartEnabled()) {
+        if (! EcommerceHelper::isCartEnabled()) {
             abort(404);
         }
 
@@ -177,7 +160,7 @@ class PublicCartController extends Controller
         $couponDiscountAmount = 0;
 
         $products = [];
-        $crossSellProducts = collect([]);
+        $crossSellProducts = collect();
 
         if (Cart::instance('cart')->count() > 0) {
             $products = Cart::instance('cart')->products();
@@ -206,14 +189,9 @@ class PublicCartController extends Controller
         )->render();
     }
 
-    /**
-     * @param UpdateCartRequest $request
-     * @param BaseHttpResponse $response
-     * @return array|BaseHttpResponse|RedirectResponse
-     */
     public function postUpdate(UpdateCartRequest $request, BaseHttpResponse $response)
     {
-        if (!EcommerceHelper::isCartEnabled()) {
+        if (! EcommerceHelper::isCartEnabled()) {
             abort(404);
         }
 
@@ -228,7 +206,7 @@ class PublicCartController extends Controller
         foreach ($data as $item) {
             $cartItem = Cart::instance('cart')->get($item['rowId']);
 
-            if (!$cartItem) {
+            if (! $cartItem) {
                 continue;
             }
 
@@ -258,55 +236,46 @@ class PublicCartController extends Controller
             return $response
                 ->setError()
                 ->setData([
-                    'count'       => Cart::instance('cart')->count(),
+                    'count' => Cart::instance('cart')->count(),
                     'total_price' => format_price(Cart::instance('cart')->rawSubTotal()),
-                    'content'     => Cart::instance('cart')->content(),
+                    'content' => Cart::instance('cart')->content(),
                 ])
                 ->setMessage(__('One or all products are not enough quantity so cannot update!'));
         }
 
         return $response
             ->setData([
-                'count'       => Cart::instance('cart')->count(),
+                'count' => Cart::instance('cart')->count(),
                 'total_price' => format_price(Cart::instance('cart')->rawSubTotal()),
-                'content'     => Cart::instance('cart')->content(),
+                'content' => Cart::instance('cart')->content(),
             ])
             ->setMessage(__('Update cart successfully!'));
     }
 
-    /**
-     * @param string $id
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function getRemove($id, BaseHttpResponse $response)
+    public function getRemove(string $id, BaseHttpResponse $response)
     {
-        if (!EcommerceHelper::isCartEnabled()) {
+        if (! EcommerceHelper::isCartEnabled()) {
             abort(404);
         }
 
         try {
             Cart::instance('cart')->remove($id);
-        } catch (Exception $exception) {
+        } catch (Exception) {
             return $response->setError()->setMessage(__('Cart item is not existed!'));
         }
 
         return $response
             ->setData([
-                'count'       => Cart::instance('cart')->count(),
+                'count' => Cart::instance('cart')->count(),
                 'total_price' => format_price(Cart::instance('cart')->rawSubTotal()),
-                'content'     => Cart::instance('cart')->content(),
+                'content' => Cart::instance('cart')->content(),
             ])
             ->setMessage(__('Removed item from cart successfully!'));
     }
 
-    /**
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function getDestroy(BaseHttpResponse $response)
     {
-        if (!EcommerceHelper::isCartEnabled()) {
+        if (! EcommerceHelper::isCartEnabled()) {
             abort(404);
         }
 

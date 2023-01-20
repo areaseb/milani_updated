@@ -56,14 +56,14 @@ class SslCommerzNotification extends AbstractSslCommerz
      */
     public function orderValidate($postData, $transactionId = '', $amount = 0, $currency = 'BDT')
     {
-        if ($postData == '' && $transactionId == '' && !is_array($postData)) {
+        if ($postData == '' && $transactionId == '' && ! is_array($postData)) {
             $this->error = 'Please provide valid transaction ID and post request data';
+
             return $this->error;
         }
 
         return $this->validate($transactionId, $amount, $currency, $postData);
     }
-
 
     /**
      * VALIDATE SSLCOMMERZ TRANSACTION
@@ -100,12 +100,11 @@ class SslCommerzNotification extends AbstractSslCommerz
                     curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, 2);
                 }
 
-
                 $result = curl_exec($handle);
 
                 $code = curl_getinfo($handle, CURLINFO_HTTP_CODE);
 
-                if ($code == 200 && !(curl_errno($handle))) {
+                if ($code == 200 && ! (curl_errno($handle))) {
                     // TO CONVERT AS ARRAY
                     // $result = json_decode($result, true);
                     // $status = $result['status'];
@@ -129,6 +128,7 @@ class SslCommerzNotification extends AbstractSslCommerz
                             } else {
                                 // DATA TEMPERED
                                 $this->error = 'Data has been tempered';
+
                                 return false;
                             }
                         } else {
@@ -138,27 +138,32 @@ class SslCommerzNotification extends AbstractSslCommerz
                             } else {
                                 // DATA TEMPERED
                                 $this->error = 'Data has been tempered';
+
                                 return false;
                             }
                         }
                     } else {
                         // FAILED TRANSACTION
                         $this->error = 'Failed Transaction';
+
                         return false;
                     }
                 } else {
                     // Failed to connect with SSLCOMMERZ
                     $this->error = 'Failed to connect with SSLCOMMERZ';
+
                     return false;
                 }
             } else {
                 // Hash validation failed
                 $this->error = 'Hash validation failed';
+
                 return false;
             }
         } else {
             // INVALID DATA
             $this->error = 'Invalid data';
+
             return false;
         }
     }
@@ -177,7 +182,7 @@ class SslCommerzNotification extends AbstractSslCommerz
             $pre_define_key = explode(',', $postData['verify_key']);
 
             $new_data = [];
-            if (!empty($pre_define_key)) {
+            if (! empty($pre_define_key)) {
                 foreach ($pre_define_key as $value) {
                     $new_data[$value] = ($postData[$value]);
                 }
@@ -198,10 +203,12 @@ class SslCommerzNotification extends AbstractSslCommerz
                 return true;
             } else {
                 $this->error = 'Verification signature not matched';
+
                 return false;
             }
         } else {
             $this->error = 'Required data mission. ex: verify_key, verify_sign';
+
             return false;
         }
     }
@@ -216,7 +223,7 @@ class SslCommerzNotification extends AbstractSslCommerz
     {
         if (empty($requestData)) {
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => 'Please provide a valid information list about transaction with transaction id, amount, success url, fail url, cancel url, store id and pass at least',
             ];
         }
@@ -238,7 +245,7 @@ class SslCommerzNotification extends AbstractSslCommerz
         $formattedResponse = $this->formatResponse($response, $type, $pattern);
 
         $data = [
-            'error'   => false,
+            'error' => false,
             'message' => null,
         ];
 

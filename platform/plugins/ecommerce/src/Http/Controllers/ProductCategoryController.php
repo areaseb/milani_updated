@@ -16,32 +16,18 @@ use Botble\Ecommerce\Http\Resources\ProductCategoryResource;
 use Botble\Ecommerce\Models\ProductCategory;
 use Botble\Ecommerce\Repositories\Interfaces\ProductCategoryInterface;
 use Exception;
-use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
-use Throwable;
 
 class ProductCategoryController extends BaseController
 {
-    /**
-     * @var ProductCategoryInterface
-     */
-    protected $productCategoryRepository;
+    protected ProductCategoryInterface $productCategoryRepository;
 
-    /**
-     * ProductCategoryController constructor.
-     * @param ProductCategoryInterface $productCategoryRepository
-     */
     public function __construct(ProductCategoryInterface $productCategoryRepository)
     {
         $this->productCategoryRepository = $productCategoryRepository;
     }
 
-    /**
-     * @return BaseHttpResponse|Factory|View|string
-     * @throws Throwable
-     */
     public function index(FormBuilder $formBuilder, Request $request, BaseHttpResponse $response)
     {
         page_title()->setTitle(trans('plugins/ecommerce::product-categories.name'));
@@ -64,10 +50,6 @@ class ProductCategoryController extends BaseController
         return $form->renderForm();
     }
 
-    /**
-     * @param FormBuilder $formBuilder
-     * @return BaseHttpResponse|string
-     */
     public function create(FormBuilder $formBuilder, Request $request, BaseHttpResponse $response)
     {
         page_title()->setTitle(trans('plugins/ecommerce::product-categories.create'));
@@ -79,11 +61,6 @@ class ProductCategoryController extends BaseController
         return $formBuilder->create(ProductCategoryForm::class)->renderForm();
     }
 
-    /**
-     * @param ProductCategoryRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function store(ProductCategoryRequest $request, BaseHttpResponse $response)
     {
         $productCategory = $this->productCategoryRepository->createOrUpdate($request->input());
@@ -101,7 +78,7 @@ class ProductCategoryController extends BaseController
 
             $response->setData([
                 'model' => $productCategory,
-                'form'  => $form
+                'form' => $form,
             ]);
         }
 
@@ -111,12 +88,7 @@ class ProductCategoryController extends BaseController
                 ->setMessage(trans('core/base::notices.create_success_message'));
     }
 
-    /**
-     * @param int $id
-     * @param FormBuilder $formBuilder
-     * @return BaseHttpResponse|string
-     */
-    public function edit($id, FormBuilder $formBuilder, Request $request, BaseHttpResponse $response)
+    public function edit(int $id, FormBuilder $formBuilder, Request $request, BaseHttpResponse $response)
     {
         $productCategory = $this->productCategoryRepository->findOrFail($id);
 
@@ -129,13 +101,7 @@ class ProductCategoryController extends BaseController
         return $formBuilder->create(ProductCategoryForm::class, ['model' => $productCategory])->renderForm();
     }
 
-    /**
-     * @param int $id
-     * @param ProductCategoryRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function update($id, ProductCategoryRequest $request, BaseHttpResponse $response)
+    public function update(int $id, ProductCategoryRequest $request, BaseHttpResponse $response)
     {
         $productCategory = $this->productCategoryRepository->findOrFail($id);
         $productCategory->fill($request->input());
@@ -153,7 +119,7 @@ class ProductCategoryController extends BaseController
             }
             $response->setData([
                 'model' => $productCategory,
-                'form'  => $form
+                'form' => $form,
             ]);
         }
 
@@ -162,19 +128,14 @@ class ProductCategoryController extends BaseController
                 ->setMessage(trans('core/base::notices.update_success_message'));
     }
 
-    /**
-     * @param Request $request
-     * @param int $id
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function destroy(Request $request, $id, BaseHttpResponse $response)
+    public function destroy(Request $request, int $id, BaseHttpResponse $response)
     {
         try {
             $productCategory = $this->productCategoryRepository->findOrFail($id);
 
             $this->productCategoryRepository->delete($productCategory);
             event(new DeletedContentEvent(PRODUCT_CATEGORY_MODULE_SCREEN_NAME, $request, $productCategory));
+
             return $response->setMessage(trans('core/base::notices.delete_success_message'));
         } catch (Exception $exception) {
             return $response
@@ -183,12 +144,6 @@ class ProductCategoryController extends BaseController
         }
     }
 
-    /**
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     * @throws Exception
-     */
     public function deletes(Request $request, BaseHttpResponse $response)
     {
         $ids = $request->input('ids');
@@ -207,11 +162,7 @@ class ProductCategoryController extends BaseController
         return $response->setMessage(trans('core/base::notices.delete_success_message'));
     }
 
-    /**
-     * @param ProductCategory|null $model
-     * @return string
-     */
-    private function getForm($model = null)
+    protected function getForm(?ProductCategory $model = null): string
     {
         $options = ['template' => 'core/base::forms.form-no-wrap'];
         if ($model) {
@@ -225,19 +176,13 @@ class ProductCategoryController extends BaseController
         return $form->renderForm();
     }
 
-    /**
-     * @param FormAbstract $form
-     * @param ProductCategory|null $model
-     * @param array $options
-     * @return FormAbstract
-     */
-    private function setFormOptions($form, $model = null, $options = [])
+    protected function setFormOptions(FormAbstract $form, ?ProductCategory $model = null, array $options = [])
     {
-        if (!$model) {
+        if (! $model) {
             $form->setUrl(route('product-categories.create'));
         }
 
-        if (!Auth::user()->hasPermission('product-categories.create') && !$model) {
+        if (! Auth::user()->hasPermission('product-categories.create') && ! $model) {
             $class = $form->getFormOption('class');
             $form->setFormOption('class', $class . ' d-none');
         }
@@ -247,27 +192,18 @@ class ProductCategoryController extends BaseController
         return $form;
     }
 
-    /**
-     * @param array $options
-     * @return array
-     */
-    private function getOptions($options = [])
+    protected function getOptions(array $options = []): array
     {
         return array_merge([
-            'canCreate'   => Auth::user()->hasPermission('product-categories.create'),
-            'canEdit'     => Auth::user()->hasPermission('product-categories.edit'),
-            'canDelete'   => Auth::user()->hasPermission('product-categories.destroy'),
+            'canCreate' => Auth::user()->hasPermission('product-categories.create'),
+            'canEdit' => Auth::user()->hasPermission('product-categories.edit'),
+            'canDelete' => Auth::user()->hasPermission('product-categories.destroy'),
             'createRoute' => 'product-categories.create',
-            'editRoute'   => 'product-categories.edit',
+            'editRoute' => 'product-categories.edit',
             'deleteRoute' => 'product-categories.destroy',
         ], $options);
     }
 
-    /**
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function getSearch(Request $request, BaseHttpResponse $response)
     {
         $term = $request->input('search');

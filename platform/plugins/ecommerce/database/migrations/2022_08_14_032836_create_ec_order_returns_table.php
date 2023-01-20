@@ -5,14 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class () extends Migration {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
-        if (!Schema::hasTable('ec_order_returns')) {
+        if (! Schema::hasTable('ec_order_returns')) {
             Schema::create('ec_order_returns', function (Blueprint $table) {
                 $table->id();
                 $table->integer('order_id')->unsigned()->comment('Order ID');
@@ -26,12 +21,7 @@ return new class () extends Migration {
         }
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('ec_order_returns');
     }

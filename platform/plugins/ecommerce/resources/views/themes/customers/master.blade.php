@@ -12,7 +12,7 @@
                                     <div id="account-avatar">
                                         <div class="profile-image">
                                             <div class="avatar-view mt-card-avatar">
-                                                <img class="br2" src="{{ auth('customer')->user()->avatar_url }}">
+                                                <img class="br2" src="{{ auth('customer')->user()->avatar_url }}" alt="{{ auth('customer')->user()->name }}">
                                                 <div class="mt-overlay br2">
                                                     <span><i class="fa fa-edit"></i></span>
                                                 </div>
@@ -44,6 +44,12 @@
                                     <a href="{{ route('customer.orders') }}" class="collection-item @if (Route::currentRouteName() == 'customer.orders') active @endif">{{ __('Orders') }}</a>
                                     <i class="fa fa-first-order" aria-hidden="true"></i>
                                 </li>
+                                @if (EcommerceHelper::isReviewEnabled())
+                                    <li class="list-group-item">
+                                        <a href="{{ route('customer.product-reviews') }}" class="collection-item @if (Route::currentRouteName() == 'customer.product-reviews') active @endif">{{ __('Product Reviews') }}</a>
+                                        <i class="fa fa-star"></i>
+                                    </li>
+                                @endif
                                 @if (EcommerceHelper::isEnabledSupportDigitalProducts())
                                     <li class="list-group-item">
                                         <a href="{{ route('customer.downloads') }}" class="collection-item @if (Route::currentRouteName() == 'customer.downloads') active @endif">{{ __('Downloads') }}</a>
@@ -96,7 +102,7 @@
                             <div class="avatar-upload">
                                 <input class="avatar-src" name="avatar_src" type="hidden">
                                 <input class="avatar-data" name="avatar_data" type="hidden">
-                                {!! csrf_field() !!}
+                                @csrf
                                 <label for="avatarInput">{{ __('New image') }}</label>
                                 <input class="avatar-input" id="avatarInput" name="avatar_file" type="file">
                             </div>

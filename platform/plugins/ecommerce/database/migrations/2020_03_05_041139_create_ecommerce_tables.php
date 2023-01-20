@@ -4,12 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 
 return new class () extends Migration {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         $this->down();
 
@@ -59,7 +54,43 @@ return new class () extends Migration {
             $table->timestamps();
         });
 
-
+        Schema::create('ec_products', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->longText('content')->nullable();
+            $table->string('status', 60)->default('published');
+            $table->text('images')->nullable();
+            $table->string('sku')->nullable();
+            $table->integer('order')->unsigned()->default(0);
+            $table->integer('quantity')->unsigned()->nullable();
+            $table->tinyInteger('allow_checkout_when_out_of_stock')->unsigned()->default(0);
+            $table->tinyInteger('with_storehouse_management')->unsigned()->default(0);
+            $table->tinyInteger('is_featured')->unsigned()->default(0);
+            $table->text('options')->nullable();
+            $table->integer('category_id')->unsigned()->nullable();
+            $table->integer('brand_id')->unsigned()->nullable();
+            $table->tinyInteger('is_variation')->default(0);
+            $table->tinyInteger('is_searchable')->default(0);
+            $table->tinyInteger('is_show_on_list')->default(0);
+            $table->tinyInteger('sale_type')->default(0);
+            $table->double('price')->unsigned()->nullable();
+            $table->double('sale_price')->unsigned()->nullable();
+            $table->timestamp('start_date')->nullable();
+            $table->timestamp('end_date')->nullable();
+            $table->float('length')->nullable();
+            $table->float('wide')->nullable();
+            $table->float('height')->nullable();
+            $table->float('weight')->nullable();
+            $table->string('barcode')->nullable();
+            $table->string('length_unit', 20)->nullable();
+            $table->string('wide_unit', 20)->nullable();
+            $table->string('height_unit', 20)->nullable();
+            $table->string('weight_unit', 20)->nullable();
+            $table->integer('tax_id')->unsigned()->nullable();
+            $table->bigInteger('views')->default(0);
+            $table->timestamps();
+        });
 
         Schema::create('ec_product_category_product', function (Blueprint $table) {
             $table->id();
@@ -307,7 +338,7 @@ return new class () extends Migration {
             $table->id();
             $table->string('name', 120);
             $table->integer('shipping_id')->unsigned();
-            $table->enum('type', ['base_on_price', 'base_on_weight'])->default('base_on_price')->nullable();
+            $table->string('type', 60)->default('based_on_price')->nullable();
             $table->integer('currency_id')->unsigned()->nullable();
             $table->decimal('from', 15)->default(0)->nullable();
             $table->decimal('to', 15)->default(0)->nullable();
@@ -395,12 +426,7 @@ return new class () extends Migration {
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('ec_product_collection_products');

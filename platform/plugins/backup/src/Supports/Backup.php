@@ -4,44 +4,28 @@ namespace Botble\Backup\Supports;
 
 use BaseHelper;
 use Botble\Backup\Supports\MySql\MySqlDump;
-use Botble\Base\Supports\PclZip as Zip;
+use Botble\Base\Supports\Zipper;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Support\Facades\File;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\Process\Process;
-use ZipArchive;
 
 class Backup
 {
-    /**
-     * The filesystem instance.
-     *
-     * @var Filesystem
-     */
-    protected $file;
+    protected Filesystem $files;
 
-    /**
-     * @var string
-     */
-    protected $folder;
+    protected ?string $folder = null;
 
-    /**
-     * Backup constructor.
-     * @param Filesystem $file
-     */
-    public function __construct(Filesystem $file)
+    protected Zipper $zipper;
+
+    public function __construct(Filesystem $file, Zipper $zipper)
     {
-        $this->file = $file;
+        $this->files = $file;
+        $this->zipper = $zipper;
     }
 
-    /**
-     * @param string $name
-     * @param string|null $description
-     * @return array
-     */
     public function createBackupFolder(string $name, ?string $description = null): array
     {
         $backupFolder = $this->createFolder($this->getBackupPath());
@@ -56,55 +40,36 @@ class Backup
         }
 
         $data[$now] = [
-            'name'        => $name,
+            'name' => $name,
             'description' => $description,
-            'date'        => Carbon::now()->toDateTimeString(),
+            'date' => Carbon::now()->toDateTimeString(),
         ];
 
         BaseHelper::saveFileData($file, $data);
 
         return [
-            'key'  => $now,
+            'key' => $now,
             'data' => $data[$now],
         ];
     }
 
-    /**
-     * @param string $folder
-     * @return string
-     */
     public function createFolder(string $folder): string
     {
-        if (!$this->file->isDirectory($folder)) {
-            $this->file->makeDirectory($folder);
-            chmod($folder, 0755);
-        }
+        $this->files->ensureDirectoryExists($folder);
 
         return $folder;
     }
 
-    /**
-     * @param null $path
-     * @return string
-     */
-    public function getBackupPath($path = null): string
+    public function getBackupPath(?string $path = null): string
     {
         return storage_path('app/backup') . ($path ? '/' . $path : null);
     }
 
-    /**
-     * @param string $key
-     * @return string
-     */
     public function getBackupDatabasePath(string $key): string
     {
         return $this->getBackupPath($key . '/database-' . $key . '.zip');
     }
 
-    /**
-     * @param string $key
-     * @return bool
-     */
     public function isDatabaseBackupAvailable(string $key): bool
     {
         $file = $this->getBackupDatabasePath($key);
@@ -112,10 +77,7 @@ class Backup
         return file_exists($file) && filesize($file) > 1024;
     }
 
-    /**
-     * @return array|bool|mixed
-     */
-    public function getBackupList()
+    public function getBackupList(): array
     {
         $file = $this->getBackupPath('backup.json');
         if (file_exists($file)) {
@@ -125,10 +87,6 @@ class Backup
         return [];
     }
 
-    /**
-     * @return bool
-     * @throws Exception
-     */
     public function backupDb(): bool
     {
         $file = 'database-' . Carbon::now()->format('Y-m-d-H-i-s');
@@ -136,13 +94,13 @@ class Backup
 
         $mysqlPath = rtrim(config('plugins.backup.general.backup_mysql_execute_path'), '/');
 
-        if (!empty($mysqlPath)) {
+        if (! empty($mysqlPath)) {
             $mysqlPath = $mysqlPath . '/';
         }
 
         $config = config('database.connections.mysql', []);
 
-        if (!$config) {
+        if (! $config) {
             return false;
         }
 
@@ -152,33 +110,27 @@ class Backup
 
         try {
             Process::fromShellCommandline($sql)->mustRun();
-        } catch (Exception $exception) {
+        } catch (Exception) {
             try {
                 system($sql);
-            } catch (Exception $e) {
+            } catch (Exception) {
                 $this->processMySqlDumpPHP($path, $config);
             }
         }
 
-        if (!File::exists($path . '.sql')) {
+        if (! $this->files->exists($path . '.sql') || $this->files->size($path . '.sql') < 1024) {
             $this->processMySqlDumpPHP($path, $config);
         }
 
-        $this->compressFileToZip($path, $file);
+        $this->compressFileToZip($path, $path . '.zip');
 
-        if (File::exists($path . '.zip')) {
+        if ($this->files->exists($path . '.zip')) {
             chmod($path . '.zip', 0755);
         }
 
         return true;
     }
 
-    /**
-     * @param string $path
-     * @param array $config
-     * @return bool
-     * @throws Exception
-     */
     protected function processMySqlDumpPHP(string $path, array $config): bool
     {
         $dump = new MySqlDump('mysql:host=' . $config['host'] . ';dbname=' . $config['database'], $config['username'], $config['password']);
@@ -187,67 +139,28 @@ class Backup
         return true;
     }
 
-    /**
-     * @param string $path
-     * @param string $name
-     * @throws Exception
-     */
-    public function compressFileToZip(string $path, string $name): void
+    public function compressFileToZip(string $path, string $destination): void
     {
-        $filename = $path . '.zip';
-
-        if (class_exists('ZipArchive', false)) {
-            $zip = new ZipArchive();
-            if ($zip->open($filename, ZipArchive::CREATE)) {
-                $zip->addFile($path . '.sql', $name . '.sql');
-                $zip->close();
-            }
-        } else {
-            $archive = new Zip($filename);
-            $archive->add($path . '.sql', PCLZIP_OPT_REMOVE_PATH, $filename);
-        }
+        $this->zipper->compress($path . '.sql', $destination);
 
         $this->deleteFile($path . '.sql');
     }
 
-    /**
-     * @param string $file
-     * @throws Exception
-     */
     protected function deleteFile(string $file): void
     {
-        if ($this->file->exists($file)) {
-            $this->file->delete($file);
+        if ($this->files->exists($file)) {
+            $this->files->delete($file);
         }
     }
 
-    /**
-     * @param string $source
-     * @return bool
-     */
     public function backupFolder(string $source): bool
     {
         $file = $this->folder . DIRECTORY_SEPARATOR . 'storage-' . Carbon::now()->format('Y-m-d-H-i-s') . '.zip';
 
         BaseHelper::maximumExecutionTimeAndMemoryLimit();
 
-        if (class_exists('ZipArchive', false)) {
-            $zip = new ZipArchive();
-            if ($zip->open($file, ZipArchive::CREATE) !== true) {
-                $this->deleteFolderBackup($this->folder);
-            }
-        } else {
-            $zip = new Zip($file);
-        }
-
-        $arrSource = explode(DIRECTORY_SEPARATOR, $source);
-        $pathLength = strlen(implode(DIRECTORY_SEPARATOR, $arrSource) . DIRECTORY_SEPARATOR);
-
-        // add each file in the file list to the archive
-        $this->recurseZip($source, $zip, $pathLength);
-
-        if (class_exists('ZipArchive', false)) {
-            $zip->close();
+        if (! $this->zipper->compress($source, $file)) {
+            $this->deleteFolderBackup($this->folder);
         }
 
         if (file_exists($file)) {
@@ -257,76 +170,39 @@ class Backup
         return true;
     }
 
-    /**
-     * @param string $path
-     */
     public function deleteFolderBackup(string $path): void
     {
         $backupFolder = $this->getBackupPath();
-        if ($this->file->isDirectory($backupFolder) && $this->file->isDirectory($path)) {
+        if ($this->files->isDirectory($backupFolder) && $this->files->isDirectory($path)) {
             foreach (BaseHelper::scanFolder($path) as $item) {
-                $this->file->delete($path . DIRECTORY_SEPARATOR . $item);
+                $this->files->delete($path . DIRECTORY_SEPARATOR . $item);
             }
-            $this->file->deleteDirectory($path);
+            $this->files->deleteDirectory($path);
 
-            if (empty($this->file->directories($backupFolder))) {
-                $this->file->deleteDirectory($backupFolder);
+            if (empty($this->files->directories($backupFolder))) {
+                $this->files->deleteDirectory($backupFolder);
             }
         }
 
         $file = $this->getBackupPath('backup.json');
         $data = [];
+
         if (file_exists($file)) {
             $data = BaseHelper::getFileData($file);
         }
-        if (!empty($data)) {
+
+        if (! empty($data)) {
             unset($data[Arr::last(explode('/', $path))]);
             BaseHelper::saveFileData($file, $data);
         }
     }
 
-    /**
-     * @param string $src
-     * @param ZipArchive | Zip $zip
-     * @param string $pathLength
-     */
-    public function recurseZip(string $src, &$zip, string $pathLength): void
-    {
-        foreach (BaseHelper::scanFolder($src) as $file) {
-            if ($this->file->isDirectory($src . DIRECTORY_SEPARATOR . $file)) {
-                $this->recurseZip($src . DIRECTORY_SEPARATOR . $file, $zip, $pathLength);
-            } else {
-                if (class_exists('ZipArchive', false)) {
-                    $zip->addFile(
-                        $src . DIRECTORY_SEPARATOR . $file,
-                        substr($src . DIRECTORY_SEPARATOR . $file, $pathLength)
-                    );
-                } else {
-                    /**
-                     * @var Zip $zip
-                     */
-                    $zip->add(
-                        $src . DIRECTORY_SEPARATOR . $file,
-                        PCLZIP_OPT_REMOVE_PATH,
-                        substr($src . DIRECTORY_SEPARATOR . $file, $pathLength)
-                    );
-                }
-            }
-        }
-    }
-
-    /**
-     * @param string $path
-     * @param string $file
-     * @return bool
-     * @throws Exception
-     */
     public function restoreDatabase(string $file, string $path): bool
     {
         $this->extractFileTo($file, $path);
-        $file = $path . DIRECTORY_SEPARATOR . $this->file->name($file) . '.sql';
+        $file = $path . DIRECTORY_SEPARATOR . $this->files->name($file) . '.sql';
 
-        if (!file_exists($file)) {
+        if (! file_exists($file)) {
             return false;
         }
 
@@ -342,42 +218,20 @@ class Backup
         return true;
     }
 
-    /**
-     * @param string $fileName
-     * @param string $pathTo
-     * @return bool
-     */
     public function extractFileTo(string $fileName, string $pathTo): bool
     {
-        if (class_exists('ZipArchive', false)) {
-            $zip = new ZipArchive();
-            if ($zip->open($fileName) === true) {
-                $zip->extractTo($pathTo);
-                $zip->close();
-
-                return true;
-            }
-
-            return false;
-        }
-
-        $archive = new Zip($fileName);
-        $archive->extract(PCLZIP_OPT_PATH, $pathTo);
+        $this->zipper->extract($fileName, $pathTo);
 
         return true;
     }
 
-    /**
-     * @param string $directory
-     * @return bool
-     */
     public function cleanDirectory(string $directory): bool
     {
-        foreach (File::glob(rtrim($directory, '/') . '/*') as $item) {
-            if (File::isDirectory($item)) {
-                File::deleteDirectory($item);
-            } elseif (!in_array(File::basename($item), ['.htaccess', '.gitignore'])) {
-                File::delete($item);
+        foreach ($this->files->glob(rtrim($directory, '/') . '/*') as $item) {
+            if ($this->files->isDirectory($item)) {
+                $this->files->deleteDirectory($item);
+            } elseif (! in_array($this->files->basename($item), ['.htaccess', '.gitignore'])) {
+                $this->files->delete($item);
             }
         }
 

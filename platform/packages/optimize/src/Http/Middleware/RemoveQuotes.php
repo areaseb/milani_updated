@@ -4,28 +4,25 @@ namespace Botble\Optimize\Http\Middleware;
 
 class RemoveQuotes extends PageSpeed
 {
-    public function apply($buffer)
+    public function apply(string $buffer): string
     {
         $buffer = $this->replaceInsideHtmlTags($this->voidElements(), '/\/>/', '>', $buffer);
 
         $replace = [
-            '/ src="(.\S*?)"/'         => ' src=$1',
-            '/ width="(.\S*?)"/'       => ' width=$1',
-            '/ height="(.\S*?)"/'      => ' height=$1',
-            '/ name="(.\S*?)"/'        => ' name=$1',
-            '/ charset="(.\S*?)"/'     => ' charset=$1',
-            '/ align="(.\S*?)"/'       => ' align=$1',
-            '/ border="(.\S*?)"/'      => ' border=$1',
+            '/ src="(.\S*?)"/' => ' src=$1',
+            '/ width="(.\S*?)"/' => ' width=$1',
+            '/ height="(.\S*?)"/' => ' height=$1',
+            '/ name="(.\S*?)"/' => ' name=$1',
+            '/ charset="(.\S*?)"/' => ' charset=$1',
+            '/ align="(.\S*?)"/' => ' align=$1',
+            '/ border="(.\S*?)"/' => ' border=$1',
             '/ crossorigin="(.\S*?)"/' => ' crossorigin=$1',
-            '/ type="(.\S*?)"/'        => ' type=$1',
+            '/ type="(.\S*?)"/' => ' type=$1',
         ];
 
         return $this->replace($replace, $buffer);
     }
 
-    /**
-     * @return string[]
-     */
     protected function voidElements(): array
     {
         return [
@@ -46,14 +43,6 @@ class RemoveQuotes extends PageSpeed
         ];
     }
 
-    /**
-     * Match all occurrences of the html tags given
-     *
-     * @param array $tags Html tags to match in the given buffer
-     * @param string $buffer Middleware response buffer
-     *
-     * @return array $matches Html tags found in the buffer
-     */
     protected function matchAllHtmlTag(array $tags, string $buffer): array
     {
         $voidTags = array_intersect($tags, $this->voidElements());
@@ -65,12 +54,6 @@ class RemoveQuotes extends PageSpeed
         );
     }
 
-    /**
-     * @param array $tags
-     * @param string $pattern
-     * @param string $buffer
-     * @return array
-     */
     protected function matchTags(array $tags, string $pattern, string $buffer): array
     {
         if (empty($tags)) {
@@ -84,16 +67,6 @@ class RemoveQuotes extends PageSpeed
         return $matches[0];
     }
 
-    /**
-     * Replace occurrences of regex pattern inside of given HTML tags
-     *
-     * @param array $tags Html tags to match and run regex to replace occurrences
-     * @param string $regex Regex rule to match on the given HTML tags
-     * @param string $replace Content to replace
-     * @param string $buffer Middleware response buffer
-     *
-     * @return string $buffer Middleware response buffer
-     */
     protected function replaceInsideHtmlTags(array $tags, string $regex, string $replace, string $buffer): string
     {
         foreach ($this->matchAllHtmlTag($tags, $buffer) as $tagMatched) {

@@ -2,7 +2,6 @@
 
 namespace Botble\Paystack\Services\Abstracts;
 
-use Botble\Payment\Models\Payment;
 use Botble\Payment\Services\Traits\PaymentErrorTrait;
 use Botble\Paystack\Services\Paystack;
 use Botble\Support\Services\ProduceServiceInterface;
@@ -14,24 +13,12 @@ abstract class PaystackPaymentAbstract implements ProduceServiceInterface
 {
     use PaymentErrorTrait;
 
-    /**
-     * @var string
-     */
-    protected $paymentCurrency;
+    protected ?string $paymentCurrency = null;
 
-    /**
-     * @var object
-     */
-    protected $client;
+    protected bool $supportRefundOnline;
 
-    /**
-     * @var bool
-     */
-    protected $supportRefundOnline;
+    protected float $totalAmount;
 
-    /**
-     * PaystackPaymentAbstract constructor.
-     */
     public function __construct()
     {
         $this->paymentCurrency = config('plugins.payment.payment.currency');
@@ -41,20 +28,11 @@ abstract class PaystackPaymentAbstract implements ProduceServiceInterface
         $this->supportRefundOnline = true;
     }
 
-    /**
-     * @return bool
-     */
-    public function getSupportRefundOnline()
+    public function getSupportRefundOnline(): bool
     {
         return $this->supportRefundOnline;
     }
 
-    /**
-     * Set payment currency
-     *
-     * @param string $currency String name of currency
-     * @return self
-     */
     public function setCurrency($currency)
     {
         $this->paymentCurrency = $currency;
@@ -62,29 +40,17 @@ abstract class PaystackPaymentAbstract implements ProduceServiceInterface
         return $this;
     }
 
-    /**
-     * Get current payment currency
-     *
-     * @return string Current payment currency
-     */
     public function getCurrency()
     {
         return $this->paymentCurrency;
     }
 
-    /**
-     * Get payment details
-     *
-     * @param Payment $payment
-     * @return mixed Object payment details
-     * @throws Exception
-     */
     public function getPaymentDetails($payment)
     {
         try {
             $params = [
                 'from' => $payment->created_at->subDays(1)->toISOString(),
-                'to'   => $payment->created_at->addDays(1)->toISOString(),
+                'to' => $payment->created_at->addDays(1)->toISOString(),
             ];
 
             $response = (new Paystack())->getListTransactions($params);
@@ -93,15 +59,13 @@ abstract class PaystackPaymentAbstract implements ProduceServiceInterface
             }
         } catch (Exception $exception) {
             $this->setErrorMessageAndLogging($exception, 1);
+
             return false;
         }
 
         return false;
     }
 
-    /**
-     * This function can be used to preform refund on the capture.
-     */
     public function refundOrder($paymentId, $amount)
     {
         try {
@@ -109,87 +73,66 @@ abstract class PaystackPaymentAbstract implements ProduceServiceInterface
 
             if ($response['status']) {
                 $response = array_merge($response, ['_refund_id' => Arr::get($response, 'data.id')]);
+
                 return [
-                    'error'   => false,
+                    'error' => false,
                     'message' => $response['message'],
-                    'data'    => (array) $response,
+                    'data' => $response,
                 ];
             }
+
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => trans('plugins/payment::payment.status_is_not_completed'),
             ];
         } catch (Exception $exception) {
             $this->setErrorMessageAndLogging($exception, 1);
+
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => $exception->getMessage(),
             ];
         }
     }
 
-    /**
-     * Get refund details
-     *
-     * @param string $refundId
-     * @return mixed Object refund details
-     */
     public function getRefundDetails($refundId)
     {
         try {
             $response = (new Paystack())->getRefundDetails($refundId);
             if ($response['status']) {
                 return [
-                    'error'   => false,
+                    'error' => false,
                     'message' => $response['message'],
-                    'data'    => $response,
+                    'data' => $response,
                 ];
             }
+
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => trans('plugins/payment::payment.status_is_not_completed'),
             ];
         } catch (Exception $exception) {
             $this->setErrorMessageAndLogging($exception, 1);
+
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => $exception->getMessage(),
             ];
         }
     }
 
-    /**
-     * Execute main service
-     *
-     * @param Request $request
-     *
-     * @return mixed
-     */
     public function execute(Request $request)
     {
         try {
             return $this->makePayment($request);
         } catch (Exception $exception) {
             $this->setErrorMessageAndLogging($exception, 1);
+
             return false;
         }
     }
 
-    /**
-     * Make a payment
-     *
-     * @param Request $request
-     *
-     * @return mixed
-     */
     abstract public function makePayment(Request $request);
 
-    /**
-     * Use this function to perform more logic after user has made a payment
-     *
-     * @param Request $request
-     *
-     * @return mixed
-     */
     abstract public function afterMakePayment(Request $request);
 }

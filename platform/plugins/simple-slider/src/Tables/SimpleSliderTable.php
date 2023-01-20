@@ -8,28 +8,19 @@ use Botble\SimpleSlider\Repositories\Interfaces\SimpleSliderInterface;
 use Botble\Table\Abstracts\TableAbstract;
 use Html;
 use Illuminate\Contracts\Routing\UrlGenerator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Yajra\DataTables\DataTables;
 
 class SimpleSliderTable extends TableAbstract
 {
-    /**
-     * @var bool
-     */
     protected $hasActions = true;
 
-    /**
-     * @var bool
-     */
     protected $hasFilter = true;
 
-    /**
-     * SimpleSliderTable constructor.
-     * @param DataTables $table
-     * @param UrlGenerator $urlGenerator
-     * @param SimpleSliderInterface $simpleSliderRepository
-     */
     public function __construct(
         DataTables $table,
         UrlGenerator $urlGenerator,
@@ -39,25 +30,22 @@ class SimpleSliderTable extends TableAbstract
 
         $this->repository = $simpleSliderRepository;
 
-        if (!Auth::user()->hasAnyPermission(['simple-slider.edit', 'simple-slider.destroy'])) {
+        if (! Auth::user()->hasAnyPermission(['simple-slider.edit', 'simple-slider.destroy'])) {
             $this->hasOperations = false;
             $this->hasActions = false;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function ajax()
+    public function ajax(): \Illuminate\Http\JsonResponse
     {
         $data = $this->table
             ->eloquent($this->query())
             ->editColumn('name', function ($item) {
-                if (!Auth::user()->hasPermission('simple-slider.edit')) {
-                    return $item->name;
+                if (! Auth::user()->hasPermission('simple-slider.edit')) {
+                    return BaseHelper::clean($item->name);
                 }
 
-                return Html::link(route('simple-slider.edit', $item->id), $item->name);
+                return Html::link(route('simple-slider.edit', $item->id), BaseHelper::clean($item->name));
             })
             ->editColumn('checkbox', function ($item) {
                 return $this->getCheckbox($item->id);
@@ -81,10 +69,7 @@ class SimpleSliderTable extends TableAbstract
         return $this->toJson($data);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function query()
+    public function query(): Relation|Builder|QueryBuilder
     {
         $query = $this->repository->getModel()->select([
             'id',
@@ -97,21 +82,18 @@ class SimpleSliderTable extends TableAbstract
         return $this->applyScopes($query);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function columns()
+    public function columns(): array
     {
         return [
-            'id'         => [
+            'id' => [
                 'title' => trans('core/base::tables.id'),
                 'width' => '20px',
             ],
-            'name'       => [
+            'name' => [
                 'title' => trans('core/base::tables.name'),
                 'class' => 'text-start',
             ],
-            'key'        => [
+            'key' => [
                 'title' => trans('plugins/simple-slider::simple-slider.key'),
                 'class' => 'text-start',
             ],
@@ -119,54 +101,45 @@ class SimpleSliderTable extends TableAbstract
                 'title' => trans('core/base::tables.created_at'),
                 'width' => '100px',
             ],
-            'status'     => [
+            'status' => [
                 'title' => trans('core/base::tables.status'),
                 'width' => '100px',
             ],
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function buttons()
+    public function buttons(): array
     {
         return $this->addCreateButton(route('simple-slider.create'), 'simple-slider.create');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function bulkActions(): array
     {
         return $this->addDeleteAction(route('simple-slider.deletes'), 'simple-slider.destroy', parent::bulkActions());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getBulkChanges(): array
     {
         return [
-            'name'       => [
-                'title'    => trans('core/base::tables.name'),
-                'type'     => 'text',
+            'name' => [
+                'title' => trans('core/base::tables.name'),
+                'type' => 'text',
                 'validate' => 'required|max:120',
             ],
-            'key'        => [
-                'title'    => trans('plugins/simple-slider::simple-slider.key'),
-                'type'     => 'text',
+            'key' => [
+                'title' => trans('plugins/simple-slider::simple-slider.key'),
+                'type' => 'text',
                 'validate' => 'required|max:120',
             ],
-            'status'     => [
-                'title'    => trans('core/base::tables.status'),
-                'type'     => 'customSelect',
-                'choices'  => BaseStatusEnum::labels(),
+            'status' => [
+                'title' => trans('core/base::tables.status'),
+                'type' => 'customSelect',
+                'choices' => BaseStatusEnum::labels(),
                 'validate' => 'required|' . Rule::in(BaseStatusEnum::values()),
             ],
             'created_at' => [
                 'title' => trans('core/base::tables.created_at'),
-                'type'  => 'date',
+                'type' => 'datePicker',
             ],
         ];
     }

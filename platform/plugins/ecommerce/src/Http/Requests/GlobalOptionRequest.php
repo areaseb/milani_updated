@@ -2,19 +2,21 @@
 
 namespace Botble\Ecommerce\Http\Requests;
 
+use Botble\Ecommerce\Enums\GlobalOptionEnum;
 use Botble\Support\Http\Requests\Request;
+use Illuminate\Validation\Rule;
 
 class GlobalOptionRequest extends Request
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
-    public function rules()
+    public function rules(): array
     {
         return [
             'name' => 'required',
+            'option_type' => [
+                Rule::requiredIf(function () {
+                    return $this->input('option_type') == GlobalOptionEnum::NA;
+                }),
+            ],
         ];
     }
 }

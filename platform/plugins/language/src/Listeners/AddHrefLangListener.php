@@ -12,13 +12,7 @@ use Language;
 
 class AddHrefLangListener
 {
-    /**
-     * Handle the event.
-     *
-     * @param RenderingSingleEvent $event
-     * @return void
-     */
-    public function handle(RenderingSingleEvent $event)
+    public function handle(RenderingSingleEvent $event): void
     {
         try {
             if (defined('THEME_FRONT_HEADER')) {
@@ -30,7 +24,7 @@ class AddHrefLangListener
                             foreach (Language::getSupportedLocales() as $localeCode => $properties) {
                                 if ($localeCode != Language::getCurrentLocale()) {
                                     $urls[] = [
-                                        'url'       => Language::getLocalizedURL($localeCode, url()->current(), [], false),
+                                        'url' => Language::getLocalizedURL($localeCode, url()->current(), [], false),
                                         'lang_code' => $localeCode,
                                     ];
                                 }
@@ -44,17 +38,17 @@ class AddHrefLangListener
                                 ->join('language_meta as meta', 'meta.lang_meta_origin', 'language_meta.lang_meta_origin')
                                 ->where([
                                     'meta.reference_type' => $event->slug->reference_type,
-                                    'meta.reference_id'   => $event->slug->reference_id,
+                                    'meta.reference_id' => $event->slug->reference_id,
                                 ])
                                 ->pluck('language_meta.lang_meta_code', 'language_meta.reference_id')->all();
 
                             $slug = Slug::whereIn('reference_id', array_keys($languageMeta))
                                 ->where('reference_type', $event->slug->reference_type)
-                                ->select('key', 'prefix', 'reference_id')
+                                ->select(['key', 'prefix', 'reference_id'])
                                 ->get();
 
                             foreach ($slug as $item) {
-                                if (!empty($languageMeta[$item->reference_id])) {
+                                if (! empty($languageMeta[$item->reference_id])) {
                                     $locale = Language::getLocaleByLocaleCode($languageMeta[$item->reference_id]);
 
                                     if ($locale == Language::getDefaultLocale() && Language::hideDefaultLocaleInURL()) {
@@ -62,7 +56,7 @@ class AddHrefLangListener
                                     }
 
                                     $urls[] = [
-                                        'url'       => url($locale . ($item->prefix ? '/' . $item->prefix : '') . '/' . $item->key),
+                                        'url' => url($locale . ($item->prefix ? '/' . $item->prefix : '') . '/' . $item->key),
                                         'lang_code' => $languageMeta[$item->reference_id],
                                     ];
                                 }

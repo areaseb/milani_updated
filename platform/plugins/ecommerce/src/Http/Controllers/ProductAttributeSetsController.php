@@ -13,28 +13,14 @@ use Botble\Ecommerce\Repositories\Interfaces\ProductCategoryInterface;
 use Botble\Ecommerce\Services\ProductAttributes\StoreAttributeSetService;
 use Botble\Ecommerce\Tables\ProductAttributeSetsTable;
 use Exception;
-use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
-use Throwable;
 
 class ProductAttributeSetsController extends BaseController
 {
-    /**
-     * @var ProductAttributeSetInterface
-     */
-    protected $productAttributeSetRepository;
+    protected ProductAttributeSetInterface $productAttributeSetRepository;
 
-    /**
-     * @var ProductCategoryInterface
-     */
-    protected $productCategoryRepository;
+    protected ProductCategoryInterface $productCategoryRepository;
 
-    /**
-     * ProductAttributesController constructor.
-     * @param ProductAttributeSetInterface $productAttributeSetRepository
-     * @param ProductCategoryInterface $productCategoryRepository
-     */
     public function __construct(
         ProductAttributeSetInterface $productAttributeSetRepository,
         ProductCategoryInterface $productCategoryRepository
@@ -43,11 +29,6 @@ class ProductAttributeSetsController extends BaseController
         $this->productCategoryRepository = $productCategoryRepository;
     }
 
-    /**
-     * @param ProductAttributeSetsTable $dataTable
-     * @return Factory|View
-     * @throws Throwable
-     */
     public function index(ProductAttributeSetsTable $dataTable)
     {
         page_title()->setTitle(trans('plugins/ecommerce::product-attributes.name'));
@@ -55,10 +36,6 @@ class ProductAttributeSetsController extends BaseController
         return $dataTable->renderTable();
     }
 
-    /**
-     * @param FormBuilder $formBuilder
-     * @return string
-     */
     public function create(FormBuilder $formBuilder)
     {
         page_title()->setTitle(trans('plugins/ecommerce::product-attributes.create'));
@@ -75,13 +52,6 @@ class ProductAttributeSetsController extends BaseController
         return $formBuilder->create(ProductAttributeSetForm::class)->renderForm();
     }
 
-    /**
-     * @param ProductAttributeSetsRequest $request
-     * @param StoreAttributeSetService $service
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     * @throws Exception
-     */
     public function store(
         ProductAttributeSetsRequest $request,
         StoreAttributeSetService $service,
@@ -97,12 +67,7 @@ class ProductAttributeSetsController extends BaseController
             ->setMessage(trans('core/base::notices.create_success_message'));
     }
 
-    /**
-     * @param int $id
-     * @param FormBuilder $formBuilder
-     * @return string
-     */
-    public function edit($id, FormBuilder $formBuilder)
+    public function edit(int $id, FormBuilder $formBuilder)
     {
         page_title()->setTitle(trans('plugins/ecommerce::product-attributes.edit'));
 
@@ -122,16 +87,8 @@ class ProductAttributeSetsController extends BaseController
             ->renderForm();
     }
 
-    /**
-     * @param int $id
-     * @param ProductAttributeSetsRequest $request
-     * @param StoreAttributeSetService $service
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     * @throws Exception
-     */
     public function update(
-        $id,
+        int $id,
         ProductAttributeSetsRequest $request,
         StoreAttributeSetService $service,
         BaseHttpResponse $response
@@ -145,12 +102,7 @@ class ProductAttributeSetsController extends BaseController
             ->setMessage(trans('core/base::notices.update_success_message'));
     }
 
-    /**
-     * @param int $id
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function destroy($id, BaseHttpResponse $response)
+    public function destroy(int $id, BaseHttpResponse $response)
     {
         try {
             $productAttributeSet = $this->productAttributeSetRepository->findOrFail($id);
@@ -164,12 +116,6 @@ class ProductAttributeSetsController extends BaseController
         }
     }
 
-    /**
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     * @throws Exception
-     */
     public function deletes(Request $request, BaseHttpResponse $response)
     {
         $ids = $request->input('ids');

@@ -3,8 +3,7 @@
 use Botble\Widget\Models\Widget as WidgetModel;
 use Illuminate\Database\Migrations\Migration;
 
-class FixFooterWidget extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      *
@@ -32,4 +31,4 @@ class FixFooterWidget extends Migration
     {
         //
     }
-}
+};

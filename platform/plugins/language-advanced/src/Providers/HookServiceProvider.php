@@ -3,50 +3,45 @@
 namespace Botble\LanguageAdvanced\Providers;
 
 use Assets;
-use Botble\Base\Models\BaseModel;
+use Botble\Base\Forms\FormAbstract;
 use Botble\Language\Repositories\Interfaces\LanguageInterface;
 use Botble\Language\Repositories\Interfaces\LanguageMetaInterface;
 use Botble\LanguageAdvanced\Supports\LanguageAdvancedManager;
 use DB;
-use Eloquent;
-use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use Language;
 use MetaBox;
-use Request;
 use Route;
 use SlugHelper;
-use Throwable;
 use Yajra\DataTables\EloquentDataTable;
 
 class HookServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         add_action(BASE_ACTION_META_BOXES, [$this, 'addLanguageBox'], 1134, 2);
         add_action(BASE_ACTION_TOP_FORM_CONTENT_NOTIFICATION, [$this, 'addCurrentLanguageEditingAlert'], 1134, 3);
         add_action(BASE_ACTION_BEFORE_EDIT_CONTENT, [$this, 'getCurrentAdminLanguage'], 1134, 2);
+        add_action(BASE_ACTION_META_BOXES, [$this, 'customizeMetaBoxes'], 10, 2);
+
         add_filter(BASE_FILTER_BEFORE_GET_ADMIN_SINGLE_ITEM, [$this, 'getDataLanguageBeforeShow'], 1135, 4);
         add_filter(BASE_FILTER_TABLE_HEADINGS, [$this, 'addLanguageTableHeading'], 1134, 2);
         add_filter(BASE_FILTER_GET_LIST_DATA, [$this, 'addLanguageColumn'], 1134, 2);
         add_filter(BASE_FILTER_BEFORE_GET_FRONT_PAGE_ITEM, [$this, 'checkItemLanguageBeforeGetListItem'], 1134, 2);
         add_filter(BASE_FILTER_BEFORE_RENDER_FORM, [$this, 'changeFormDataBeforeRendering'], 1134, 2);
-        add_action(BASE_ACTION_META_BOXES, [$this, 'customizeMetaBoxes'], 10, 2);
         add_filter(BASE_FILTER_SLUG_AREA, [$this, 'changeSlugField'], 25, 2);
         add_filter('stored_meta_box_key', [$this, 'storeMetaBoxKey'], 1134, 2);
     }
 
-    /**
-     * @param string $priority
-     * @param string|Model $object
-     */
-    public function addLanguageBox(string $priority, $object)
+    public function addLanguageBox(string $priority, Model|string|null $object): void
     {
-        if ($priority == 'top' && !empty($object) && $object->id && LanguageAdvancedManager::isSupported($object) && Language::getActiveLanguage([
+        if ($priority == 'top' && ! empty($object) && $object->getKey() && LanguageAdvancedManager::isSupported($object) && Language::getActiveLanguage([
                 'lang_code',
                 'lang_flag',
                 'lang_name',
@@ -61,9 +56,6 @@ class HookServiceProvider extends ServiceProvider
         }
     }
 
-    /**
-     * @throws Throwable
-     */
     public function languageMetaField(): ?string
     {
         $languages = Language::getActiveLanguage([
@@ -80,7 +72,7 @@ class HookServiceProvider extends ServiceProvider
 
         $currentLanguage = self::checkCurrentLanguage($languages);
 
-        if (!$currentLanguage) {
+        if (! $currentLanguage) {
             $currentLanguage = Language::getDefaultLanguage([
                 'lang_flag',
                 'lang_name',
@@ -99,14 +91,9 @@ class HookServiceProvider extends ServiceProvider
             ->render();
     }
 
-    /**
-     * @param array $languages
-     * @return mixed
-     * @throws BindingResolutionException
-     */
-    public function checkCurrentLanguage($languages)
+    public function checkCurrentLanguage(array|Collection $languages)
     {
-        $request = $this->app->make('request');
+        $request = $this->app['request'];
 
         foreach ($languages as $language) {
             if (($request->input('ref_lang') && $language->lang_code == $request->input('ref_lang')) ||
@@ -119,26 +106,17 @@ class HookServiceProvider extends ServiceProvider
         return null;
     }
 
-    /**
-     * @return array
-     */
     protected function getRoutes(): array
     {
         $currentRoute = implode('.', explode('.', Route::currentRouteName(), -1));
 
         return apply_filters(LANGUAGE_FILTER_ROUTE_ACTION, [
             'create' => $currentRoute . '.create',
-            'edit'   => $currentRoute . '.edit',
+            'edit' => $currentRoute . '.edit',
         ]);
     }
 
-    /**
-     * @param Request $request
-     * @param string|Model $data
-     * @return void
-     * @throws Throwable
-     */
-    public function addCurrentLanguageEditingAlert($request, $data = null)
+    public function addCurrentLanguageEditingAlert(Request $request, Model|string|null $data = null): void
     {
         $model = $data;
         if (is_object($data)) {
@@ -152,14 +130,14 @@ class HookServiceProvider extends ServiceProvider
             }
 
             $language = null;
-            if (!empty($code)) {
+            if (! empty($code) && is_string($code)) {
                 Language::setCurrentAdminLocale($code);
                 $language = $this->app->make(LanguageInterface::class)->getFirstBy(
                     ['lang_code' => $code],
                     ['lang_name']
                 );
 
-                if (!empty($language)) {
+                if (! empty($language)) {
                     $language = $language->lang_name;
                 }
             }
@@ -168,29 +146,23 @@ class HookServiceProvider extends ServiceProvider
         }
     }
 
-    /**
-     * @param Request $request
-     * @param Eloquent | null $data
-     * @return null|string
-     * @throws BindingResolutionException
-     */
-    public function getCurrentAdminLanguage($request, $data = null)
+    public function getCurrentAdminLanguage(Request $request, Model|string|null $data = null): ?string
     {
         $code = null;
         if ($request->has('ref_lang')) {
             $code = $request->input('ref_lang');
-        } elseif (!empty($data) && $data->id) {
+        } elseif (! empty($data) && $data->id) {
             $meta = $this->app->make(LanguageMetaInterface::class)->getFirstBy([
-                'reference_id'   => $data->id,
+                'reference_id' => $data->id,
                 'reference_type' => get_class($data),
             ], ['lang_meta_code']);
 
-            if (!empty($meta)) {
+            if (! empty($meta)) {
                 $code = $meta->lang_meta_code;
             }
         }
 
-        if (empty($code)) {
+        if (empty($code) || ! is_string($code)) {
             $code = Language::getDefaultLocaleCode();
         }
 
@@ -199,24 +171,14 @@ class HookServiceProvider extends ServiceProvider
         return $code;
     }
 
-    /**
-     * @param array $options
-     * @return string
-     * @throws Throwable
-     */
     public function languageSwitcher(array $options = []): string
     {
         return view('plugins/language::partials.switcher', compact('options'))->render();
     }
 
-    /**
-     * @param Builder|EloquentBuilder $data
-     * @param BaseModel $model
-     * @return mixed
-     */
-    public function getDataLanguageBeforeShow($data, $model)
+    public function getDataLanguageBeforeShow(EloquentBuilder|null|Collection $data, Model|string|null $model)
     {
-        if (!LanguageAdvancedManager::isSupported($model)) {
+        if (! LanguageAdvancedManager::isSupported($model)) {
             return $data;
         }
 
@@ -236,7 +198,7 @@ class HookServiceProvider extends ServiceProvider
             ->first();
 
         if ($language) {
-            if (!$data->getQuery()->columns) {
+            if (! $data->getQuery()->columns) {
                 $data = $data->select([$table . '.*']);
             }
 
@@ -250,17 +212,12 @@ class HookServiceProvider extends ServiceProvider
         return $data;
     }
 
-    /**
-     * @param EloquentDataTable $data
-     * @param string|Model $model
-     * @return EloquentDataTable
-     */
-    public function addLanguageColumn($data, $model)
+    public function addLanguageColumn(EloquentDataTable $data, Model|string|null $model): EloquentDataTable
     {
         if ($model && LanguageAdvancedManager::isSupported($model)) {
             $route = $this->getRoutes();
 
-            if (is_in_admin() && Auth::check() && !Auth::user()->hasAnyPermission($route)) {
+            if (is_in_admin() && Auth::check() && ! Auth::user()->hasAnyPermission($route)) {
                 return $data;
             }
 
@@ -275,18 +232,13 @@ class HookServiceProvider extends ServiceProvider
         return $data;
     }
 
-    /**
-     * @param array $headings
-     * @param string|Model $model
-     * @return array
-     */
-    public function addLanguageTableHeading(array $headings, $model): array
+    public function addLanguageTableHeading(array $headings, Model|string|null $model): array
     {
-        if (!LanguageAdvancedManager::isSupported($model)) {
+        if (! LanguageAdvancedManager::isSupported($model)) {
             return $headings;
         }
 
-        if (is_in_admin() && Auth::check() && !Auth::user()->hasAnyPermission($this->getRoutes())) {
+        if (is_in_admin() && Auth::check() && ! Auth::user()->hasAnyPermission($this->getRoutes())) {
             return $headings;
         }
 
@@ -298,22 +250,17 @@ class HookServiceProvider extends ServiceProvider
 
         return array_merge($headings, [
             'language' => [
-                'name'       => 'language_meta.lang_meta_id',
-                'title'      => $heading,
-                'class'      => 'text-center language-header no-sort',
-                'width'      => (count($languages) * 40) . 'px',
-                'orderable'  => false,
+                'name' => 'language_meta.lang_meta_id',
+                'title' => $heading,
+                'class' => 'text-center language-header no-sort',
+                'width' => (count($languages) * 40) . 'px',
+                'orderable' => false,
                 'searchable' => false,
             ],
         ]);
     }
 
-    /**
-     * @param Builder|EloquentBuilder $query
-     * @param Model $model
-     * @return Builder
-     */
-    public function checkItemLanguageBeforeGetListItem($query, $model)
+    public function checkItemLanguageBeforeGetListItem($query, Model|string|null $model): Builder|EloquentBuilder|Model
     {
         if ($query instanceof Builder || $query instanceof EloquentBuilder) {
             $model = $query->getModel();
@@ -325,27 +272,18 @@ class HookServiceProvider extends ServiceProvider
             return $query;
         }
 
-        if (!LanguageAdvancedManager::isSupported($model)) {
+        if (! LanguageAdvancedManager::isSupported($model)) {
             return $query;
         }
 
-        $table = $model->getTable();
-
-        $translationTable = $table . '_translations';
-
         return $query->with([
-            'translations' => function ($query) use ($translationTable, $currentLocale) {
-                $query->where($translationTable . '.lang_code', $currentLocale);
+            'translations' => function ($query) use ($model, $currentLocale) {
+                $query->where($model->getTable() . '_translations' . '.lang_code', $currentLocale);
             },
         ]);
     }
 
-    /**
-     * @param $form
-     * @param $data
-     * @return mixed
-     */
-    public function changeFormDataBeforeRendering($form, $data)
+    public function changeFormDataBeforeRendering(FormAbstract $form, Model|string|null $data): FormAbstract
     {
         if (is_in_admin() && request()->input('ref_lang') && Language::getCurrentAdminLocaleCode() != Language::getDefaultLocaleCode() && $data && $data->id && LanguageAdvancedManager::isSupported($data)) {
             foreach ($form->getMetaBoxes() as $key => $metaBox) {
@@ -358,7 +296,7 @@ class HookServiceProvider extends ServiceProvider
 
             $columns = LanguageAdvancedManager::getTranslatableColumns($data);
             foreach ($form->getFields() as $key => $field) {
-                if (!in_array($key, $columns)) {
+                if (! in_array($key, $columns)) {
                     $form->remove($key);
                 }
             }
@@ -377,12 +315,7 @@ class HookServiceProvider extends ServiceProvider
         return $form;
     }
 
-    /**
-     * @param string $context
-     * @param $object
-     * @return void
-     */
-    public function customizeMetaBoxes(string $context, $object)
+    public function customizeMetaBoxes(string $context, Model|string|null $object): void
     {
         if (is_in_admin() && request()->input('ref_lang') && Language::getCurrentAdminLocaleCode() != Language::getDefaultLocaleCode() && LanguageAdvancedManager::isSupported($object)) {
             foreach (MetaBox::getMetaBoxes() as $reference => $metaBox) {
@@ -401,12 +334,7 @@ class HookServiceProvider extends ServiceProvider
         }
     }
 
-    /**
-     * @param string|null $html
-     * @param null $object
-     * @return string|null
-     */
-    public function changeSlugField(?string $html = null, $object = null): ?string
+    public function changeSlugField(?string $html = null, Model|string|null $object = null): ?string
     {
         if (is_in_admin() && request()->input('ref_lang') && Language::getCurrentAdminLocaleCode() != Language::getDefaultLocaleCode() && LanguageAdvancedManager::isSupported($object) && SlugHelper::isSupportedModel(get_class($object))) {
             Assets::addStylesDirectly('vendor/core/packages/slug/css/slug.css');
@@ -419,12 +347,7 @@ class HookServiceProvider extends ServiceProvider
         return $html;
     }
 
-    /**
-     * @param string $key
-     * @param $object
-     * @return string
-     */
-    public function storeMetaBoxKey(string $key, $object): string
+    public function storeMetaBoxKey(string $key, Model|string|null $object): string
     {
         $locale = is_in_admin() ? Language::getCurrentAdminLocaleCode() : Language::getCurrentLocaleCode();
 

@@ -10,20 +10,16 @@ use Botble\Media\Chunks\Handler\AbstractHandler;
 use Botble\Media\Chunks\Storage\ChunkStorage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 class ParallelSave extends ChunkSave
 {
     /**
      * Stored on construct - the file is moved and isValid will return false.
-     *
-     * @var bool
      */
-    protected $isFileValid;
+    protected bool $isFileValid;
 
-    /**
-     * {@inheritDoc}
-     */
     public function __construct(UploadedFile $file, AbstractHandler $handler, ChunkStorage $chunkStorage)
     {
         // Get current file validation - the file instance is changed
@@ -33,17 +29,11 @@ class ParallelSave extends ChunkSave
         parent::__construct($file, $handler, $chunkStorage);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function isValid(): bool
     {
         return $this->isFileValid;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function handleChunkFile($file): ChunkSave
     {
         // Move the uploaded file to chunk folder
@@ -52,17 +42,11 @@ class ParallelSave extends ChunkSave
         return $this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     protected function tryToBuildFullFileFromChunks(): ChunkSave
     {
         return parent::tryToBuildFullFileFromChunks();
     }
 
-    /**
-     * @return Collection
-     */
     protected function getSavedChunksFiles(): Collection
     {
         $chunkFileName = preg_replace(
@@ -77,7 +61,6 @@ class ParallelSave extends ChunkSave
     }
 
     /**
-     * {@inheritDoc}
      * @throws ChunkSaveException
      * @throws MissingChunkFilesException
      */
@@ -96,7 +79,7 @@ class ParallelSave extends ChunkSave
         $finalFilePath = $this->getChunkDirectory(true) . './' . $this->handler()->createChunkFileName();
         // Delete the file if exists
         if (file_exists($finalFilePath)) {
-            @unlink($finalFilePath);
+            File::delete($finalFilePath);
         }
 
         $fileMerger = new FileMerger($finalFilePath);

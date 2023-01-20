@@ -3,8 +3,7 @@
 use Botble\Page\Models\Page;
 use Illuminate\Database\Migrations\Migration;
 
-class FixOldShortcode extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      *
@@ -27,4 +26,4 @@ class FixOldShortcode extends Migration
     {
         //
     }
-}
+};

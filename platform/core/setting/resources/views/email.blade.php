@@ -21,7 +21,11 @@
                         <div class="ui-select-wrapper">
                             <select name="email_driver" class="ui-select setting-select-options" id="email_driver">
                                 <option value="smtp" @if (setting('email_driver', config('mail.default')) == 'smtp') selected @endif>SMTP</option>
-                                <option value="sendmail" @if (setting('email_driver', config('mail.default')) == 'sendmail') selected @endif>Sendmail</option>
+
+                                @if (function_exists('proc_open'))
+                                    <option value="sendmail" @if (setting('email_driver', config('mail.default')) == 'sendmail') selected @endif>Sendmail</option>
+                                @endif
+
                                 <option value="mailgun" @if (setting('email_driver', config('mail.default')) == 'mailgun') selected @endif>Mailgun</option>
                                 <option value="ses" @if (setting('email_driver', config('mail.default')) == 'ses') selected @endif>SES</option>
                                 <option value="postmark" @if (setting('email_driver', config('mail.default')) == 'postmark') selected @endif>Postmark</option>
@@ -137,14 +141,6 @@
                         <label class="text-title-field" for="email_from_address">{{ trans('core/setting::setting.email.sender_email') }}</label>
                         <input data-counter="60" type="text" class="next-input" name="email_from_address" id="email_from_address"
                                value="{{ setting('email_from_address', config('mail.from.address')) }}" placeholder="admin@example.com">
-                    </div>
-
-                    <div class="form-group mb-3">
-                        <input type="hidden" name="using_queue_to_send_mail" value="0">
-                        <label>
-                            <input type="checkbox"  value="1" @if (setting('using_queue_to_send_mail')) checked @endif name="using_queue_to_send_mail">
-                            {{ trans('core/setting::setting.email.using_queue_to_send_mail') }}
-                        </label>
                     </div>
 
                     <div class="form-group mb-3">

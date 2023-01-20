@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Http\Controllers\BeezupOrdersController;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -12,7 +11,7 @@ class AppServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register(): void
+    public function register()
     {
         //
     }
@@ -22,10 +21,8 @@ class AppServiceProvider extends ServiceProvider
      *
      * @return void
      */
-
     public function boot()
     {
-        $beez = new BeezupOrdersController();
-        dd($beez->getOrders());
+        //
     }
 }

@@ -5,22 +5,13 @@ namespace Botble\Ecommerce\Http\Controllers\Customers;
 use App\Http\Controllers\Controller;
 use Botble\Ecommerce\Models\Invoice;
 use Botble\Ecommerce\Repositories\Interfaces\InvoiceInterface;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\Request;
-use EcommerceHelper;
 use InvoiceHelper;
 use SeoHelper;
 use Theme;
-use Throwable;
-use View;
 
 class InvoiceController extends Controller
 {
-    /**
-     * @return string
-     * @throws Throwable
-     */
     public function index()
     {
         SeoHelper::setTitle(__('Invoices'));
@@ -33,11 +24,6 @@ class InvoiceController extends Controller
         return '';
     }
 
-    /**
-     * @param $id
-     * @param InvoiceInterface $invoiceRepository
-     * @return \Response
-     */
     public function show($id, InvoiceInterface $invoiceRepository)
     {
         $invoice = $invoiceRepository->findOrFail($id);
@@ -57,12 +43,6 @@ class InvoiceController extends Controller
         )->render();
     }
 
-    /**
-     * @param int $invoiceId
-     * @param Request $request
-     * @param InvoiceInterface $invoiceRepository
-     * @return \Response
-     */
     public function getGenerateInvoice(int $invoiceId, Request $request, InvoiceInterface $invoiceRepository)
     {
         $invoice = $invoiceRepository->findOrFail($invoiceId);
@@ -76,10 +56,6 @@ class InvoiceController extends Controller
         return InvoiceHelper::downloadInvoice($invoice);
     }
 
-    /**
-     * @param Invoice $invoice
-     * @return bool
-     */
     protected function canViewInvoice(Invoice $invoice): bool
     {
         return auth('customer')->id() == $invoice->payment->customer_id;

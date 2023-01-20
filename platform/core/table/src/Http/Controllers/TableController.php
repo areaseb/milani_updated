@@ -9,46 +9,32 @@ use Botble\Table\Http\Requests\FilterRequest;
 use Botble\Table\TableBuilder;
 use Exception;
 use Form;
-use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Throwable;
 
 class TableController extends Controller
 {
-    /**
-     * @var TableBuilder
-     */
-    protected $tableBuilder;
+    protected TableBuilder $tableBuilder;
 
-    /**
-     * TableController constructor.
-     * @param TableBuilder $tableBuilder
-     */
     public function __construct(TableBuilder $tableBuilder)
     {
         $this->tableBuilder = $tableBuilder;
     }
 
-    /**
-     * @param BulkChangeRequest $request
-     * @return array
-     * @throws Throwable
-     */
     public function getDataForBulkChanges(BulkChangeRequest $request): array
     {
         $class = $request->input('class');
 
-        if (!$class || !class_exists($class)) {
+        if (! $class || ! class_exists($class)) {
             return [];
         }
 
         $object = $this->tableBuilder->create($class);
 
         $data = $object->getValueInput(null, null, 'text');
-        if (!$request->input('key')) {
+        if (! $request->input('key')) {
             return $data;
         }
 
@@ -63,7 +49,7 @@ class TableController extends Controller
         }
 
         $label = '';
-        if (!empty($column['title'])) {
+        if (! empty($column['title'])) {
             $label = Form::label($column['title'], null, ['class' => $labelClass])->toHtml();
         }
 
@@ -83,12 +69,6 @@ class TableController extends Controller
         return $data;
     }
 
-    /**
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     * @throws BindingResolutionException
-     */
     public function postSaveBulkChange(Request $request, BaseHttpResponse $response)
     {
         $ids = $request->input('ids');
@@ -103,7 +83,7 @@ class TableController extends Controller
 
         $class = $request->input('class');
 
-        if (!$class || !class_exists($class)) {
+        if (! $class || ! class_exists($class)) {
             return $response
                 ->setError();
         }
@@ -112,7 +92,7 @@ class TableController extends Controller
 
         $columns = $object->getBulkChanges();
 
-        if (!empty($columns[$inputKey]['validate'])) {
+        if (! empty($columns[$inputKey]['validate'])) {
             $validator = Validator::make($request->input(), [
                 'value' => $columns[$inputKey]['validate'],
             ]);
@@ -135,24 +115,18 @@ class TableController extends Controller
         return $response->setMessage(trans('core/table::table.save_bulk_change_success'));
     }
 
-    /**
-     * @param FilterRequest $request
-     * @return array
-     * @throws BindingResolutionException
-     * @throws Throwable
-     */
     public function getFilterInput(FilterRequest $request)
     {
         $class = $request->input('class');
 
-        if (!$class || !class_exists($class)) {
+        if (! $class || ! class_exists($class)) {
             return [];
         }
 
         $object = $this->tableBuilder->create($class);
 
         $data = $object->getValueInput(null, null, 'text');
-        if (!$request->input('key')) {
+        if (! $request->input('key')) {
             return $data;
         }
 

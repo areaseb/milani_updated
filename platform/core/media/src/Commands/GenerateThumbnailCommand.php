@@ -7,48 +7,18 @@ use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use RvMedia;
+use Symfony\Component\Console\Attribute\AsCommand;
 
+#[AsCommand('cms:media:thumbnail:generate', 'Generate thumbnails for images')]
 class GenerateThumbnailCommand extends Command
 {
-    /**
-     * The console command signature.
-     *
-     * @var string
-     */
-    protected $signature = 'cms:media:thumbnail:generate';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Generate thumbnails for images';
-
-    /**
-     * @var MediaFileInterface
-     */
-    protected $fileRepository;
-
-    /**
-     * GenerateThumbnailCommand constructor.
-     * @param MediaFileInterface $fileRepository
-     */
-    public function __construct(MediaFileInterface $fileRepository)
+    public function handle(MediaFileInterface $fileRepository): int
     {
-        parent::__construct();
-        $this->fileRepository = $fileRepository;
-    }
+        $this->components->info('Starting to generate thumbnails...');
 
-    /**
-     * @return int
-     */
-    public function handle()
-    {
-        $this->info('Starting to generate thumbnails...');
+        $files = $fileRepository->allBy([], [], ['url', 'mime_type', 'folder_id']);
 
-        $files = $this->fileRepository->allBy([], [], ['url', 'mime_type', 'folder_id']);
-
-        $this->info('Processing ' . $files->count() . ' ' . Str::plural('file', $files->count()) . '...');
+        $this->components->info('Processing ' . $files->count() . ' ' . Str::plural('file', $files->count()) . '...');
 
         $errors = [];
 
@@ -57,11 +27,11 @@ class GenerateThumbnailCommand extends Command
                 RvMedia::generateThumbnails($file);
             } catch (Exception $exception) {
                 $errors[] = $file->url;
-                $this->error($exception->getMessage());
+                $this->components->error($exception->getMessage());
             }
         }
 
-        $this->info('Generated media thumbnails successfully!');
+        $this->components->info('Generated media thumbnails successfully!');
 
         $errors = array_unique($errors);
 
@@ -70,13 +40,13 @@ class GenerateThumbnailCommand extends Command
         }, $errors);
 
         if ($errors) {
-            $this->info('We are unable to regenerate thumbnail for these files:');
+            $this->components->info('We are unable to regenerate thumbnail for these files:');
 
             $this->table(['File directory'], $errors);
 
-            return 1;
+            return self::FAILURE;
         }
 
-        return 0;
+        return self::SUCCESS;
     }
 }
