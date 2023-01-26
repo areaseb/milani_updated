@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        $beez = new BeezupOrdersController();
-        dd($beez->getOrders());
+//        $beez = new BeezupOrdersController();
+//        dd($beez->getOrders());
     }
 }

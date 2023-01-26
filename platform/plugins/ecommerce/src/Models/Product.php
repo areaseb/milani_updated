@@ -28,13 +28,6 @@ class Product extends BaseModel
     use EnumCastable;
 
     /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
-    protected $table = 'ec_products';
-
-    /**
      * @var array
      */
     protected $fillable = [
@@ -100,6 +93,13 @@ class Product extends BaseModel
         'sku_set',
         'sku_parent'
     ];
+
+    /**
+     * The database table used by the model.
+     *
+     * @var string
+     */
+    protected $table = 'ec_products';
 
     /**
      * @var array
