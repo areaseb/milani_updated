@@ -11,57 +11,51 @@ use EcommerceHelper;
  */
 trait LocationTrait
 {
-    /**
-     * @return string|null
-     */
     public function getCountryNameAttribute(): ?string
     {
         return EcommerceHelper::getCountryNameById($this->country);
     }
 
-    /**
-     * @return string|null
-     */
     public function getStateNameAttribute(): ?string
     {
         $value = $this->state;
 
-        if (!$value || !is_plugin_active('location')) {
+        if (! $value || ! is_plugin_active('location')) {
             return $value;
         }
 
-        $stateName = app(StateInterface::class)->getModel()->where('id', $value)->value('name');
+        if (is_numeric($value)) {
+            $stateName = app(StateInterface::class)->getModel()
+                ->where('id', $value)
+                ->value('name');
 
-        if ($stateName) {
-            return $stateName;
+            if ($stateName) {
+                return $stateName;
+            }
         }
 
         return $value;
     }
 
-    /**
-     * @return string|null
-     */
     public function getCityNameAttribute(): ?string
     {
         $value = $this->city;
 
-        if (!$value || !is_plugin_active('location')) {
+        if (! $value || ! is_plugin_active('location')) {
             return $value;
         }
 
-        $cityName = app(CityInterface::class)->getModel()->where('id', $value)->value('name');
+        if (is_numeric($value)) {
+            $cityName = app(CityInterface::class)->getModel()->where('id', $value)->value('name');
 
-        if ($cityName) {
-            return $cityName;
+            if ($cityName) {
+                return $cityName;
+            }
         }
 
         return $value;
     }
 
-    /**
-     * @return string
-     */
     public function getFullAddressAttribute(): string
     {
         return ($this->address ? $this->address . ', ' : null) .

@@ -21,7 +21,7 @@ class AuditLogServiceProvider extends ServiceProvider
 {
     use LoadAndPublishDataTrait;
 
-    public function register()
+    public function register(): void
     {
         $this->app->bind(AuditLogInterface::class, function () {
             return new AuditLogCacheDecorator(new AuditLogRepository(new AuditHistory()));
@@ -30,14 +30,14 @@ class AuditLogServiceProvider extends ServiceProvider
         AliasLoader::getInstance()->alias('AuditLog', AuditLogFacade::class);
     }
 
-    public function boot()
+    public function boot(): void
     {
         $this->app->register(EventServiceProvider::class);
         $this->app->register(CommandServiceProvider::class);
 
         $this->setNamespace('plugins/audit-log')
             ->loadHelpers()
-            ->loadRoutes(['web'])
+            ->loadRoutes()
             ->loadAndPublishViews()
             ->loadAndPublishTranslations()
             ->loadAndPublishConfigurations(['permissions'])
@@ -47,12 +47,12 @@ class AuditLogServiceProvider extends ServiceProvider
         Event::listen(RouteMatched::class, function () {
             dashboard_menu()
                 ->registerItem([
-                    'id'          => 'cms-plugin-audit-log',
-                    'priority'    => 8,
-                    'parent_id'   => 'cms-core-platform-administration',
-                    'name'        => 'plugins/audit-log::history.name',
-                    'icon'        => null,
-                    'url'         => route('audit-log.index'),
+                    'id' => 'cms-plugin-audit-log',
+                    'priority' => 8,
+                    'parent_id' => 'cms-core-platform-administration',
+                    'name' => 'plugins/audit-log::history.name',
+                    'icon' => null,
+                    'url' => route('audit-log.index'),
                     'permissions' => ['audit-log.index'],
                 ]);
         });

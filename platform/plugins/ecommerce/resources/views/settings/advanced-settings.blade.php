@@ -69,35 +69,37 @@
                             <label class="me-2">
                                 <input type="radio" name="ecommerce_tax_enabled"
                                        value="1"
-                                       @if (EcommerceHelper::isTaxEnabled()) checked @endif>{{ trans('core/setting::setting.general.yes') }}
+                                       @if (EcommerceHelper::isTaxEnabled()) checked @endif class="trigger-input-option" data-setting-container="#tax-settings">{{ trans('core/setting::setting.general.yes') }}
                             </label>
                             <label>
                                 <input type="radio" name="ecommerce_tax_enabled"
                                        value="0"
-                                       @if (!EcommerceHelper::isTaxEnabled()) checked @endif>{{ trans('core/setting::setting.general.no') }}
+                                       @if (!EcommerceHelper::isTaxEnabled()) checked @endif class="trigger-input-option" data-setting-container="#tax-settings">{{ trans('core/setting::setting.general.no') }}
                             </label>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label class="text-title-field" for="default_tax_rate">{{ trans('plugins/ecommerce::ecommerce.setting.default_tax_rate') }}</label>
-                            {!! Form::customSelect('default_tax_rate', [0 => trans('plugins/ecommerce::tax.select_tax')] + app(\Botble\Ecommerce\Repositories\Interfaces\TaxInterface::class)->pluck('title', 'id'), get_ecommerce_setting('default_tax_rate')) !!}
-                            <span class="help-ts">{{ trans('plugins/ecommerce::ecommerce.setting.default_tax_rate_description') }}</span>
-                        </div>
+                        <div id="tax-settings" class="mb-4 border rounded-top rounded-bottom p-3 bg-light @if (!EcommerceHelper::isTaxEnabled()) d-none @endif">
+                            <div class="form-group mb-3">
+                                <label class="text-title-field" for="default_tax_rate">{{ trans('plugins/ecommerce::ecommerce.setting.default_tax_rate') }}</label>
+                                {!! Form::customSelect('default_tax_rate', [0 => trans('plugins/ecommerce::tax.select_tax')] + app(\Botble\Ecommerce\Repositories\Interfaces\TaxInterface::class)->pluck('title', 'id'), get_ecommerce_setting('default_tax_rate')) !!}
+                                <span class="help-ts">{{ trans('plugins/ecommerce::ecommerce.setting.default_tax_rate_description') }}</span>
+                            </div>
 
-                        <div class="form-group mb-3">
-                            <label class="text-title-field"
-                                   for="display_product_price_including_taxes">{{ trans('plugins/ecommerce::ecommerce.setting.display_product_price_including_taxes') }}
-                            </label>
-                            <label class="me-2">
-                                <input type="radio" name="display_product_price_including_taxes"
-                                       value="1"
-                                       @if (EcommerceHelper::isDisplayProductIncludingTaxes()) checked @endif>{{ trans('core/setting::setting.general.yes') }}
-                            </label>
-                            <label>
-                                <input type="radio" name="display_product_price_including_taxes"
-                                       value="0"
-                                       @if (!EcommerceHelper::isDisplayProductIncludingTaxes()) checked @endif>{{ trans('core/setting::setting.general.no') }}
-                            </label>
+                            <div class="form-group mb-3">
+                                <label class="text-title-field"
+                                       for="display_product_price_including_taxes">{{ trans('plugins/ecommerce::ecommerce.setting.display_product_price_including_taxes') }}
+                                </label>
+                                <label class="me-2">
+                                    <input type="radio" name="display_product_price_including_taxes"
+                                           value="1"
+                                           @if (EcommerceHelper::isDisplayProductIncludingTaxes()) checked @endif>{{ trans('core/setting::setting.general.yes') }}
+                                </label>
+                                <label>
+                                    <input type="radio" name="display_product_price_including_taxes"
+                                           value="0"
+                                           @if (!EcommerceHelper::isDisplayProductIncludingTaxes()) checked @endif>{{ trans('core/setting::setting.general.no') }}
+                                </label>
+                            </div>
                         </div>
 
                         <div class="form-group mb-3">
@@ -113,6 +115,22 @@
                                 <input type="radio" name="order_tracking_enabled"
                                        value="0"
                                        @if (!EcommerceHelper::isOrderTrackingEnabled()) checked @endif>{{ trans('core/setting::setting.general.no') }}
+                            </label>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="text-title-field"
+                                   for="order_auto_confirmed">{{ trans('plugins/ecommerce::ecommerce.setting.enable_order_auto_confirmed') }}
+                            </label>
+                            <label class="me-2">
+                                <input type="radio" name="order_auto_confirmed"
+                                       value="1"
+                                       @if (EcommerceHelper::isOrderAutoConfirmedEnabled()) checked @endif>{{ trans('core/setting::setting.general.yes') }}
+                            </label>
+                            <label>
+                                <input type="radio" name="order_auto_confirmed"
+                                       value="0"
+                                       @if (!EcommerceHelper::isOrderAutoConfirmedEnabled()) checked @endif>{{ trans('core/setting::setting.general.no') }}
                             </label>
                         </div>
 
@@ -147,6 +165,19 @@
                             <div class="form-group mb-3">
                                 <label class="text-title-field" for="review_max_file_number">{{ trans('plugins/ecommerce::ecommerce.setting.review.max_file_number') }}</label>
                                 <input type="number" min="1" max="100" name="review_max_file_number" class="next-input input-mask-number next-input--invisible" value="{{ EcommerceHelper::reviewMaxFileNumber() }}">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="text-title-field"
+                                       for="only_allow_customers_purchased_to_review">{{ trans('plugins/ecommerce::ecommerce.setting.only_allow_customers_purchased_to_review') }}
+                                </label>
+                                <label class="me-2">
+                                    <input type="radio" name="only_allow_customers_purchased_to_review"value="1"
+                                        @if (EcommerceHelper::onlyAllowCustomersPurchasedToReview()) checked @endif>{{ trans('core/setting::setting.general.yes') }}
+                                </label>
+                                <label>
+                                    <input type="radio" name="only_allow_customers_purchased_to_review"value="0"
+                                        @if (!EcommerceHelper::onlyAllowCustomersPurchasedToReview()) checked @endif>{{ trans('core/setting::setting.general.no') }}
+                                </label>
                             </div>
                         </div>
 
@@ -388,12 +419,12 @@
                             <label class="me-2">
                                 <input type="radio" name="enable_customer_recently_viewed_products"
                                        value="1"
-                                       @if (EcommerceHelper::isEnabledCustomerRecentlyViewedProducts()) checked @endif>{{ trans('core/setting::setting.general.yes') }}
+                                       @if (EcommerceHelper::isEnabledCustomerRecentlyViewedProducts()) checked @endif class="trigger-input-option" data-setting-container=".recently-viewed-products-settings-container">{{ trans('core/setting::setting.general.yes') }}
                             </label>
                             <label>
                                 <input type="radio" name="enable_customer_recently_viewed_products"
                                        value="0"
-                                       @if (!EcommerceHelper::isEnabledCustomerRecentlyViewedProducts()) checked @endif>{{ trans('core/setting::setting.general.no') }}
+                                       @if (!EcommerceHelper::isEnabledCustomerRecentlyViewedProducts()) checked @endif class="trigger-input-option" data-setting-container=".recently-viewed-products-settings-container">{{ trans('core/setting::setting.general.no') }}
                             </label>
                         </div>
 
@@ -428,6 +459,12 @@
                             <label class="text-title-field" for="company_address_for_invoicing">{{ trans('plugins/ecommerce::ecommerce.setting.company_address') }}</label>
                             <input type="text" class="form-control" name="company_address_for_invoicing" value="{{ get_ecommerce_setting('company_address_for_invoicing') ?: (get_ecommerce_setting('store_address') . ', ' . get_ecommerce_setting('store_city') . ', ' . get_ecommerce_setting('store_state') . ', ' . EcommerceHelper::getCountryNameById(get_ecommerce_setting('store_country'))) }}">
                         </div>
+                        @if (EcommerceHelper::isZipCodeEnabled())
+                            <div class="form-group mb-3">
+                                <label class="text-title-field" for="company_zipcode_for_invoicing">{{ trans('plugins/ecommerce::ecommerce.setting.company_zipcode') }}</label>
+                                <input type="text" class="form-control" name="company_zipcode_for_invoicing" value="{{ get_ecommerce_setting('company_zipcode_for_invoicing') ?: get_ecommerce_setting('store_zip_code') }}">
+                            </div>
+                        @endif
                         <div class="form-group mb-3">
                             <label class="text-title-field" for="company_email_for_invoicing">{{ trans('plugins/ecommerce::ecommerce.setting.company_email') }}</label>
                             <input type="text" class="form-control" name="company_email_for_invoicing" value="{{ get_ecommerce_setting('company_email_for_invoicing') ?: get_ecommerce_setting('store_email') }}">
@@ -452,18 +489,20 @@
                             <label class="me-2">
                                 <input type="radio" name="using_custom_font_for_invoice"
                                        value="1"
-                                       @if (get_ecommerce_setting('using_custom_font_for_invoice', 0) == 1) checked @endif>{{ trans('core/setting::setting.general.yes') }}
+                                       @if (get_ecommerce_setting('using_custom_font_for_invoice', 0) == 1) checked @endif class="trigger-input-option" data-setting-container=".custom-font-settings-container">{{ trans('core/setting::setting.general.yes') }}
                             </label>
                             <label>
                                 <input type="radio" name="using_custom_font_for_invoice"
                                        value="0"
-                                       @if (get_ecommerce_setting('using_custom_font_for_invoice', 0) == 0) checked @endif>{{ trans('core/setting::setting.general.no') }}
+                                       @if (get_ecommerce_setting('using_custom_font_for_invoice', 0) == 0) checked @endif class="trigger-input-option" data-setting-container=".custom-font-settings-container">{{ trans('core/setting::setting.general.no') }}
                             </label>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label class="text-title-field" for="invoice_font_family">{{ trans('plugins/ecommerce::ecommerce.setting.invoice_font_family') }}</label>
-                            {!! Form::googleFonts('invoice_font_family', get_ecommerce_setting('invoice_font_family')) !!}
+                        <div class="custom-font-settings-container mb-4 border rounded-top rounded-bottom p-3 bg-light @if (get_ecommerce_setting('using_custom_font_for_invoice', 0) == 0) d-none @endif">
+                            <div class="form-group mb-3">
+                                <label class="text-title-field" for="invoice_font_family">{{ trans('plugins/ecommerce::ecommerce.setting.invoice_font_family') }}</label>
+                                {!! Form::googleFonts('invoice_font_family', get_ecommerce_setting('invoice_font_family')) !!}
+                            </div>
                         </div>
 
                         <div class="form-group mb-3">
@@ -614,19 +653,19 @@
                     <div class="wrapper-content pd-all-20">
                         <div class="form-group mb-3">
                             <label class="text-title-field"
-                                   for="search_for_an_exact_phrase">{{ trans('plugins/ecommerce::ecommerce.setting.activate_custom_return_product_quantity') }}
+                                   for="can_custom_return_product_quantity">{{ trans('plugins/ecommerce::ecommerce.setting.allow_partial_return') }}
                             </label>
                             <label class="me-2">
                                 <input type="radio" name="can_custom_return_product_quantity"
                                        value="1"
-                                       @if (get_ecommerce_setting('can_custom_return_product_quantity', 0) == 1) checked @endif>{{ trans('core/setting::setting.general.yes') }}
+                                       @if (EcommerceHelper::allowPartialReturn()) checked @endif>{{ trans('core/setting::setting.general.yes') }}
                             </label>
                             <label>
                                 <input type="radio" name="can_custom_return_product_quantity"
                                        value="0"
-                                       @if (get_ecommerce_setting('can_custom_return_product_quantity', 0) == 0) checked @endif>{{ trans('core/setting::setting.general.no') }}
+                                       @if (!EcommerceHelper::allowPartialReturn()) checked @endif>{{ trans('core/setting::setting.general.no') }}
                             </label>
-                            <span class="help-ts">{{ trans('plugins/ecommerce::ecommerce.setting.activate_custom_return_product_quantity_description') }}</span>
+                            <span class="help-ts">{{ trans('plugins/ecommerce::ecommerce.setting.allow_partial_return_description') }}</span>
                         </div>
                         <div class="form-group mb-3">
                             <label class="text-title-field"

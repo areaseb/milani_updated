@@ -2,6 +2,10 @@
 
 namespace Botble\Location\Tables;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use BaseHelper;
 use Botble\Base\Enums\BaseStatusEnum;
@@ -15,34 +19,14 @@ use Yajra\DataTables\DataTables;
 
 class CityTable extends TableAbstract
 {
-    /**
-     * @var bool
-     */
     protected $hasActions = true;
 
-    /**
-     * @var bool
-     */
     protected $hasFilter = true;
 
-    /**
-     * @var CountryInterface
-     */
-    protected $countryRepository;
+    protected CountryInterface $countryRepository;
 
-    /**
-     * @var StateInterface
-     */
-    protected $stateRepository;
+    protected StateInterface $stateRepository;
 
-    /**
-     * CityTable constructor.
-     * @param DataTables $table
-     * @param UrlGenerator $urlGenerator
-     * @param CityInterface $cityRepository
-     * @param CountryInterface $countryRepository
-     * @param StateInterface $stateRepository
-     */
     public function __construct(
         DataTables $table,
         UrlGenerator $urlGenerator,
@@ -56,34 +40,32 @@ class CityTable extends TableAbstract
         $this->countryRepository = $countryRepository;
         $this->stateRepository = $stateRepository;
 
-        if (!Auth::user()->hasAnyPermission(['city.edit', 'city.destroy'])) {
+        if (! Auth::user()->hasAnyPermission(['city.edit', 'city.destroy'])) {
             $this->hasOperations = false;
             $this->hasActions = false;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function ajax()
+    public function ajax(): JsonResponse
     {
         $data = $this->table
             ->eloquent($this->query())
             ->editColumn('name', function ($item) {
-                if (!Auth::user()->hasPermission('city.edit')) {
-                    return $item->name;
+                if (! Auth::user()->hasPermission('city.edit')) {
+                    return BaseHelper::clean($item->name);
                 }
-                return Html::link(route('city.edit', $item->id), $item->name);
+
+                return Html::link(route('city.edit', $item->id), BaseHelper::clean($item->name));
             })
             ->editColumn('state_id', function ($item) {
-                if (!$item->state_id || !$item->state->name) {
+                if (! $item->state_id || ! $item->state->name) {
                     return '&mdash;';
                 }
 
                 return Html::link(route('state.edit', $item->state_id), $item->state->name);
             })
             ->editColumn('country_id', function ($item) {
-                if (!$item->country_id || !$item->country->name) {
+                if (! $item->country_id || ! $item->country->name) {
                     return '&mdash;';
                 }
 
@@ -105,10 +87,7 @@ class CityTable extends TableAbstract
         return $this->toJson($data);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function query()
+    public function query(): Relation|Builder|QueryBuilder
     {
         $query = $this->repository->getModel()->select([
             'id',
@@ -122,21 +101,18 @@ class CityTable extends TableAbstract
         return $this->applyScopes($query);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function columns()
+    public function columns(): array
     {
         return [
-            'id'         => [
+            'id' => [
                 'title' => trans('core/base::tables.id'),
                 'width' => '20px',
             ],
-            'name'       => [
+            'name' => [
                 'title' => trans('core/base::tables.name'),
                 'class' => 'text-start',
             ],
-            'state_id'   => [
+            'state_id' => [
                 'title' => trans('plugins/location::city.state'),
                 'class' => 'text-start',
             ],
@@ -148,59 +124,50 @@ class CityTable extends TableAbstract
                 'title' => trans('core/base::tables.created_at'),
                 'width' => '100px',
             ],
-            'status'     => [
+            'status' => [
                 'title' => trans('core/base::tables.status'),
                 'width' => '100px',
             ],
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function buttons()
+    public function buttons(): array
     {
         return $this->addCreateButton(route('city.create'), 'city.create');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function bulkActions(): array
     {
         return $this->addDeleteAction(route('city.deletes'), 'city.destroy', parent::bulkActions());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getBulkChanges(): array
     {
         return [
-            'name'       => [
-                'title'    => trans('core/base::tables.name'),
-                'type'     => 'text',
+            'name' => [
+                'title' => trans('core/base::tables.name'),
+                'type' => 'text',
                 'validate' => 'required|max:120',
             ],
-            'state_id'   => [
-                'title'    => trans('plugins/location::city.state'),
-                'type'     => 'customSelect',
+            'state_id' => [
+                'title' => trans('plugins/location::city.state'),
+                'type' => 'customSelect',
                 'validate' => 'required|max:120',
             ],
             'country_id' => [
-                'title'    => trans('plugins/location::city.country'),
-                'type'     => 'customSelect',
+                'title' => trans('plugins/location::city.country'),
+                'type' => 'customSelect',
                 'validate' => 'required|max:120',
             ],
-            'status'     => [
-                'title'    => trans('core/base::tables.status'),
-                'type'     => 'customSelect',
-                'choices'  => BaseStatusEnum::labels(),
+            'status' => [
+                'title' => trans('core/base::tables.status'),
+                'type' => 'customSelect',
+                'choices' => BaseStatusEnum::labels(),
                 'validate' => 'required|in:' . implode(',', BaseStatusEnum::values()),
             ],
             'created_at' => [
                 'title' => trans('core/base::tables.created_at'),
-                'type'  => 'date',
+                'type' => 'datePicker',
             ],
         ];
     }

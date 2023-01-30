@@ -6,19 +6,14 @@ use Botble\Support\Http\Requests\Request;
 
 class PaymentRequest extends Request
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
-    public function rules()
+    public function rules(): array
     {
         return [
-            'tran_id'  => 'required',
-            'amount'   => 'required',
+            'tran_id' => 'required',
+            'amount' => 'required',
             'currency' => 'required',
-            'value_a'  => 'required',
-            'value_b'  => 'required',
+            'value_a' => 'required',
+            'value_b' => 'required',
         ];
     }
 }

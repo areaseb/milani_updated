@@ -4,14 +4,10 @@ namespace Botble\Optimize\Http\Middleware;
 
 class ElideAttributes extends PageSpeed
 {
-    /**
-     * @param string $buffer
-     * @return string
-     */
-    public function apply($buffer)
+    public function apply(string $buffer): string
     {
         $replace = [
-            '/ method=("get"|get)/'   => '',
+            '/ method=("get"|get)/' => '',
             '/ disabled=[^ >]*(.*?)/' => ' disabled',
             '/ selected=[^ >]*(.*?)/' => ' selected',
         ];

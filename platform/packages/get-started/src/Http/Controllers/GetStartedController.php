@@ -13,11 +13,6 @@ use ThemeOption;
 
 class GetStartedController extends BaseController
 {
-    /**
-     * @param GetStartedRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function save(GetStartedRequest $request, BaseHttpResponse $response): BaseHttpResponse
     {
         $step = $request->input('step');
@@ -54,7 +49,7 @@ class GetStartedController extends BaseController
                 $user = auth()->user();
 
                 if ($user->username != config('core.base.general.demo.account.username', 'botble') &&
-                    !Hash::check($user->getAuthPassword(), config('core.base.general.demo.account.password', '159357'))
+                    ! Hash::check($user->getAuthPassword(), config('core.base.general.demo.account.password', '159357'))
                 ) {
                     $nextStep = 4;
                 }

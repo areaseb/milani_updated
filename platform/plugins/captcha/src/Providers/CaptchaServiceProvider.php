@@ -12,24 +12,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
+use Theme;
 
 class CaptchaServiceProvider extends ServiceProvider
 {
     use LoadAndPublishDataTrait;
 
-    /**
-     * Indicates if loading of the provider is deferred.
-     *
-     * @var bool
-     */
-    protected $defer = false;
+    protected bool $defer = false;
 
-    public function register()
+    public function register(): void
     {
         config([
-            'plugins.captcha.general.secret'     => setting('captcha_secret'),
-            'plugins.captcha.general.site_key'   => setting('captcha_site_key'),
-            'plugins.captcha.general.type'       => setting('captcha_type'),
+            'plugins.captcha.general.secret' => setting('captcha_secret'),
+            'plugins.captcha.general.site_key' => setting('captcha_site_key'),
+            'plugins.captcha.general.type' => setting('captcha_type'),
         ]);
 
         $this->app->singleton('captcha', function ($app) {
@@ -47,7 +43,7 @@ class CaptchaServiceProvider extends ServiceProvider
         AliasLoader::getInstance()->alias('Captcha', CaptchaFacade::class);
     }
 
-    public function boot()
+    public function boot(): void
     {
         $this->setNamespace('plugins/captcha')
             ->loadAndPublishConfigurations(['general'])
@@ -57,7 +53,7 @@ class CaptchaServiceProvider extends ServiceProvider
         $this->bootValidator();
 
         if (defined('THEME_MODULE_SCREEN_NAME') && setting('captcha_hide_badge')) {
-            \Theme::asset()->writeStyle('hide-recaptcha-badge', '.grecaptcha-badge { visibility: hidden; }');
+            Theme::asset()->writeStyle('hide-recaptcha-badge', '.grecaptcha-badge { visibility: hidden; }');
         }
 
         $this->app->booted(function () {
@@ -112,13 +108,9 @@ class CaptchaServiceProvider extends ServiceProvider
         });
     }
 
-    /**
-     * @param array $parameters
-     * @return array
-     */
     public function mapParameterToOptions(array $parameters = []): array
     {
-        if (!is_array($parameters)) {
+        if (! is_array($parameters)) {
             return [];
         }
 
@@ -134,12 +126,7 @@ class CaptchaServiceProvider extends ServiceProvider
         return $options;
     }
 
-    /**
-     * Get the services provided by the provider.
-     *
-     * @return array
-     */
-    public function provides()
+    public function provides(): array
     {
         return ['captcha', 'math-captcha'];
     }

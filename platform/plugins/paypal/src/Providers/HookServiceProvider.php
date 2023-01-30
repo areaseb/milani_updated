@@ -12,7 +12,7 @@ use Throwable;
 
 class HookServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         add_filter(PAYMENT_FILTER_ADDITIONAL_PAYMENT_METHODS, [$this, 'registerPaypalMethod'], 2, 2);
 
@@ -110,14 +110,14 @@ class HookServiceProvider extends ServiceProvider
 
             $notSupportCurrency = false;
 
-            if (!in_array($currency, $supportedCurrencies)) {
+            if (! in_array($currency, $supportedCurrencies)) {
                 $notSupportCurrency = true;
 
-                if (!$currencyModel->where('title', 'USD')->exists()) {
+                if (! $currencyModel->where('title', 'USD')->exists()) {
                     $data['error'] = true;
                     $data['message'] = __(":name doesn't support :currency. List of currencies supported by :name: :currencies.", [
-                        'name'       => 'PayPal',
-                        'currency'   => $currency,
+                        'name' => 'PayPal',
+                        'currency' => $currency,
                         'currencies' => implode(', ', $supportedCurrencies),
                     ]);
 
@@ -138,7 +138,7 @@ class HookServiceProvider extends ServiceProvider
                 }
             }
 
-            if (!$request->input('callback_url')) {
+            if (! $request->input('callback_url')) {
                 $paymentData['callback_url'] = route('payments.paypal.status');
             }
 

@@ -12,11 +12,11 @@ class Webmasters implements WebmastersContract
      * @var array
      */
     protected $supported = [
-        'google'    => 'google-site-verification',
-        'bing'      => 'msvalidate.01',
-        'alexa'     => 'alexaVerifyID',
+        'google' => 'google-site-verification',
+        'bing' => 'msvalidate.01',
+        'alexa' => 'alexaVerifyID',
         'pinterest' => 'p:domain_verify',
-        'yandex'    => 'yandex-verification',
+        'yandex' => 'yandex-verification',
     ];
 
     /**
@@ -69,7 +69,7 @@ class Webmasters implements WebmastersContract
      */
     public function add($webmaster, $content)
     {
-        if (!empty($name = $this->getWebmasterName($webmaster))) {
+        if (! empty($name = $this->getWebmasterName($webmaster))) {
             $this->meta->add(compact('name', 'content'));
         }
 

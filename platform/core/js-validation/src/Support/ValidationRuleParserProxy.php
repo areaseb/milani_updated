@@ -3,44 +3,25 @@
 namespace Botble\JsValidation\Support;
 
 use Closure;
+use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Validation\NestedRules;
 use Illuminate\Validation\ValidationRuleParser;
 
 class ValidationRuleParserProxy
 {
     use AccessProtectedTrait;
 
-    /**
-     * ValidationRuleParser instance.
-     *
-     * @var ValidationRuleParser
-     */
-    protected $parser;
+    protected ValidationRuleParser $parser;
 
-    /**
-     * Closure to invoke non accessible Validator methods.
-     *
-     * @var Closure
-     */
-    protected $parserMethod;
+    protected Closure $parserMethod;
 
-    /**
-     * ValidationRuleParserProxy constructor.
-     *
-     * @param array $data
-     */
-    public function __construct($data = [])
+    public function __construct(array $data = [])
     {
-        $this->parser = new ValidationRuleParser((array)$data);
+        $this->parser = new ValidationRuleParser($data);
         $this->parserMethod = $this->createProtectedCaller($this->parser);
     }
 
-    /**
-     * Extract the rule name and parameters from a rule.
-     *
-     * @param array|string $rules
-     * @return array
-     */
-    public function parse($rules)
+    public function parse(array|string|Rule|NestedRules $rules): array
     {
         return $this->parser->parse($rules);
     }

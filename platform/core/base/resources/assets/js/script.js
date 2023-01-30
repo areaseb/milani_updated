@@ -16,15 +16,15 @@ class Botble {
 
     static blockUI(options) {
         options = $.extend(true, {}, options);
-        let html = '';
+        let html;
         if (options.animate) {
             html = '<div class="loading-message ' + (options.boxed ? 'loading-message-boxed' : '') + '">' + '<div class="block-spinner-bar"><div class="bounce1"></div><div class="bounce2"></div><div class="bounce3"></div></div>' + '</div>';
         } else if (options.iconOnly) {
-            html = '<div class="loading-message ' + (options.boxed ? 'loading-message-boxed' : '') + '"><img src="/vendor/core/core/base/images/loading-spinner-blue.gif" alt="loading"></div>';
+            html = '<div class="loading-message ' + (options.boxed ? 'loading-message-boxed' : '') + '"><img src="' + window.siteUrl + '/vendor/core/core/base/images/loading-spinner-blue.gif" alt="loading"></div>';
         } else if (options.textOnly) {
             html = '<div class="loading-message ' + (options.boxed ? 'loading-message-boxed' : '') + '"><span>&nbsp;&nbsp;' + (options.message ? options.message : 'LOADING...') + '</span></div>';
         } else {
-            html = '<div class="loading-message ' + (options.boxed ? 'loading-message-boxed' : '') + '"><img src="/vendor/core/core/base/images/loading-spinner-blue.gif" alt="loading"><span>&nbsp;&nbsp;' + (options.message ? options.message : 'LOADING...') + '</span></div>';
+            html = '<div class="loading-message ' + (options.boxed ? 'loading-message-boxed' : '') + '"><img src="' + window.siteUrl + '/vendor/core/core/base/images/loading-spinner-blue.gif" alt="loading"><span>&nbsp;&nbsp;' + (options.message ? options.message : 'LOADING...') + '</span></div>';
         }
 
         if (options.target) { // element blocking
@@ -302,17 +302,14 @@ class Botble {
     }
 
     static initDatePicker(element) {
-        if (jQuery().bootstrapDP) {
+        if (jQuery().flatpickr) {
             let format = $(document).find(element).data('date-format');
             if (!format) {
-                format = 'yyyy-mm-dd';
+                format = 'Y-m-d';
             }
-            $(document).find(element).bootstrapDP({
-                maxDate: 0,
-                changeMonth: true,
-                changeYear: true,
-                autoclose: true,
+            $(document).find(element).flatpickr({
                 dateFormat: format,
+                wrap: true
             });
         }
     }
@@ -457,7 +454,7 @@ class Botble {
                     groupSeparator: $(element).data('thousands-separator') ?? ',',
                     radixPoint: $(element).data('decimal-separator') ?? '.',
                     digitsOptional: true,
-                    placeholder: '0',
+                    placeholder: $(element).data('placeholder') ?? '0',
                     autoGroup: true,
                     autoUnmask: true,
                     removeMaskOnSubmit: true,
@@ -532,7 +529,7 @@ class Botble {
         }
 
         if (jQuery().areYouSure) {
-            $('form').areYouSure();
+            $('form.dirty-check').areYouSure();
         }
 
         Botble.initDatePicker('.datepicker');
@@ -545,7 +542,7 @@ class Botble {
         }
 
         $('.select2_google_fonts_picker').each(function (i, obj) {
-            if (!$(obj).hasClass('select2-hidden-accessible')){
+            if (!$(obj).hasClass('select2-hidden-accessible')) {
                 $(obj).select2({
                     templateResult: function (opt) {
                         if (!opt.id) {
@@ -696,9 +693,9 @@ class Botble {
                                     let link = file.full_url;
                                     if (file.type === 'youtube') {
                                         link = link.replace('watch?v=', 'embed/');
-                                        content += '<iframe width="420" height="315" src="' + link + '" frameborder="0" allowfullscreen></iframe><br />';
+                                        content += '<iframe width="420" height="315" src="' + link + '" frameborder="0" allowfullscreen loading="lazy"></iframe><br />';
                                     } else if (file.type === 'image') {
-                                        content += '<img src="' + link + '" alt="' + file.name + '" /><br />';
+                                        content += '<img src="' + link + '" alt="' + file.name + '" loading="lazy"/><br />';
                                     } else {
                                         content += '<a href="' + link + '">' + file.name + '</a><br />';
                                     }
@@ -713,9 +710,9 @@ class Botble {
                                     let link = file.full_url;
                                     if (file.type === 'youtube') {
                                         link = link.replace('watch?v=', 'embed/');
-                                        html += '<iframe width="420" height="315" src="' + link + '" frameborder="0" allowfullscreen></iframe><br />';
+                                        html += '<iframe width="420" height="315" src="' + link + '" frameborder="0" allowfullscreen loading="lazy"></iframe><br />';
                                     } else if (file.type === 'image') {
-                                        html += '<img src="' + link + '" alt="' + file.name + '" /><br />';
+                                        html += '<img src="' + link + '" alt="' + file.name + '" loading="lazy"/><br />';
                                     } else {
                                         html += '<a href="' + link + '">' + file.name + '</a><br />';
                                     }
@@ -735,6 +732,9 @@ class Botble {
                                 $el.closest('.attachment-wrapper').find('.attachment-url').val(firstAttachment.url);
                                 $el.closest('.attachment-wrapper').find('.attachment-details').html('<a href="' + firstAttachment.full_url + '" target="_blank">' + firstAttachment.url + '</a>');
                                 break;
+                            default:
+                                const coreInsertMediaEvent = new CustomEvent('core-insert-media', { detail: { files: files, element: $el } })
+                                document.dispatchEvent(coreInsertMediaEvent)
                         }
                     }
                 });
@@ -944,10 +944,6 @@ class Botble {
             });
         }
     }
-}
-
-if (jQuery().datepicker && jQuery().datepicker.noConflict) {
-    $.fn.bootstrapDP = $.fn.datepicker.noConflict();
 }
 
 $(document).ready(() => {

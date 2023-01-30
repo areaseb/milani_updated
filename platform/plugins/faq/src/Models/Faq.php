@@ -2,25 +2,15 @@
 
 namespace Botble\Faq\Models;
 
+use Botble\Base\Casts\SafeContent;
 use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Base\Models\BaseModel;
-use Botble\Base\Traits\EnumCastable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Faq extends BaseModel
 {
-    use EnumCastable;
-
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
     protected $table = 'faqs';
 
-    /**
-     * @var array
-     */
     protected $fillable = [
         'question',
         'answer',
@@ -28,16 +18,12 @@ class Faq extends BaseModel
         'status',
     ];
 
-    /**
-     * @var array
-     */
     protected $casts = [
         'status' => BaseStatusEnum::class,
+        'question' => SafeContent::class,
+        'answer' => SafeContent::class,
     ];
 
-    /**
-     * @return BelongsTo
-     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(FaqCategory::class, 'category_id')->withDefault();

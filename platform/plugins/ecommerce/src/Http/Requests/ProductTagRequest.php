@@ -8,15 +8,10 @@ use Illuminate\Validation\Rule;
 
 class ProductTagRequest extends Request
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
-    public function rules()
+    public function rules(): array
     {
         return [
-            'name'   => 'required',
+            'name' => 'required',
             'status' => Rule::in(BaseStatusEnum::values()),
         ];
     }

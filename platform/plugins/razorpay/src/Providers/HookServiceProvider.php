@@ -13,11 +13,10 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Razorpay\Api\Api;
 use Razorpay\Api\Errors\SignatureVerificationError;
-use Throwable;
 
 class HookServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         add_filter(PAYMENT_FILTER_ADDITIONAL_PAYMENT_METHODS, [$this, 'registerRazorpayMethod'], 11, 2);
         add_filter(PAYMENT_FILTER_AFTER_POST_CHECKOUT, [$this, 'checkoutWithRazorpay'], 11, 2);
@@ -77,14 +76,16 @@ class HookServiceProvider extends ServiceProvider
         add_filter(PAYMENT_FILTER_GET_REFUND_DETAIL, function ($data, $payment, $refundId) {
             if ($payment->payment_channel == RAZORPAY_PAYMENT_METHOD_NAME) {
                 $refundDetail = (new RazorpayPaymentService())->getRefundDetails($refundId);
-                if (!Arr::get($refundDetail, 'error')) {
+                if (! Arr::get($refundDetail, 'error')) {
                     $refunds = Arr::get($payment->metadata, 'refunds', []);
                     $refund = collect($refunds)->firstWhere('id', $refundId);
                     $refund = array_merge((array) $refund, Arr::get($refundDetail, 'data', []));
+
                     return array_merge($refundDetail, [
                         'view' => view('plugins/razorpay::refund-detail', ['refund' => $refund, 'paymentModel' => $payment])->render(),
                     ]);
                 }
+
                 return $refundDetail;
             }
 
@@ -92,27 +93,17 @@ class HookServiceProvider extends ServiceProvider
         }, 20, 3);
     }
 
-    /**
-     * @param string $settings
-     * @return string
-     * @throws Throwable
-     */
-    public function addPaymentSettings($settings)
+    public function addPaymentSettings(?string $settings): string
     {
         return $settings . view('plugins/razorpay::settings')->render();
     }
 
-    /**
-     * @param string $html
-     * @param array $data
-     * @return string
-     */
-    public function registerRazorpayMethod($html, $data)
+    public function registerRazorpayMethod(?string $html, array $data): string
     {
         $apiKey = get_payment_setting('key', RAZORPAY_PAYMENT_METHOD_NAME);
         $apiSecret = get_payment_setting('secret', RAZORPAY_PAYMENT_METHOD_NAME);
 
-        if (!$apiKey || !$apiSecret) {
+        if (! $apiKey || ! $apiSecret) {
             return $html;
         }
 
@@ -127,8 +118,8 @@ class HookServiceProvider extends ServiceProvider
             $amount = $data['amount'] * 100;
 
             $order = $api->order->create([
-                'receipt'  => $receiptId,
-                'amount'   => (int)round($amount),
+                'receipt' => $receiptId,
+                'amount' => (int)round($amount),
                 'currency' => $data['currency'],
             ]);
 
@@ -140,12 +131,7 @@ class HookServiceProvider extends ServiceProvider
         return $html . view('plugins/razorpay::methods', $data)->render();
     }
 
-    /**
-     * @param Request $request
-     * @param array $data
-     * @return array
-     */
-    public function checkoutWithRazorpay(array $data, Request $request)
+    public function checkoutWithRazorpay(array $data, Request $request): array
     {
         if ($request->input('payment_method') == RAZORPAY_PAYMENT_METHOD_NAME) {
             try {
@@ -155,16 +141,16 @@ class HookServiceProvider extends ServiceProvider
                 );
 
                 $api->utility->verifyPaymentSignature([
-                    'razorpay_signature'  => $request->input('razorpay_signature'),
+                    'razorpay_signature' => $request->input('razorpay_signature'),
                     'razorpay_payment_id' => $request->input('razorpay_payment_id'),
-                    'razorpay_order_id'   => $request->input('razorpay_order_id'),
+                    'razorpay_order_id' => $request->input('razorpay_order_id'),
                 ]);
 
                 $order = $api->order->fetch($request->input('razorpay_order_id'));
 
                 $order = $order->toArray();
 
-                if (in_array($order['status'], ['created', 'paid', 'attempted'])) {
+                if (in_array($order['status'], ['created', 'paid', 'attempted', 'captured', 'authorized'])) {
                     $amount = $order['amount_paid'] / 100;
 
                     $status = PaymentStatusEnum::COMPLETED;
@@ -173,13 +159,13 @@ class HookServiceProvider extends ServiceProvider
 
                     if ($data['charge_id']) {
                         do_action(PAYMENT_ACTION_PAYMENT_PROCESSED, [
-                            'account_id'      => Arr::get($data, 'account_id'),
-                            'amount'          => $amount,
-                            'currency'        => $data['currency'],
-                            'charge_id'       => $data['charge_id'],
+                            'account_id' => Arr::get($data, 'account_id'),
+                            'amount' => $amount,
+                            'currency' => $data['currency'],
+                            'charge_id' => $data['charge_id'],
                             'payment_channel' => RAZORPAY_PAYMENT_METHOD_NAME,
-                            'status'          => $status,
-                            'order_id'        => (array) $request->input('order_id', []),
+                            'status' => $status,
+                            'order_id' => (array) $request->input('order_id', []),
                         ]);
                     } else {
                         $data['error'] = true;

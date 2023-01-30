@@ -15,7 +15,7 @@ class PaymentServiceProvider extends ServiceProvider
 {
     use LoadAndPublishDataTrait;
 
-    public function register()
+    public function register(): void
     {
         $this
             ->setNamespace('plugins/payment')
@@ -26,43 +26,43 @@ class PaymentServiceProvider extends ServiceProvider
         });
     }
 
-    public function boot()
+    public function boot(): void
     {
         $this
             ->loadAndPublishConfigurations(['payment', 'permissions'])
             ->loadAndPublishViews()
             ->loadAndPublishTranslations()
-            ->loadRoutes(['web'])
+            ->loadRoutes()
             ->loadMigrations()
             ->publishAssets();
 
         Event::listen(RouteMatched::class, function () {
             dashboard_menu()
                 ->registerItem([
-                    'id'          => 'cms-plugins-payments',
-                    'priority'    => 800,
-                    'parent_id'   => null,
-                    'name'        => 'plugins/payment::payment.name',
-                    'icon'        => 'fas fa-credit-card',
-                    'url'         => route('payment.index'),
+                    'id' => 'cms-plugins-payments',
+                    'priority' => 800,
+                    'parent_id' => null,
+                    'name' => 'plugins/payment::payment.name',
+                    'icon' => 'fas fa-credit-card',
+                    'url' => route('payment.index'),
                     'permissions' => ['payment.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-payments-all',
-                    'priority'    => 0,
-                    'parent_id'   => 'cms-plugins-payments',
-                    'name'        => 'plugins/payment::payment.transactions',
-                    'icon'        => null,
-                    'url'         => route('payment.index'),
+                    'id' => 'cms-plugins-payments-all',
+                    'priority' => 0,
+                    'parent_id' => 'cms-plugins-payments',
+                    'name' => 'plugins/payment::payment.transactions',
+                    'icon' => null,
+                    'url' => route('payment.index'),
                     'permissions' => ['payment.index'],
                 ])
                 ->registerItem([
-                    'id'          => 'cms-plugins-payment-methods',
-                    'priority'    => 1,
-                    'parent_id'   => 'cms-plugins-payments',
-                    'name'        => 'plugins/payment::payment.payment_methods',
-                    'icon'        => null,
-                    'url'         => route('payments.methods'),
+                    'id' => 'cms-plugins-payment-methods',
+                    'priority' => 1,
+                    'parent_id' => 'cms-plugins-payments',
+                    'name' => 'plugins/payment::payment.payment_methods',
+                    'icon' => null,
+                    'url' => route('payments.methods'),
                     'permissions' => ['payments.settings'],
                 ]);
         });

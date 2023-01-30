@@ -4,7 +4,6 @@ namespace Botble\Payment\Models;
 
 use Botble\ACL\Models\User;
 use Botble\Base\Models\BaseModel;
-use Botble\Base\Traits\EnumCastable;
 use Botble\Payment\Enums\PaymentMethodEnum;
 use Botble\Payment\Enums\PaymentStatusEnum;
 use Html;
@@ -13,18 +12,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Payment extends BaseModel
 {
-    use EnumCastable;
-
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
     protected $table = 'payments';
 
-    /**
-     * @var array
-     */
     protected $fillable = [
         'amount',
         'currency',
@@ -41,43 +30,31 @@ class Payment extends BaseModel
         'refund_note',
     ];
 
-    /**
-     * @var array
-     */
     protected $casts = [
         'payment_channel' => PaymentMethodEnum::class,
-        'status'          => PaymentStatusEnum::class,
-        'metadata'        => 'array',
+        'status' => PaymentStatusEnum::class,
+        'metadata' => 'array',
     ];
 
-    /**
-     * @return BelongsTo
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class)->withDefault();
     }
 
-    /**
-     * @return MorphTo
-     */
     public function customer(): MorphTo
     {
         return $this->morphTo()->withDefault();
     }
 
-    /**
-     * @return string
-     */
     public function getDescription(): string
     {
         $time = Html::tag('span', $this->created_at->diffForHumans(), ['class' => 'small italic']);
 
         return __('You have created a payment #:charge_id via :channel :time : :amount', [
             'charge_id' => $this->charge_id,
-            'channel'   => $this->payment_channel->label(),
-            'time'      => $time,
-            'amount'    => number_format($this->amount, 2) . $this->currency,
+            'channel' => $this->payment_channel->label(),
+            'time' => $time,
+            'amount' => number_format($this->amount, 2) . $this->currency,
         ]);
     }
 }

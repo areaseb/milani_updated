@@ -3,7 +3,6 @@
 namespace Botble\Location;
 
 use Botble\Base\Enums\BaseStatusEnum;
-use Botble\Base\Models\BaseModel;
 use Botble\Base\Models\BaseQueryBuilder;
 use Botble\Base\Supports\PclZip as Zip;
 use Botble\Location\Models\City;
@@ -15,102 +14,76 @@ use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Utils;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use ZipArchive;
 
 class Location
 {
-    /**
-     * @var StateInterface
-     */
-    protected $stateRepository;
+    protected StateInterface $stateRepository;
 
-    /**
-     * @var CityInterface
-     */
-    protected $cityRepository;
+    protected CityInterface $cityRepository;
 
-    /**
-     * Location constructor.
-     * @param StateInterface $stateRepository
-     * @param CityInterface $cityRepository
-     */
     public function __construct(StateInterface $stateRepository, CityInterface $cityRepository)
     {
         $this->stateRepository = $stateRepository;
         $this->cityRepository = $cityRepository;
     }
 
-    /**
-     * @return array
-     */
     public function getStates(): array
     {
         $states = $this->stateRepository->advancedGet([
             'condition' => [
                 'status' => BaseStatusEnum::PUBLISHED,
             ],
-            'order_by'  => ['order' => 'ASC', 'name' => 'ASC'],
+            'order_by' => ['order' => 'ASC', 'name' => 'ASC'],
         ]);
 
         return $states->pluck('name', 'id')->all();
     }
 
-    /**
-     * @param $stateId
-     * @return array
-     */
     public function getCitiesByState($stateId): array
     {
         $cities = $this->cityRepository->advancedGet([
             'condition' => [
-                'status'   => BaseStatusEnum::PUBLISHED,
+                'status' => BaseStatusEnum::PUBLISHED,
                 'state_id' => $stateId,
             ],
-            'order_by'  => ['order' => 'ASC', 'name' => 'ASC'],
+            'order_by' => ['order' => 'ASC', 'name' => 'ASC'],
         ]);
 
         return $cities->pluck('name', 'id')->all();
     }
 
-    /**
-     * @param $cityId
-     * @return string
-     */
-    public function getCityNameById($cityId): ?string
+    public function getCityById($cityId): ?City
     {
-        $city = $this->cityRepository->getFirstBy([
-            'id'     => $cityId,
+        return $this->cityRepository->getFirstBy([
+            'id' => $cityId,
             'status' => BaseStatusEnum::PUBLISHED,
         ]);
-
-        return $city ? $city->name : null;
     }
 
-    /**
-     * @param $stateId
-     * @return string
-     */
+    public function getCityNameById($cityId): ?string
+    {
+        $city = $this->getCityById($cityId);
+
+        return $city?->name;
+    }
+
     public function getStateNameById($stateId): ?string
     {
         $state = $this->stateRepository->getFirstBy([
-            'id'     => $stateId,
+            'id' => $stateId,
             'status' => BaseStatusEnum::PUBLISHED,
         ]);
 
         return $state ? $state->name : null;
     }
 
-    /**
-     * @param string|BaseModel $model
-     * @return bool
-     */
-    public function isSupported($model): bool
+    public function isSupported(string|object $model): bool
     {
-        if (!$model) {
+        if (! $model) {
             return false;
         }
 
@@ -121,21 +94,14 @@ class Location
         return in_array($model, $this->supportedModels());
     }
 
-    /**
-     * @return int[]|string[]
-     */
     public function supportedModels(): array
     {
         return array_keys($this->getSupported());
     }
 
-    /**
-     * @param string|BaseModel|null $model
-     * @return array
-     */
-    public function getSupported($model = null): array
+    public function getSupported(string|object $model = null): array
     {
-        if (!$model) {
+        if (! $model) {
             return config('plugins.location.general.supported', []);
         }
 
@@ -146,18 +112,15 @@ class Location
         return Arr::get(config('plugins.location.general.supported', []), $model, []);
     }
 
-    /**
-     * @param string $model
-     * @param array $keys
-     * @return bool
-     */
     public function registerModule(string $model, array $keys = []): bool
     {
-        $keys = array_filter(array_merge([
-            'country' => 'country_id',
-            'state'   => 'state_id',
-            'city'    => 'city_id',
-        ], $keys));
+        $keys = array_filter(
+            array_merge([
+                'country' => 'country_id',
+                'state' => 'state_id',
+                'city' => 'city_id',
+            ], $keys)
+        );
 
         config([
             'plugins.location.general.supported' => array_merge($this->getSupported(), [$model => $keys]),
@@ -166,9 +129,6 @@ class Location
         return true;
     }
 
-    /**
-     * @return array|string[]
-     */
     public function getRemoteAvailableLocations(): array
     {
         $client = new Client(['verify' => false]);
@@ -177,7 +137,7 @@ class Location
             $info = $client->request('GET', 'https://api.github.com/repos/botble/locations/git/trees/master', [
                 'headers' => [
                     'Content-Type' => 'application/json',
-                    'Accept'       => 'application/json',
+                    'Accept' => 'application/json',
                 ],
             ]);
 
@@ -192,17 +152,13 @@ class Location
 
                 $availableLocations[] = $tree['path'];
             }
-        } catch (Exception|GuzzleException $exception) {
+        } catch (Exception|GuzzleException) {
             $availableLocations = ['us', 'ca', 'vn'];
         }
 
         return $availableLocations;
     }
 
-    /**
-     * @param string $countryCode
-     * @return array|false[]
-     */
     public function downloadRemoteLocation(string $countryCode): array
     {
         $repository = 'https://github.com/botble/locations';
@@ -213,9 +169,9 @@ class Location
 
         $availableLocations = $this->getRemoteAvailableLocations();
 
-        if (!in_array($countryCode, $availableLocations)) {
+        if (! in_array($countryCode, $availableLocations)) {
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => 'This country locations data is not available on ' . $repository,
             ];
         }
@@ -226,7 +182,7 @@ class Location
             ]);
         } catch (Exception|GuzzleException $exception) {
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => $exception->getMessage(),
             ];
         }
@@ -239,7 +195,7 @@ class Location
                 $zip->close();
             } else {
                 return [
-                    'error'   => true,
+                    'error' => true,
                     'message' => 'Extract location files failed!',
                 ];
             }
@@ -254,7 +210,7 @@ class Location
 
         $dataPath = storage_path('app/locations-master/' . $countryCode);
 
-        if (!File::isDirectory($dataPath)) {
+        if (! File::isDirectory($dataPath)) {
             abort(404);
         }
 
@@ -275,14 +231,14 @@ class Location
         $cities = json_decode($cities, true);
         foreach ($cities as $item) {
             $state = State::where('name', $item['name'])->first();
-            if (!$state) {
+            if (! $state) {
                 continue;
             }
 
             foreach ($item['cities'] as $cityName) {
                 $city = [
-                    'name'       => $cityName,
-                    'state_id'   => $state->id,
+                    'name' => $cityName,
+                    'state_id' => $state->id,
                     'country_id' => $country->id,
                 ];
 
@@ -293,17 +249,11 @@ class Location
         File::deleteDirectory(storage_path('app/locations-master'));
 
         return [
-            'error'   => false,
+            'error' => false,
             'message' => trans('plugins/location::bulk-import.imported_successfully'),
         ];
     }
 
-    /**
-     * @param BaseQueryBuilder|Model $model
-     * @param int|null $cityId
-     * @param string|null $location
-     * @return BaseQueryBuilder|Model
-     */
     public function filter($model, int $cityId = null, string $location = null)
     {
         $className = get_class($model);

@@ -8,6 +8,10 @@ use Botble\Page\Repositories\Interfaces\PageInterface;
 use Botble\Table\Abstracts\TableAbstract;
 use Html;
 use Illuminate\Contracts\Routing\UrlGenerator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -15,48 +19,33 @@ use Yajra\DataTables\DataTables;
 
 class PageTable extends TableAbstract
 {
-    /**
-     * @var bool
-     */
     protected $hasActions = true;
 
-    /**
-     * @var bool
-     */
     protected $hasFilter = true;
 
-    /**
-     * PageTable constructor.
-     * @param DataTables $table
-     * @param UrlGenerator $urlGenerator
-     * @param PageInterface $pageRepository
-     */
     public function __construct(DataTables $table, UrlGenerator $urlGenerator, PageInterface $pageRepository)
     {
         parent::__construct($table, $urlGenerator);
 
         $this->repository = $pageRepository;
 
-        if (!Auth::user()->hasAnyPermission(['pages.edit', 'pages.destroy'])) {
+        if (! Auth::user()->hasAnyPermission(['pages.edit', 'pages.destroy'])) {
             $this->hasOperations = false;
             $this->hasActions = false;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function ajax()
+    public function ajax(): JsonResponse
     {
         $pageTemplates = get_page_templates();
 
         $data = $this->table
             ->eloquent($this->query())
             ->editColumn('name', function ($item) {
-                if (!Auth::user()->hasPermission('posts.edit')) {
-                    $name = $item->name;
+                if (! Auth::user()->hasPermission('posts.edit')) {
+                    $name = BaseHelper::clean($item->name);
                 } else {
-                    $name = Html::link(route('pages.edit', $item->id), $item->name);
+                    $name = Html::link(route('pages.edit', $item->id), BaseHelper::clean($item->name));
                 }
 
                 if (function_exists('theme_option') && BaseHelper::isHomepage($item->id)) {
@@ -71,7 +60,7 @@ class PageTable extends TableAbstract
                 return $this->getCheckbox($item->id);
             })
             ->editColumn('template', function ($item) use ($pageTemplates) {
-                return Arr::get($pageTemplates, $item->template);
+                return Arr::get($pageTemplates, $item->template ?: 'default');
             })
             ->editColumn('created_at', function ($item) {
                 return BaseHelper::formatDate($item->created_at);
@@ -86,10 +75,7 @@ class PageTable extends TableAbstract
         return $this->toJson($data);
     }
 
-    /**
-     * @return mixed
-     */
-    public function query()
+    public function query(): Relation|Builder|QueryBuilder
     {
         $query = $this->repository->getModel()->select([
             'id',
@@ -102,21 +88,18 @@ class PageTable extends TableAbstract
         return $this->applyScopes($query);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function columns()
+    public function columns(): array
     {
         return [
-            'id'         => [
+            'id' => [
                 'title' => trans('core/base::tables.id'),
                 'width' => '20px',
             ],
-            'name'       => [
+            'name' => [
                 'title' => trans('core/base::tables.name'),
                 'class' => 'text-start',
             ],
-            'template'   => [
+            'template' => [
                 'title' => trans('core/base::tables.template'),
                 'class' => 'text-start',
             ],
@@ -125,7 +108,7 @@ class PageTable extends TableAbstract
                 'width' => '100px',
                 'class' => 'text-center',
             ],
-            'status'     => [
+            'status' => [
                 'title' => trans('core/base::tables.status'),
                 'width' => '100px',
                 'class' => 'text-center',
@@ -133,48 +116,39 @@ class PageTable extends TableAbstract
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function buttons()
+    public function buttons(): array
     {
         return $this->addCreateButton(route('pages.create'), 'pages.create');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function bulkActions(): array
     {
         return $this->addDeleteAction(route('pages.deletes'), 'pages.destroy', parent::bulkActions());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getBulkChanges(): array
     {
         return [
-            'name'       => [
-                'title'    => trans('core/base::tables.name'),
-                'type'     => 'text',
+            'name' => [
+                'title' => trans('core/base::tables.name'),
+                'type' => 'text',
                 'validate' => 'required|max:120',
             ],
-            'status'     => [
-                'title'    => trans('core/base::tables.status'),
-                'type'     => 'customSelect',
-                'choices'  => BaseStatusEnum::labels(),
+            'status' => [
+                'title' => trans('core/base::tables.status'),
+                'type' => 'customSelect',
+                'choices' => BaseStatusEnum::labels(),
                 'validate' => 'required|' . Rule::in(BaseStatusEnum::values()),
             ],
-            'template'   => [
-                'title'    => trans('core/base::tables.template'),
-                'type'     => 'customSelect',
-                'choices'  => get_page_templates(),
+            'template' => [
+                'title' => trans('core/base::tables.template'),
+                'type' => 'customSelect',
+                'choices' => get_page_templates(),
                 'validate' => 'required',
             ],
             'created_at' => [
                 'title' => trans('core/base::tables.created_at'),
-                'type'  => 'date',
+                'type' => 'datePicker',
             ],
         ];
     }

@@ -10,10 +10,7 @@ use Botble\Menu\Models\Menu;
 
 class MenuForm extends FormAbstract
 {
-    /**
-     * {@inheritDoc}
-     */
-    public function buildForm()
+    public function buildForm(): void
     {
         Assets::addScriptsDirectly([
             'vendor/core/packages/menu/libraries/jquery-nestable/jquery.nestable.js',
@@ -36,23 +33,23 @@ class MenuForm extends FormAbstract
             ->withCustomFields()
             ->setValidatorClass(MenuRequest::class)
             ->add('name', 'text', [
-                'label'      => trans('core/base::forms.name'),
+                'label' => trans('core/base::forms.name'),
                 'label_attr' => ['class' => 'control-label required'],
-                'attr'       => [
-                    'placeholder'  => trans('core/base::forms.name_placeholder'),
+                'attr' => [
+                    'placeholder' => trans('core/base::forms.name_placeholder'),
                     'data-counter' => 120,
                 ],
             ])
             ->add('status', 'customSelect', [
-                'label'      => trans('core/base::tables.status'),
+                'label' => trans('core/base::tables.status'),
                 'label_attr' => ['class' => 'control-label required'],
-                'choices'    => BaseStatusEnum::labels(),
+                'choices' => BaseStatusEnum::labels(),
             ])
             ->addMetaBoxes([
                 'structure' => [
-                    'wrap'    => false,
+                    'wrap' => false,
                     'content' => view('packages/menu::menu-structure', [
-                        'menu'      => $this->getModel(),
+                        'menu' => $this->getModel(),
                         'locations' => $locations,
                     ])->render(),
                 ],

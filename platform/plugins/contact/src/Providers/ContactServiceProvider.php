@@ -20,7 +20,7 @@ class ContactServiceProvider extends ServiceProvider
 {
     use LoadAndPublishDataTrait;
 
-    public function register()
+    public function register(): void
     {
         $this->app->bind(ContactInterface::class, function () {
             return new ContactCacheDecorator(new ContactRepository(new Contact()));
@@ -31,13 +31,13 @@ class ContactServiceProvider extends ServiceProvider
         });
     }
 
-    public function boot()
+    public function boot(): void
     {
         $this
             ->setNamespace('plugins/contact')
             ->loadHelpers()
             ->loadAndPublishConfigurations(['permissions', 'email'])
-            ->loadRoutes(['web'])
+            ->loadRoutes()
             ->loadAndPublishViews()
             ->loadAndPublishTranslations()
             ->loadMigrations()
@@ -45,12 +45,12 @@ class ContactServiceProvider extends ServiceProvider
 
         Event::listen(RouteMatched::class, function () {
             dashboard_menu()->registerItem([
-                'id'          => 'cms-plugins-contact',
-                'priority'    => 120,
-                'parent_id'   => null,
-                'name'        => 'plugins/contact::contact.menu',
-                'icon'        => 'far fa-envelope',
-                'url'         => route('contacts.index'),
+                'id' => 'cms-plugins-contact',
+                'priority' => 120,
+                'parent_id' => null,
+                'name' => 'plugins/contact::contact.menu',
+                'icon' => 'far fa-envelope',
+                'url' => route('contacts.index'),
                 'permissions' => ['contacts.index'],
             ]);
 

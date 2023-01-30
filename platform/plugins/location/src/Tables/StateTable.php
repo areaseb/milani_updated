@@ -2,6 +2,10 @@
 
 namespace Botble\Location\Tables;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use BaseHelper;
 use Botble\Base\Enums\BaseStatusEnum;
@@ -14,27 +18,12 @@ use Yajra\DataTables\DataTables;
 
 class StateTable extends TableAbstract
 {
-    /**
-     * @var bool
-     */
     protected $hasActions = true;
 
-    /**
-     * @var bool
-     */
     protected $hasFilter = true;
 
-    /**
-     * @var CountryInterface
-     */
-    protected $countryRepository;
+    protected CountryInterface $countryRepository;
 
-    /**
-     * StateTable constructor.
-     * @param DataTables $table
-     * @param UrlGenerator $urlGenerator
-     * @param StateInterface $stateRepository
-     */
     public function __construct(
         DataTables $table,
         UrlGenerator $urlGenerator,
@@ -46,29 +35,28 @@ class StateTable extends TableAbstract
         $this->repository = $stateRepository;
         $this->countryRepository = $countryRepository;
 
-        if (!Auth::user()->hasAnyPermission(['state.edit', 'state.destroy'])) {
+        if (! Auth::user()->hasAnyPermission(['state.edit', 'state.destroy'])) {
             $this->hasOperations = false;
             $this->hasActions = false;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function ajax()
+    public function ajax(): JsonResponse
     {
         $data = $this->table
             ->eloquent($this->query())
             ->editColumn('name', function ($item) {
-                if (!Auth::user()->hasPermission('state.edit')) {
-                    return $item->name;
+                if (! Auth::user()->hasPermission('state.edit')) {
+                    return BaseHelper::clean($item->name);
                 }
-                return Html::link(route('state.edit', $item->id), $item->name);
+
+                return Html::link(route('state.edit', $item->id), BaseHelper::clean($item->name));
             })
             ->editColumn('country_id', function ($item) {
-                if (!$item->country_id && $item->country->name) {
+                if (! $item->country_id && $item->country->name) {
                     return null;
                 }
+
                 return Html::link(route('country.edit', $item->country_id), $item->country->name);
             })
             ->editColumn('checkbox', function ($item) {
@@ -87,10 +75,7 @@ class StateTable extends TableAbstract
         return $this->toJson($data);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function query()
+    public function query(): Relation|Builder|QueryBuilder
     {
         $query = $this->repository->getModel()->select([
             'id',
@@ -103,17 +88,14 @@ class StateTable extends TableAbstract
         return $this->applyScopes($query);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function columns()
+    public function columns(): array
     {
         return [
-            'id'         => [
+            'id' => [
                 'title' => trans('core/base::tables.id'),
                 'width' => '20px',
             ],
-            'name'       => [
+            'name' => [
                 'title' => trans('core/base::tables.name'),
                 'class' => 'text-start',
             ],
@@ -125,54 +107,45 @@ class StateTable extends TableAbstract
                 'title' => trans('core/base::tables.created_at'),
                 'width' => '100px',
             ],
-            'status'     => [
+            'status' => [
                 'title' => trans('core/base::tables.status'),
                 'width' => '100px',
             ],
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function buttons()
+    public function buttons(): array
     {
         return $this->addCreateButton(route('state.create'), 'state.create');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function bulkActions(): array
     {
         return $this->addDeleteAction(route('state.deletes'), 'state.destroy', parent::bulkActions());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getBulkChanges(): array
     {
         return [
-            'name'       => [
-                'title'    => trans('core/base::tables.name'),
-                'type'     => 'text',
+            'name' => [
+                'title' => trans('core/base::tables.name'),
+                'type' => 'text',
                 'validate' => 'required|max:120',
             ],
             'country_id' => [
-                'title'    => trans('plugins/location::state.country'),
-                'type'     => 'customSelect',
+                'title' => trans('plugins/location::state.country'),
+                'type' => 'customSelect',
                 'validate' => 'required|max:120',
             ],
-            'status'     => [
-                'title'    => trans('core/base::tables.status'),
-                'type'     => 'customSelect',
-                'choices'  => BaseStatusEnum::labels(),
+            'status' => [
+                'title' => trans('core/base::tables.status'),
+                'type' => 'customSelect',
+                'choices' => BaseStatusEnum::labels(),
                 'validate' => 'required|in:' . implode(',', BaseStatusEnum::values()),
             ],
             'created_at' => [
                 'title' => trans('core/base::tables.created_at'),
-                'type'  => 'date',
+                'type' => 'datePicker',
             ],
         ];
     }

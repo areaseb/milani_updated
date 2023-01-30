@@ -7,17 +7,12 @@ use Botble\Support\Http\Requests\Request;
 
 class EditAccountRequest extends Request
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
-    public function rules()
+    public function rules(): array
     {
         return [
-            'name'  => 'required|max:255',
+            'name' => 'required|max:255',
             'phone' => 'sometimes|' . BaseHelper::getPhoneValidationRule(),
-            'dob'   => 'max:20|sometimes',
+            'dob' => 'max:20|sometimes',
         ];
     }
 }

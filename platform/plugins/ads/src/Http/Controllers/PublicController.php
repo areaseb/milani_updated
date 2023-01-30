@@ -8,29 +8,18 @@ use Botble\Base\Http\Responses\BaseHttpResponse;
 
 class PublicController extends BaseController
 {
-    /**
-     * @var AdsInterface
-     */
-    protected $adsRepository;
+    protected AdsInterface $adsRepository;
 
-    /**
-     * @param AdsInterface $adsRepository
-     */
     public function __construct(AdsInterface $adsRepository)
     {
         $this->adsRepository = $adsRepository;
     }
 
-    /**
-     * @param string $key
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function getAdsClick($key, BaseHttpResponse $response)
+    public function getAdsClick(string $key, BaseHttpResponse $response)
     {
         $ads = $this->adsRepository->getFirstBy(compact('key'));
 
-        if (!$ads || !$ads->url) {
+        if (! $ads || ! $ads->url) {
             return $response->setNextUrl(route('public.single'));
         }
 

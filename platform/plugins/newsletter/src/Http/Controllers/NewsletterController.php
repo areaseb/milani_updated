@@ -15,25 +15,13 @@ class NewsletterController extends BaseController
 {
     use HasDeleteManyItemsTrait;
 
-    /**
-     * @var NewsletterInterface
-     */
-    protected $newsletterRepository;
+    protected NewsletterInterface $newsletterRepository;
 
-    /**
-     * NewsletterController constructor.
-     * @param NewsletterInterface $newsletterRepository
-     */
     public function __construct(NewsletterInterface $newsletterRepository)
     {
         $this->newsletterRepository = $newsletterRepository;
     }
 
-    /**
-     * @param NewsletterTable $dataTable
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
-     * @throws \Throwable
-     */
     public function index(NewsletterTable $dataTable)
     {
         page_title()->setTitle(trans('plugins/newsletter::newsletter.name'));
@@ -41,13 +29,7 @@ class NewsletterController extends BaseController
         return $dataTable->renderTable();
     }
 
-    /**
-     * @param Request $request
-     * @param int $id
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function destroy(Request $request, $id, BaseHttpResponse $response)
+    public function destroy(Request $request, int $id, BaseHttpResponse $response)
     {
         try {
             $newsletter = $this->newsletterRepository->findOrFail($id);
@@ -63,12 +45,6 @@ class NewsletterController extends BaseController
         }
     }
 
-    /**
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     * @throws Exception
-     */
     public function deletes(Request $request, BaseHttpResponse $response)
     {
         return $this->executeDeleteItems(

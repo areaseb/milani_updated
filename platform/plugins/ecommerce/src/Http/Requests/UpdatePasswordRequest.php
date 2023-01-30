@@ -6,17 +6,11 @@ use Botble\Support\Http\Requests\Request;
 
 class UpdatePasswordRequest extends Request
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     *
-     */
-    public function rules()
+    public function rules(): array
     {
         return [
-            'old_password'          => 'required|min:6|max:60',
-            'password'              => 'required|min:6|max:60',
+            'old_password' => 'required|min:6|max:60',
+            'password' => 'required|min:6|max:60',
             'password_confirmation' => 'same:password',
         ];
     }

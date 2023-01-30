@@ -9,77 +9,49 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Input\InputOption;
 
+#[AsCommand('cms:backup:restore', 'Restore a backup')]
 class BackupRestoreCommand extends Command
 {
-    /**
-     * @var Backup
-     */
-    public $backup;
-
-    /**
-     * The console command signature.
-     *
-     * @var string
-     */
-    protected $signature = 'cms:backup:restore {--backup= : The backup date}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Restore a backup';
-
-    /**
-     * BackupCommand constructor.
-     * @param Backup $backup
-     */
-    public function __construct(Backup $backup)
-    {
-        parent::__construct();
-        $this->backup = $backup;
-    }
-
-    /**
-     * Execute the console command.
-     * @throws Exception
-     */
-    public function handle()
+    public function handle(Backup $backupService): int
     {
         try {
             if ($this->option('backup')) {
                 $backup = $this->option('backup');
 
-                if (!File::isDirectory($this->backup->getBackupPath($backup))) {
-                    $this->error('Cannot found backup folder!');
-                    return 1;
+                if (! File::isDirectory($backupService->getBackupPath($backup))) {
+                    $this->components->error('Cannot found backup folder!');
+
+                    return self::FAILURE;
                 }
             } else {
-                $backups = BaseHelper::scanFolder($this->backup->getBackupPath());
+                $backups = BaseHelper::scanFolder($backupService->getBackupPath());
 
                 if (empty($backups)) {
-                    $this->error('No backup found to restore!');
-                    return 1;
+                    $this->components->error('No backup found to restore!');
+
+                    return self::FAILURE;
                 }
 
                 $backup = Arr::first($backups);
             }
 
-            $this->info('Restoring backup...');
+            $this->components->info('Restoring backup...');
 
-            $path = $this->backup->getBackupPath($backup);
+            $path = $backupService->getBackupPath($backup);
             foreach (BaseHelper::scanFolder($path) as $file) {
                 if (Str::contains(basename($file), 'database')) {
-                    $this->info('Restoring database...');
-                    $this->backup->restoreDatabase($path . DIRECTORY_SEPARATOR . $file, $path);
+                    $this->components->info('Restoring database...');
+                    $backupService->restoreDatabase($path . DIRECTORY_SEPARATOR . $file, $path);
                 }
 
                 if (Str::contains(basename($file), 'storage')) {
-                    $this->info('Restoring uploaded files...');
+                    $this->components->info('Restoring uploaded files...');
                     $pathTo = config('filesystems.disks.public.root');
-                    $this->backup->cleanDirectory($pathTo);
-                    $this->backup->extractFileTo($path . DIRECTORY_SEPARATOR . $file, $pathTo);
+                    $backupService->cleanDirectory($pathTo);
+                    $backupService->extractFileTo($path . DIRECTORY_SEPARATOR . $file, $pathTo);
                 }
             }
 
@@ -87,11 +59,16 @@ class BackupRestoreCommand extends Command
 
             do_action(BACKUP_ACTION_AFTER_RESTORE, BACKUP_MODULE_SCREEN_NAME, request());
 
-            $this->info(trans('plugins/backup::backup.restore_backup_success'));
+            $this->components->info(trans('plugins/backup::backup.restore_backup_success'));
         } catch (Exception $exception) {
-            $this->error($exception->getMessage());
+            $this->components->error($exception->getMessage());
         }
 
-        return 0;
+        return self::SUCCESS;
+    }
+
+    protected function configure(): void
+    {
+        $this->addOption('backup', null, InputOption::VALUE_REQUIRED, 'The backup date');
     }
 }

@@ -5,13 +5,12 @@ namespace Botble\Base\Facades;
 use Botble\Base\Supports\EmailHandler;
 use Illuminate\Support\Facades\Facade;
 
+/**
+ * @see \Botble\Base\Supports\EmailHandler
+ */
 class EmailHandlerFacade extends Facade
 {
-    /**
-     * @return string
-     * @since 2.2
-     */
-    protected static function getFacadeAccessor()
+    protected static function getFacadeAccessor(): string
     {
         return EmailHandler::class;
     }

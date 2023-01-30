@@ -14,7 +14,7 @@ use Throwable;
 
 class HookServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         add_filter(PAYMENT_FILTER_ADDITIONAL_PAYMENT_METHODS, [$this, 'registerMollieMethod'], 17, 2);
 
@@ -113,14 +113,14 @@ class HookServiceProvider extends ServiceProvider
 
             try {
                 $response = Mollie::api()->payments->create([
-                    'amount'      => [
+                    'amount' => [
                         'currency' => $request->input('currency'),
-                        'value'    => number_format((float)$request->input('amount'), 2, '.', ''),
+                        'value' => number_format((float)$request->input('amount'), 2, '.', ''),
                     ],
                     'description' => 'Order(s) ' . $orderCodes->implode(', '),
                     'redirectUrl' => PaymentHelper::getRedirectURL(),
-                    'webhookUrl'  => route('mollie.payment.callback'),
-                    'metadata'    => ['order_id' => $orderIds],
+                    'webhookUrl' => route('mollie.payment.callback'),
+                    'metadata' => ['order_id' => $orderIds],
                 ]);
 
                 header('Location: ' . $response->getCheckoutUrl());

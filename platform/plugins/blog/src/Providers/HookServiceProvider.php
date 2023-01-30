@@ -5,7 +5,6 @@ namespace Botble\Blog\Providers;
 use Assets;
 use BaseHelper;
 use Botble\Base\Enums\BaseStatusEnum;
-use Botble\Base\Models\BaseModel;
 use Botble\Blog\Models\Category;
 use Botble\Blog\Models\Post;
 use Botble\Blog\Models\Tag;
@@ -13,23 +12,24 @@ use Botble\Blog\Services\BlogService;
 use Botble\Dashboard\Supports\DashboardWidgetInstance;
 use Botble\Page\Models\Page;
 use Botble\Page\Repositories\Interfaces\PageInterface;
+use Botble\Shortcode\Compilers\Shortcode;
+use Botble\Slug\Models\Slug;
 use Eloquent;
 use Html;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Menu;
 use RvMedia;
-use stdClass;
 use Theme;
 
 class HookServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         if (defined('MENU_ACTION_SIDEBAR_OPTIONS')) {
             Menu::addMenuOptionModel(Category::class);
@@ -45,11 +45,7 @@ class HookServiceProvider extends ServiceProvider
 
         Event::listen(RouteMatched::class, function () {
             if (function_exists('admin_bar')) {
-                View::composer('*', function () {
-                    if (Auth::check() && Auth::user()->hasPermission('posts.create')) {
-                        admin_bar()->registerLink(trans('plugins/blog::posts.post'), route('posts.create'), 'add-new');
-                    }
-                });
+                admin_bar()->registerLink(trans('plugins/blog::posts.post'), route('posts.create'), 'add-new', 'posts.create');
             }
         });
 
@@ -83,38 +79,38 @@ class HookServiceProvider extends ServiceProvider
 
                     $schemaType = setting('blog_post_schema_type', 'NewsArticle');
 
-                    if (!in_array($schemaType, ['NewsArticle', 'News', 'Article', 'BlogPosting'])) {
+                    if (! in_array($schemaType, ['NewsArticle', 'News', 'Article', 'BlogPosting'])) {
                         $schemaType = 'NewsArticle';
                     }
 
                     $schema = [
-                        '@context'         => 'https://schema.org',
-                        '@type'            => $schemaType,
+                        '@context' => 'https://schema.org',
+                        '@type' => $schemaType,
                         'mainEntityOfPage' => [
                             '@type' => 'WebPage',
-                            '@id'   => $post->url,
+                            '@id' => $post->url,
                         ],
-                        'headline'         => BaseHelper::clean($post->name),
-                        'description'      => BaseHelper::clean($post->description),
-                        'image'            => [
+                        'headline' => BaseHelper::clean($post->name),
+                        'description' => BaseHelper::clean($post->description),
+                        'image' => [
                             '@type' => 'ImageObject',
-                            'url'   => RvMedia::getImageUrl($post->image, null, false, RvMedia::getDefaultImage()),
+                            'url' => RvMedia::getImageUrl($post->image, null, false, RvMedia::getDefaultImage()),
                         ],
-                        'author'           => [
+                        'author' => [
                             '@type' => 'Person',
-                            'url'   => route('public.index'),
-                            'name'  => $post->author->name,
+                            'url' => route('public.index'),
+                            'name' => $post->author->name,
                         ],
-                        'publisher'        => [
+                        'publisher' => [
                             '@type' => 'Organization',
-                            'name'  => theme_option('site_title'),
-                            'logo'  => [
+                            'name' => theme_option('site_title'),
+                            'logo' => [
                                 '@type' => 'ImageObject',
-                                'url'   => RvMedia::getImageUrl(theme_option('logo')),
+                                'url' => RvMedia::getImageUrl(theme_option('logo')),
                             ],
                         ],
-                        'datePublished'    => $post->created_at->toDateString(),
-                        'dateModified'     => $post->updated_at->toDateString(),
+                        'datePublished' => $post->created_at->toDateString(),
+                        'dateModified' => $post->updated_at->toDateString(),
                     ];
 
                     return $html . Html::tag('script', json_encode($schema), ['type' => 'application/ld+json'])
@@ -132,44 +128,44 @@ class HookServiceProvider extends ServiceProvider
 
         theme_option()
             ->setSection([
-                'title'      => 'Blog',
-                'desc'       => 'Theme options for Blog',
-                'id'         => 'opt-text-subsection-blog',
+                'title' => 'Blog',
+                'desc' => 'Theme options for Blog',
+                'id' => 'opt-text-subsection-blog',
                 'subsection' => true,
-                'icon'       => 'fa fa-edit',
-                'fields'     => [
+                'icon' => 'fa fa-edit',
+                'fields' => [
                     [
-                        'id'         => 'blog_page_id',
-                        'type'       => 'customSelect',
-                        'label'      => trans('plugins/blog::base.blog_page_id'),
+                        'id' => 'blog_page_id',
+                        'type' => 'customSelect',
+                        'label' => trans('plugins/blog::base.blog_page_id'),
                         'attributes' => [
-                            'name'    => 'blog_page_id',
-                            'list'    => ['' => trans('plugins/blog::base.select')] + $pages,
-                            'value'   => '',
+                            'name' => 'blog_page_id',
+                            'list' => ['' => trans('plugins/blog::base.select')] + $pages,
+                            'value' => '',
                             'options' => [
                                 'class' => 'form-control',
                             ],
                         ],
                     ],
                     [
-                        'id'         => 'number_of_posts_in_a_category',
-                        'type'       => 'number',
-                        'label'      => trans('plugins/blog::base.number_posts_per_page_in_category'),
+                        'id' => 'number_of_posts_in_a_category',
+                        'type' => 'number',
+                        'label' => trans('plugins/blog::base.number_posts_per_page_in_category'),
                         'attributes' => [
-                            'name'    => 'number_of_posts_in_a_category',
-                            'value'   => 12,
+                            'name' => 'number_of_posts_in_a_category',
+                            'value' => 12,
                             'options' => [
                                 'class' => 'form-control',
                             ],
                         ],
                     ],
                     [
-                        'id'         => 'number_of_posts_in_a_tag',
-                        'type'       => 'number',
-                        'label'      => trans('plugins/blog::base.number_posts_per_page_in_tag'),
+                        'id' => 'number_of_posts_in_a_tag',
+                        'type' => 'number',
+                        'label' => trans('plugins/blog::base.number_posts_per_page_in_tag'),
                         'attributes' => [
-                            'name'    => 'number_of_posts_in_a_tag',
-                            'value'   => 12,
+                            'name' => 'number_of_posts_in_a_tag',
+                            'value' => 12,
                             'options' => [
                                 'class' => 'form-control',
                             ],
@@ -182,7 +178,7 @@ class HookServiceProvider extends ServiceProvider
     /**
      * Register sidebar options in menu
      */
-    public function registerMenuOptions()
+    public function registerMenuOptions(): void
     {
         if (Auth::user()->hasPermission('categories.index')) {
             Menu::registerMenuOptions(Category::class, trans('plugins/blog::categories.menu'));
@@ -193,14 +189,9 @@ class HookServiceProvider extends ServiceProvider
         }
     }
 
-    /**
-     * @param array $widgets
-     * @param Collection $widgetSettings
-     * @return array
-     */
-    public function registerDashboardWidgets($widgets, $widgetSettings)
+    public function registerDashboardWidgets(array $widgets, Collection $widgetSettings): array
     {
-        if (!Auth::user()->hasPermission('posts.index')) {
+        if (! Auth::user()->hasPermission('posts.index')) {
             return $widgets;
         }
 
@@ -218,25 +209,18 @@ class HookServiceProvider extends ServiceProvider
             ->init($widgets, $widgetSettings);
     }
 
-    /**
-     * @param Eloquent $slug
-     * @return array|Eloquent
-     */
-    public function handleSingleView($slug)
+    public function handleSingleView(Slug|array $slug): Eloquent|array
     {
         return (new BlogService())->handleFrontRoutes($slug);
     }
 
-    /**
-     * @param stdClass $shortcode
-     * @return array|string
-     */
-    public function renderBlogPosts($shortcode)
+    public function renderBlogPosts(Shortcode $shortcode): array|string
     {
-        $posts = get_all_posts(true, (int)$shortcode->paginate, ['slugable', 'categories', 'categories.slugable', 'author']);
+        $posts = get_all_posts(true, (int)$shortcode->paginate);
 
         $view = 'plugins/blog::themes.templates.posts';
         $themeView = Theme::getThemeNamespace() . '::views.templates.posts';
+
         if (view()->exists($themeView)) {
             $view = $themeView;
         }
@@ -244,12 +228,7 @@ class HookServiceProvider extends ServiceProvider
         return view($view, compact('posts'))->render();
     }
 
-    /**
-     * @param string|null $content
-     * @param Page $page
-     * @return array|string|null
-     */
-    public function renderBlogPage(?string $content, Page $page)
+    public function renderBlogPage(?string $content, Page $page): ?string
     {
         if ($page->id == theme_option('blog_page_id', setting('blog_page_id'))) {
             $view = 'plugins/blog::themes.loop';
@@ -259,24 +238,14 @@ class HookServiceProvider extends ServiceProvider
             }
 
             return view($view, [
-                'posts' => get_all_posts(
-                    true,
-                    (int)theme_option('number_of_posts_in_a_category', 12),
-                    ['slugable', 'categories', 'categories.slugable', 'author']
-                ),
-            ])
-                ->render();
+                'posts' => get_all_posts(true, (int)theme_option('number_of_posts_in_a_category', 12)),
+            ])->render();
         }
 
         return $content;
     }
 
-    /**
-     * @param string|null $name
-     * @param Page $page
-     * @return string|null
-     */
-    public function addAdditionNameToPageName(?string $name, Page $page)
+    public function addAdditionNameToPageName(?string $name, Page $page): ?string
     {
         if ($page->id == theme_option('blog_page_id', setting('blog_page_id'))) {
             $subTitle = Html::tag('span', trans('plugins/blog::base.blog_page'), ['class' => 'additional-page-name'])
@@ -292,27 +261,15 @@ class HookServiceProvider extends ServiceProvider
         return $name;
     }
 
-    /**
-     * @param BaseModel $model
-     * @param string $priority
-     * @return string
-     */
-    public function addLanguageChooser($priority, $model)
+    public function addLanguageChooser(string $priority, Model $model): void
     {
         if ($priority == 'head' && $model instanceof Category) {
             $route = 'categories.index';
 
-            if ($route) {
-                echo view('plugins/language::partials.admin-list-language-chooser', compact('route'))->render();
-            }
+            echo view('plugins/language::partials.admin-list-language-chooser', compact('route'))->render();
         }
     }
 
-    /**
-     * @param string|null $data
-     * @return string
-     * @throws Throwable
-     */
     public function addSettings(?string $data = null): string
     {
         return $data . view('plugins/blog::settings')->render();

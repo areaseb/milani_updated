@@ -9,12 +9,7 @@ use Tests\TestCase;
 
 class BaseTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
-    public function testRoutes()
+    public function testRoutes(): void
     {
         $this->withoutEvents();
 
@@ -27,7 +22,7 @@ class BaseTest extends TestCase
         $routeCollection = Route::getRoutes();
 
         foreach ($routeCollection as $value) {
-            if (!in_array('GET', $value->methods())) {
+            if (! in_array('GET', $value->methods())) {
                 continue;
             }
 

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\URL;
 
 class BreadcrumbsServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         Breadcrumbs::register('dashboard.index', function (BreadcrumbsGenerator $breadcrumbs) {
             $breadcrumbs->push(trans('core/base::layouts.dashboard'), route('dashboard.index'));
@@ -35,19 +35,20 @@ class BreadcrumbsServiceProvider extends ServiceProvider
                 if (($url == $menuCategory['url'] || (Str::contains(
                     (string) $menuCategory['url'],
                     $prefix
-                ) && $prefix != '//')) && !empty($menuCategory['name'])) {
+                ) && $prefix != '//')) && ! empty($menuCategory['name'])) {
                     $found = true;
                     $breadcrumbs->push(trans($menuCategory['name']), $menuCategory['url']);
                     if ($defaultTitle != trans($menuCategory['name']) && $defaultTitle != $siteTitle) {
                         $breadcrumbs->push($defaultTitle, $menuCategory['url']);
                     }
+
                     break;
                 }
             }
 
-            if (!$found) {
+            if (! $found) {
                 foreach ($arMenu as $menuCategory) {
-                    if (!count($menuCategory['children'])) {
+                    if (! count($menuCategory['children'])) {
                         continue;
                     }
 
@@ -55,20 +56,21 @@ class BreadcrumbsServiceProvider extends ServiceProvider
                         if (($url == $menuItem['url'] || (Str::contains(
                             (string) $menuItem['url'],
                             $prefix
-                        ) && $prefix != '//')) && !empty($menuItem['name'])) {
+                        ) && $prefix != '//')) && ! empty($menuItem['name'])) {
                             $found = true;
                             $breadcrumbs->push(trans($menuCategory['name']), $menuCategory['url']);
                             $breadcrumbs->push(trans($menuItem['name']), $menuItem['url']);
                             if ($defaultTitle != trans($menuItem['name']) && $defaultTitle != $siteTitle) {
                                 $breadcrumbs->push($defaultTitle, $menuItem['url']);
                             }
+
                             break;
                         }
                     }
                 }
             }
 
-            if (!$found) {
+            if (! $found) {
                 $breadcrumbs->push($defaultTitle, $url);
             }
         });

@@ -2,20 +2,12 @@
 
 use Botble\Language\Models\LanguageMeta;
 use Botble\Location\Models\City;
-use Botble\Location\Models\CityTranslation;
 use Botble\Location\Models\Country;
-use Botble\Location\Models\CountryTranslation;
 use Botble\Location\Models\State;
-use Botble\Location\Models\StateTranslation;
 use Illuminate\Database\Migrations\Migration;
 
 return new class () extends Migration {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+    public function up(): void
     {
         if (is_plugin_active('language')) {
             Schema::dropIfExists('countries_backup');
@@ -41,7 +33,7 @@ return new class () extends Migration {
             foreach ($cities as $item) {
                 $originalItem = City::find($item->reference_id);
 
-                if (!$originalItem) {
+                if (! $originalItem) {
                     continue;
                 }
 
@@ -50,14 +42,14 @@ return new class () extends Migration {
                     ->where('reference_id', '!=', $originalItem->id)
                     ->value('reference_id');
 
-                if (!$originalId) {
+                if (! $originalId) {
                     continue;
                 }
 
-                CityTranslation::insertOrIgnore([
+                DB::table('cities_translations')->insertOrIgnore([
                     'cities_id' => $originalId,
                     'lang_code' => $item->lang_meta_code,
-                    'name'      => $originalItem->name,
+                    'name' => $originalItem->name,
                 ]);
 
                 if (is_plugin_active('real-estate')) {
@@ -74,7 +66,7 @@ return new class () extends Migration {
             foreach ($states as $item) {
                 $originalItem = State::find($item->reference_id);
 
-                if (!$originalItem) {
+                if (! $originalItem) {
                     continue;
                 }
 
@@ -83,14 +75,14 @@ return new class () extends Migration {
                     ->where('reference_id', '!=', $originalItem->id)
                     ->value('reference_id');
 
-                if (!$originalId) {
+                if (! $originalId) {
                     continue;
                 }
 
-                StateTranslation::insertOrIgnore([
-                    'states_id'    => $originalId,
-                    'lang_code'    => $item->lang_meta_code,
-                    'name'         => $originalItem->name,
+                DB::table('states_translations')->insertOrIgnore([
+                    'states_id' => $originalId,
+                    'lang_code' => $item->lang_meta_code,
+                    'name' => $originalItem->name,
                     'abbreviation' => $originalItem->abbreviation,
                 ]);
 
@@ -106,7 +98,7 @@ return new class () extends Migration {
             foreach ($countries as $item) {
                 $originalItem = Country::find($item->reference_id);
 
-                if (!$originalItem) {
+                if (! $originalItem) {
                     continue;
                 }
 
@@ -115,15 +107,15 @@ return new class () extends Migration {
                     ->where('reference_id', '!=', $originalItem->id)
                     ->value('reference_id');
 
-                if (!$originalId) {
+                if (! $originalId) {
                     continue;
                 }
 
-                CountryTranslation::insertOrIgnore([
+                DB::table('countries_translations')->insertOrIgnore([
                     'countries_id' => $originalId,
-                    'lang_code'    => $item->lang_meta_code,
-                    'name'         => $originalItem->name,
-                    'nationality'  => $originalItem->nationality,
+                    'lang_code' => $item->lang_meta_code,
+                    'name' => $originalItem->name,
+                    'nationality' => $originalItem->nationality,
                 ]);
 
                 City::where('country_id', $originalItem->id)->update(['country_id' => $originalId]);
@@ -135,34 +127,28 @@ return new class () extends Migration {
             DB::statement('CREATE TABLE IF NOT EXISTS language_meta_backup LIKE language_meta');
             DB::statement('TRUNCATE TABLE language_meta_backup');
 
-            DB::table('language_meta_backup')->insert(LanguageMeta::where('reference_type', State::class)->get()->toArray());
-            DB::table('language_meta_backup')->insert(LanguageMeta::where('reference_type', City::class)->get()->toArray());
-            DB::table('language_meta_backup')->insert(LanguageMeta::where('reference_type', Country::class)->get()->toArray());
+            DB::table('language_meta_backup')->insert(
+                LanguageMeta::where('reference_type', State::class)->get()->toArray()
+            );
+            DB::table('language_meta_backup')->insert(
+                LanguageMeta::where('reference_type', City::class)->get()->toArray()
+            );
+            DB::table('language_meta_backup')->insert(
+                LanguageMeta::where('reference_type', Country::class)->get()->toArray()
+            );
 
             LanguageMeta::where('reference_type', State::class)->delete();
             LanguageMeta::where('reference_type', City::class)->delete();
             LanguageMeta::where('reference_type', Country::class)->delete();
+
+            Schema::dropIfExists('countries_backup');
+            Schema::dropIfExists('states_backup');
+            Schema::dropIfExists('cities_backup');
         }
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
-        Schema::drop('countries');
-        Schema::rename('countries_backup', 'countries');
-
-        Schema::drop('states');
-        Schema::rename('states_backup', 'states');
-
-        Schema::drop('cities');
-        Schema::rename('cities_backup', 'cities');
-
-        DB::statement('INSERT language_meta_backup SELECT * FROM language_meta');
-
-        Schema::drop('language_meta_backup');
+        //
     }
 };

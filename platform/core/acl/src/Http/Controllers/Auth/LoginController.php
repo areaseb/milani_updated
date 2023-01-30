@@ -10,45 +10,16 @@ use Botble\ACL\Traits\AuthenticatesUsers;
 use Botble\Base\Http\Controllers\BaseController;
 use Botble\Base\Http\Responses\BaseHttpResponse;
 use Carbon\Carbon;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpFoundation\Response;
 
 class LoginController extends BaseController
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Login Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller handles authenticating users for the application and
-    | redirecting them to your home screen. The controller uses a trait
-    | to conveniently provide its functionality to your applications.
-    |
-    */
-
     use AuthenticatesUsers;
 
-    /**
-     * Where to redirect users after login.
-     *
-     * @var string
-     */
-    protected $redirectTo;
+    protected string $redirectTo = '/';
 
-    /**
-     * @var BaseHttpResponse
-     */
-    protected $response;
+    protected BaseHttpResponse $response;
 
-    /**
-     * Create a new controller instance.
-     *
-     * @param BaseHttpResponse $response
-     */
     public function __construct(BaseHttpResponse $response)
     {
         $this->middleware('guest', ['except' => 'logout']);
@@ -57,9 +28,6 @@ class LoginController extends BaseController
         $this->response = $response;
     }
 
-    /**
-     * @return Factory|Application|View
-     */
     public function showLoginForm()
     {
         page_title()->setTitle(trans('core/acl::auth.login_title'));
@@ -85,14 +53,6 @@ class LoginController extends BaseController
         return view('core/acl::auth.login');
     }
 
-    /**
-     * Handle a login request to the application.
-     *
-     * @param Request $request
-     * @return BaseHttpResponse|Response
-     * @throws ValidationException
-     * @throws ValidationException
-     */
     public function login(Request $request)
     {
         $request->merge([$this->username() => $request->input('username')]);
@@ -109,8 +69,8 @@ class LoginController extends BaseController
         }
 
         $user = app(UserInterface::class)->getFirstBy([$this->username() => $request->input($this->username())]);
-        if (!empty($user)) {
-            if (!app(ActivationInterface::class)->completed($user)) {
+        if (! empty($user)) {
+            if (! app(ActivationInterface::class)->completed($user)) {
                 return $this->response
                     ->setError()
                     ->setMessage(trans('core/acl::auth.login.not_active'));
@@ -119,9 +79,10 @@ class LoginController extends BaseController
 
         if ($this->attemptLogin($request)) {
             app(UserInterface::class)->update(['id' => $user->id], ['last_login' => Carbon::now()]);
-            if (!session()->has('url.intended')) {
+            if (! session()->has('url.intended')) {
                 session()->flash('url.intended', url()->current());
             }
+
             return $this->sendLoginResponse($request);
         }
 
@@ -130,23 +91,14 @@ class LoginController extends BaseController
         // user surpasses their maximum number of attempts they will get locked out.
         $this->incrementLoginAttempts($request);
 
-        return $this->sendFailedLoginResponse($request);
+        return $this->sendFailedLoginResponse();
     }
 
-    /**
-     * @return string
-     */
     public function username()
     {
         return filter_var(request()->input('username'), FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
     }
 
-    /**
-     * Log the user out of the application.
-     *
-     * @param Request $request
-     * @return BaseHttpResponse
-     */
     public function logout(Request $request)
     {
         do_action(AUTH_ACTION_AFTER_LOGOUT_SYSTEM, $request, $request->user());

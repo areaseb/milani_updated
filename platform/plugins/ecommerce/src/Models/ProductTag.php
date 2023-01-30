@@ -2,41 +2,27 @@
 
 namespace Botble\Ecommerce\Models;
 
+use Botble\Base\Casts\SafeContent;
 use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Base\Models\BaseModel;
-use Botble\Base\Traits\EnumCastable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ProductTag extends BaseModel
 {
-    use EnumCastable;
-
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
     protected $table = 'ec_product_tags';
 
-    /**
-     * @var array
-     */
     protected $fillable = [
         'name',
         'description',
         'status',
     ];
 
-    /**
-     * @var array
-     */
     protected $casts = [
         'status' => BaseStatusEnum::class,
+        'name' => SafeContent::class,
+        'description' => SafeContent::class,
     ];
 
-    /**
-     * @return BelongsToMany
-     */
     public function products(): BelongsToMany
     {
         return $this

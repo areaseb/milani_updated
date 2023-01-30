@@ -6,6 +6,7 @@ use Arr;
 use Assets;
 use BaseHelper;
 use Botble\Base\Http\Responses\BaseHttpResponse;
+use Botble\Base\Services\CleanDatabaseService;
 use Botble\Base\Supports\Core;
 use Botble\Base\Supports\Helper;
 use Botble\Base\Supports\Language;
@@ -13,31 +14,18 @@ use Botble\Base\Supports\MembershipAuthorization;
 use Botble\Base\Supports\SystemManagement;
 use Botble\Base\Tables\InfoTable;
 use Botble\Table\TableBuilder;
-use Exception;
-use GuzzleHttp\Exception\GuzzleException;
-use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Menu;
-use Throwable;
 
 class SystemController extends Controller
 {
-    /**
-     * @param Request $request
-     * @param TableBuilder $tableBuilder
-     * @return Factory|View
-     * @throws Throwable
-     * @throws BindingResolutionException
-     * @throws FileNotFoundException
-     */
     public function getInfo(Request $request, TableBuilder $tableBuilder)
     {
         page_title()->setTitle(trans('core/base::system.info.title'));
@@ -63,19 +51,19 @@ class SystemController extends Controller
 
         $matchPHPRequirement = version_compare(phpversion(), $requiredPhpVersion, '>=') > 0;
 
-        return view('core/base::system.info', compact(
-            'packages',
-            'infoTable',
-            'systemEnv',
-            'serverEnv',
-            'matchPHPRequirement',
-            'requiredPhpVersion'
-        ));
+        return view(
+            'core/base::system.info',
+            compact(
+                'packages',
+                'infoTable',
+                'systemEnv',
+                'serverEnv',
+                'matchPHPRequirement',
+                'requiredPhpVersion'
+            )
+        );
     }
 
-    /**
-     * @return Factory|Application|View
-     */
     public function getCacheManagement()
     {
         page_title()->setTitle(trans('core/base::cache.cache_management'));
@@ -85,30 +73,32 @@ class SystemController extends Controller
         return view('core/base::system.cache');
     }
 
-    /**
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @param Filesystem $files
-     * @param Application $app
-     * @return BaseHttpResponse
-     */
     public function postClearCache(Request $request, BaseHttpResponse $response, Filesystem $files, Application $app)
     {
         switch ($request->input('type')) {
             case 'clear_cms_cache':
                 Helper::clearCache();
                 Menu::clearCacheMenuItems();
+                $pluginCachePath = $app->bootstrapPath('cache/plugins.php');
+
+                if ($files->exists($pluginCachePath)) {
+                    $files->delete($pluginCachePath);
+                }
+
                 break;
             case 'refresh_compiled_views':
                 foreach ($files->glob(config('view.compiled') . '/*') as $view) {
                     $files->delete($view);
                 }
+
                 break;
             case 'clear_config_cache':
                 $files->delete($app->getCachedConfigPath());
+
                 break;
             case 'clear_route_cache':
                 $files->delete($app->getCachedRoutesPath());
+
                 break;
             case 'clear_log':
                 if ($files->isDirectory(storage_path('logs'))) {
@@ -116,18 +106,13 @@ class SystemController extends Controller
                         $files->delete($file->getPathname());
                     }
                 }
+
                 break;
         }
 
         return $response->setMessage(trans('core/base::cache.commands.' . $request->input('type') . '.success_msg'));
     }
 
-    /**
-     * @param MembershipAuthorization $authorization
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     * @throws GuzzleException
-     */
     public function authorize(MembershipAuthorization $authorization, BaseHttpResponse $response)
     {
         $authorization->authorize();
@@ -135,13 +120,7 @@ class SystemController extends Controller
         return $response;
     }
 
-    /**
-     * @param string $lang
-     * @param Request $request
-     * @return RedirectResponse
-     * @throws Exception
-     */
-    public function getLanguage($lang, Request $request)
+    public function getLanguage(string $lang, Request $request)
     {
         if ($lang && array_key_exists($lang, Language::getAvailableLocales())) {
             if (Auth::check()) {
@@ -153,10 +132,6 @@ class SystemController extends Controller
         return redirect()->back();
     }
 
-    /**
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function getMenuItemsCount(BaseHttpResponse $response)
     {
         $data = apply_filters(BASE_FILTER_MENU_ITEMS_COUNT, []);
@@ -164,12 +139,9 @@ class SystemController extends Controller
         return $response->setData($data);
     }
 
-    /**
-     * @return BaseHttpResponse
-     */
     public function getCheckUpdate(BaseHttpResponse $response)
     {
-        if (!config('core.base.general.enable_system_updater')) {
+        if (! config('core.base.general.enable_system_updater')) {
             return $response;
         }
 
@@ -182,25 +154,18 @@ class SystemController extends Controller
         if ($updateData['status']) {
             $response
                 ->setData(['has_new_version' => true])
-                ->setMessage('A new version (' . $updateData['version'] . ' / released on ' . $updateData['release_date'] . ') is available to update');
+                ->setMessage(
+                    'A new version (' . $updateData['version'] . ' / released on ' . $updateData['release_date'] . ') is available to update'
+                );
         }
 
         return $response;
     }
 
-    /**
-     * @return BaseHttpResponse|Application|Factory|View
-     */
-    public function getUpdater(Request $request, BaseHttpResponse $response)
+    public function getUpdater()
     {
-        if (!config('core.base.general.enable_system_updater')) {
+        if (! config('core.base.general.enable_system_updater')) {
             abort(404);
-        }
-
-        if ($request->isMethod('POST') && !version_compare(phpversion(), '8.0.2', '>=') > 0 && !config('core.base.general.upgrade_php_require_disabled')) {
-            return $response
-                ->setError()
-                ->setMessage(trans('core/base::system.upgrade_php_version_required', ['version' => phpversion()]));
         }
 
         header('Cache-Control: no-cache');
@@ -220,5 +185,36 @@ class SystemController extends Controller
         }
 
         return view('core/base::system.updater', compact('api', 'updateData'));
+    }
+
+    public function getCleanup(
+        Request $request,
+        BaseHttpResponse $response,
+        CleanDatabaseService $cleanDatabaseService
+    ): BaseHttpResponse|View {
+        if (! config('core.base.general.enabled_cleanup_database', true)) {
+            abort(401);
+        }
+
+        page_title()->setTitle(trans('core/base::system.cleanup.title'));
+
+        Assets::addScriptsDirectly('vendor/core/core/base/js/cleanup.js');
+
+        $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
+
+        $disabledTables = [
+            'disabled' => $cleanDatabaseService->getIgnoreTables(),
+            'checked' => [],
+        ];
+
+        if ($request->isMethod('POST')) {
+            Validator::validate($request->input(), ['tables' => 'array']);
+
+            $cleanDatabaseService->execute($request->input('tables', []));
+
+            return $response->setMessage(trans('core/base::system.cleanup.success_message'));
+        }
+
+        return view('core/base::system.cleanup', compact('tables', 'disabledTables'));
     }
 }

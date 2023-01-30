@@ -8,28 +8,14 @@ use Botble\Base\Http\Controllers\BaseController;
 use Botble\Ecommerce\Exports\CsvProductExport;
 use Botble\Ecommerce\Repositories\Interfaces\ProductInterface;
 use Botble\Ecommerce\Repositories\Interfaces\ProductVariationInterface;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Excel;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExportController extends BaseController
 {
-    /**
-     * @var ProductInterface
-     */
-    protected $productRepository;
+    protected ProductInterface $productRepository;
 
-    /**
-     * @var ProductVariationInterface
-     */
-    protected $productVariationRepository;
+    protected ProductVariationInterface $productVariationRepository;
 
-    /**
-     * @param ProductInterface $productRepository
-     * @param ProductVariationInterface $productVariationRepository
-     */
     public function __construct(
         ProductInterface $productRepository,
         ProductVariationInterface $productVariationRepository
@@ -38,9 +24,6 @@ class ExportController extends BaseController
         $this->productVariationRepository = $productVariationRepository;
     }
 
-    /**
-     * @return Factory|Application|View
-     */
     public function products()
     {
         page_title()->setTitle(trans('plugins/ecommerce::export.products.name'));
@@ -59,9 +42,6 @@ class ExportController extends BaseController
         return view('plugins/ecommerce::export.products', compact('totalProduct', 'totalVariation'));
     }
 
-    /**
-     * @return BinaryFileResponse
-     */
     public function exportProducts()
     {
         BaseHelper::maximumExecutionTimeAndMemoryLimit();

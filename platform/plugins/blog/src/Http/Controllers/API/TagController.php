@@ -11,16 +11,8 @@ use Illuminate\Http\Request;
 
 class TagController extends Controller
 {
-    /**
-     * @var TagInterface
-     */
-    protected $tagRepository;
+    protected TagInterface $tagRepository;
 
-    /**
-     * AuthenticationController constructor.
-     *
-     * @param TagInterface $tagRepository
-     */
     public function __construct(TagInterface $tagRepository)
     {
         $this->tagRepository = $tagRepository;
@@ -30,19 +22,15 @@ class TagController extends Controller
      * List tags
      *
      * @group Blog
-     *
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
      */
     public function index(Request $request, BaseHttpResponse $response)
     {
         $data = $this->tagRepository
             ->advancedGet([
-                'with'      => ['slugable'],
+                'with' => ['slugable'],
                 'condition' => ['status' => BaseStatusEnum::PUBLISHED],
-                'paginate'  => [
-                    'per_page'      => (int)$request->input('per_page', 10),
+                'paginate' => [
+                    'per_page' => (int)$request->input('per_page', 10),
                     'current_paged' => (int)$request->input('page', 1),
                 ],
             ]);

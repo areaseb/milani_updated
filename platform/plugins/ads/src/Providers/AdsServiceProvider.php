@@ -39,24 +39,24 @@ class AdsServiceProvider extends ServiceProvider
             ->loadAndPublishConfigurations(['permissions'])
             ->loadMigrations()
             ->loadAndPublishTranslations()
-            ->loadRoutes(['web'])
+            ->loadRoutes()
             ->loadAndPublishViews();
 
         Event::listen(RouteMatched::class, function () {
             dashboard_menu()->registerItem([
-                'id'          => 'cms-plugins-ads',
-                'priority'    => 5,
-                'parent_id'   => null,
-                'name'        => 'plugins/ads::ads.name',
-                'icon'        => 'fas fa-bullhorn',
-                'url'         => route('ads.index'),
+                'id' => 'cms-plugins-ads',
+                'priority' => 5,
+                'parent_id' => null,
+                'name' => 'plugins/ads::ads.name',
+                'icon' => 'fas fa-bullhorn',
+                'url' => route('ads.index'),
                 'permissions' => ['ads.index'],
             ]);
         });
 
         if (function_exists('shortcode')) {
             add_shortcode('ads', 'Ads', 'Ads', function ($shortcode) {
-                if (!$shortcode->key) {
+                if (! $shortcode->key) {
                     return null;
                 }
 
@@ -81,7 +81,7 @@ class AdsServiceProvider extends ServiceProvider
         }
 
         add_action(BASE_ACTION_TOP_FORM_CONTENT_NOTIFICATION, function ($request, $data = null) {
-            if (!$data instanceof Ads || !in_array(Route::currentRouteName(), ['ads.create', 'ads.edit'])) {
+            if (! $data instanceof Ads || ! in_array(Route::currentRouteName(), ['ads.create', 'ads.edit'])) {
                 return false;
             }
 

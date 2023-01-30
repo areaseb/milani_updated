@@ -3,6 +3,7 @@
 namespace Botble\Location\Imports;
 
 use Botble\Base\Enums\BaseStatusEnum;
+use Botble\Location\Events\ImportedCityEvent;
 use Botble\Location\Models\City;
 use Botble\Location\Models\CityTranslation;
 use Botble\Location\Models\Country;
@@ -13,8 +14,10 @@ use Botble\Location\Repositories\Interfaces\CityInterface;
 use Botble\Location\Repositories\Interfaces\CountryInterface;
 use Botble\Location\Repositories\Interfaces\StateInterface;
 use Botble\Slug\Repositories\Interfaces\SlugInterface;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Language;
 use Maatwebsite\Excel\Concerns\Importable;
@@ -43,42 +46,28 @@ class LocationImport implements
     use SkipsErrors;
     use ImportTrait;
 
-    /**
-     * @var CityInterface
-     */
-    protected $cityRepository;
+    protected CityInterface $cityRepository;
 
-    /**
-     * @var Request
-     */
-    protected $request;
+    protected Request $request;
 
-    /**
-     * @var mixed
-     */
-    protected $validatorClass;
+    protected string|null $validatorClass;
 
-    /**
-     * @var string
-     */
-    protected $importType = 'all';
+    protected string $importType = 'all';
 
-    /**
-     * @var int
-     */
-    protected $rowCurrent = 1; // include header
+    protected int $rowCurrent = 1; // include header
 
-    /**
-     * @var mixed
-     */
-    protected $getActiveLanguage;
+    protected array|Collection $getActiveLanguage;
 
-    /**
-     * @param CityInterface $cityRepository
-     * @param StateInterface $stateRepository
-     * @param CountryInterface $countryRepository
-     * @param Request $request
-     */
+    protected StateInterface $stateRepository;
+
+    protected CountryInterface $countryRepository;
+
+    protected SlugInterface $slugRepository;
+
+    protected Collection $countries;
+
+    protected Collection $states;
+
     public function __construct(
         CityInterface $cityRepository,
         StateInterface $stateRepository,
@@ -91,20 +80,15 @@ class LocationImport implements
         $this->countryRepository = $countryRepository;
         $this->slugRepository = $slugRepository;
         $this->request = $request;
-        $this->countries = collect([]);
-        $this->states = collect([]);
-        $this->isRealEstatePluginActive = is_plugin_active('real-estate');
+        $this->countries = collect();
+        $this->states = collect();
 
         if (defined('LANGUAGE_MODULE_SCREEN_NAME')) {
             $this->getActiveLanguage = Language::getActiveLanguage(['lang_code', 'lang_is_default']);
         }
     }
 
-    /**
-     * @param array $row
-     * @return City|Country|State|false|\Illuminate\Database\Eloquent\Model
-     */
-    public function model(array $row)
+    public function model(array $row): ?Model
     {
         $importType = $this->getImportType();
 
@@ -115,6 +99,7 @@ class LocationImport implements
             switch ($row['import_type']) {
                 case 'city':
                     $state = $this->getStateByName($stateName, $countryId);
+
                     return $this->storeCity($state);
                 case 'state':
                     return $this->storeState();
@@ -140,31 +125,19 @@ class LocationImport implements
         return null;
     }
 
-    /**
-     * @return string
-     */
-    public function getImportType()
+    public function getImportType(): string
     {
         return $this->importType;
     }
 
-    /**
-     * @param string $importType
-     * @return self
-     */
-    public function setImportType($importType)
+    public function setImportType(string $importType): self
     {
         $this->importType = $importType;
 
         return $this;
     }
 
-    /**
-     * @param string $name
-     * @param string $country
-     * @return \Eloquent|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|object|null
-     */
-    protected function getStateByName($name, $countryId)
+    protected function getStateByName($name, $countryId): ?State
     {
         $collection = $this->states
             ->where('keyword', $name)
@@ -182,40 +155,28 @@ class LocationImport implements
             $state = $this->stateRepository->getFirstBy(['name' => $name, 'country_id' => $countryId]);
         }
 
-        if (!$state) {
+        if (! $state) {
             $state = $this->stateRepository->create(['name' => $name, 'country_id' => $countryId]);
             $isCreateNew = true;
         }
 
         $this->states->push(collect([
-            'keyword'       => $name,
+            'keyword' => $name,
             'is_create_new' => $isCreateNew,
-            'model'         => $state,
-            'country'       => $this->request->input('country_temp'),
+            'model' => $state,
+            'country' => $this->request->input('country_temp'),
         ]));
 
         return $state;
     }
 
-    /**
-     * @param State $state
-     * @return false|\Illuminate\Database\Eloquent\Model|null
-     */
-    public function storeCity($state)
+    public function storeCity(State $state): ?City
     {
         $this->request->merge(['state_id' => $state->id]);
         $row = $this->request->input();
 
         $city = $this->cityRepository->create($row);
-        if ($this->isRealEstatePluginActive) {
-            $slug = Arr::get($row, 'slug') ?: Arr::get($row, 'name');
-            if (function_exists('create_city_slug')) {
-                $slug = create_city_slug($slug, $city);
-            }
-
-            $city->slug = $slug;
-            $city->save();
-        }
+        event(new ImportedCityEvent($row, $city));
 
         if ($this->getActiveLanguage) {
             foreach ($this->getActiveLanguage as $language) {
@@ -226,7 +187,7 @@ class LocationImport implements
                 CityTranslation::insertOrIgnore([
                     'cities_id' => $city->id,
                     'lang_code' => $language->lang_code,
-                    'name'      => Arr::get($row, 'name_' . $language->lang_code) ?: Arr::get($row, 'name'),
+                    'name' => Arr::get($row, 'name_' . $language->lang_code) ?: Arr::get($row, 'name'),
                 ]);
             }
         }
@@ -236,15 +197,12 @@ class LocationImport implements
         return $city;
     }
 
-    /**
-     * @return State
-     */
-    public function storeState()
+    public function storeState(): ?State
     {
         $row = $this->request->input();
         $collection = $this->states
-            ->where('keyword', $row['name'])
-            ->where('country', $row['country_temp'])
+            ->where('keyword', Arr::get($row, 'name'))
+            ->where('country', Arr::get($row, 'country_temp'))
             ->where('is_create_new', true)
             ->first();
 
@@ -261,9 +219,9 @@ class LocationImport implements
                 }
 
                 StateTranslation::insertOrIgnore([
-                    'states_id'    => $state->id,
-                    'lang_code'    => $language->lang_code,
-                    'name'         => Arr::get($row, 'name_' . $language->lang_code) ?: Arr::get($row, 'name'),
+                    'states_id' => $state->id,
+                    'lang_code' => $language->lang_code,
+                    'name' => Arr::get($row, 'name_' . $language->lang_code) ?: Arr::get($row, 'name'),
                     'abbreviation' => Arr::get($row, 'abbreviation_' . $language->lang_code) ?: Arr::get(
                         $row,
                         'abbreviation'
@@ -273,26 +231,23 @@ class LocationImport implements
         }
 
         $this->onSuccess(collect([
-            'name'        => $state->name,
-            'country'     => $row['country_temp'],
+            'name' => $state->name,
+            'country' => $row['country_temp'],
             'import_type' => 'state',
-            'model'       => $state,
+            'model' => $state,
         ]));
 
         $this->states->push(collect([
-            'keyword'       => $state->name,
+            'keyword' => $state->name,
             'is_create_new' => false,
-            'model'         => $state,
-            'country'       => $row['country_temp'],
+            'model' => $state,
+            'country' => $row['country_temp'],
         ]));
 
         return $state;
     }
 
-    /**
-     * @return Country
-     */
-    public function storeCountry()
+    public function storeCountry(): ?Country
     {
         $row = $this->request->input();
         $collection = $this->countries
@@ -314,9 +269,9 @@ class LocationImport implements
 
                 CountryTranslation::insertOrIgnore([
                     'countries_id' => $country->id,
-                    'lang_code'    => $language->lang_code,
-                    'name'         => Arr::get($row, 'name_' . $language->lang_code) ?: Arr::get($row, 'name'),
-                    'nationality'  => Arr::get($row, 'nationality_' . $language->lang_code) ?: Arr::get(
+                    'lang_code' => $language->lang_code,
+                    'name' => Arr::get($row, 'name_' . $language->lang_code) ?: Arr::get($row, 'name'),
+                    'nationality' => Arr::get($row, 'nationality_' . $language->lang_code) ?: Arr::get(
                         $row,
                         'nationality'
                     ),
@@ -325,24 +280,21 @@ class LocationImport implements
         }
 
         $this->countries->push([
-            'keyword'    => $country->name,
+            'keyword' => $country->name,
             'country_id' => $country->id,
         ]);
 
         $this->onSuccess(collect([
-            'name'        => $country->name,
-            'country'     => $row['country_temp'],
+            'name' => $country->name,
+            'country' => $row['country_temp'],
             'import_type' => 'country',
-            'model'       => $country,
+            'model' => $country,
         ]));
 
         return $country;
     }
 
-    /**
-     * @return null
-     */
-    public function onStoreCityFailure()
+    public function onStoreCityFailure(): ?string
     {
         if (method_exists($this, 'onFailure')) {
             $failures[] = new Failure(
@@ -376,34 +328,26 @@ class LocationImport implements
         return $row;
     }
 
-    /**
-     * @param array $row
-     * @return array
-     */
-    public function mapLocalization($row): array
+    public function mapLocalization(array $row): array
     {
         $row['status'] = strtolower(Arr::get($row, 'status'));
-        if (!in_array($row['status'], BaseStatusEnum::values())) {
+        if (! in_array($row['status'], BaseStatusEnum::values())) {
             $row['status'] = BaseStatusEnum::PUBLISHED;
         }
 
         $row['import_type'] = strtolower(Arr::get($row, 'import_type'));
-        if (!in_array($row['import_type'], ['city', 'country'])) {
+        if (! in_array($row['import_type'], ['city', 'country'])) {
             $row['import_type'] = 'state';
         }
 
         $this->setValues($row, [['key' => 'order', 'type' => 'integer']]);
 
-        $row['is_featured'] = !!Arr::get($row, 'is_featured');
+        $row['is_featured'] = ! ! Arr::get($row, 'is_featured');
         $row['country_temp'] = Arr::get($row, 'country');
 
         return $row;
     }
 
-    /**
-     * @param array $row
-     * @return array
-     */
     protected function setCountryToRow(array $row): array
     {
         $value = trim($row['country']);
@@ -418,12 +362,7 @@ class LocationImport implements
         return $row;
     }
 
-    /**
-     * @param int $value
-     * @param string $langCode
-     * @return int|null
-     */
-    public function getCountryId($value)
+    public function getCountryId(int|string|null $value): ?int
     {
         $country = $this->countries->where('keyword', $value)->first();
 
@@ -437,11 +376,11 @@ class LocationImport implements
                 $country = $this->countryRepository->getFirstBy(['name' => $value]);
             }
 
-            if (!$country) {
+            if (! $country) {
                 $country = $this->countryRepository->create([
-                    'name'        => $value,
+                    'name' => $value,
                     'nationality' => $this->getNationalityFromName($value),
-                    'status'      => BaseStatusEnum::PUBLISHED,
+                    'status' => BaseStatusEnum::PUBLISHED,
                 ]);
                 $isCreateNew = true;
             }
@@ -449,8 +388,8 @@ class LocationImport implements
             $countryId = $country->id;
 
             $this->countries->push([
-                'keyword'       => $value,
-                'country_id'    => $countryId,
+                'keyword' => $value,
+                'country_id' => $countryId,
                 'is_create_new' => $isCreateNew,
             ]);
         }
@@ -458,11 +397,7 @@ class LocationImport implements
         return $countryId;
     }
 
-    /**
-     * @param string $name
-     * @return string
-     */
-    private function getNationalityFromName(string $name)
+    protected function getNationalityFromName(string $name): string
     {
         $explode = explode(' ', $name);
         if (count($explode) > 2) {
@@ -472,52 +407,33 @@ class LocationImport implements
         return Str::substr($name, 0, 2);
     }
 
-    /**
-     * @return array
-     */
-    public function customValidationMessages()
+    public function customValidationMessages(): array
     {
         return method_exists($this->getValidatorClass(), 'messages') ? $this->getValidatorClass()->messages() : [];
     }
 
-    /**
-     * @return mixed
-     */
-    public function getValidatorClass()
+    public function getValidatorClass(): ?string
     {
         return $this->validatorClass;
     }
 
-    /**
-     * @param mixed $validatorClass
-     * @return self
-     */
-    public function setValidatorClass($validatorClass): self
+    public function setValidatorClass(string $validatorClass): self
     {
         $this->validatorClass = $validatorClass;
 
         return $this;
     }
 
-    /**
-     * @return array
-     */
     public function rules(): array
     {
         return method_exists($this->getValidatorClass(), 'rules') ? $this->getValidatorClass()->rules() : [];
     }
 
-    /**
-     * @return array
-     */
-    public function customValidationAttributes()
+    public function customValidationAttributes(): array
     {
         return method_exists($this->getValidatorClass(), 'attributes') ? $this->getValidatorClass()->attributes() : [];
     }
 
-    /**
-     * @return int
-     */
     public function chunkSize(): int
     {
         return 100;

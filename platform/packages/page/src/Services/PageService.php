@@ -8,6 +8,7 @@ use Botble\Page\Models\Page;
 use Botble\Page\Repositories\Interfaces\PageInterface;
 use Botble\SeoHelper\SeoOpenGraph;
 use Eloquent;
+use Html;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -17,18 +18,14 @@ use Theme;
 
 class PageService
 {
-    /**
-     * @param Eloquent|Builder $slug
-     * @return array|Eloquent
-     */
-    public function handleFrontRoutes($slug)
+    public function handleFrontRoutes(Eloquent|array $slug): Eloquent|array|Builder
     {
-        if (!$slug instanceof Eloquent) {
+        if (! $slug instanceof Eloquent) {
             return $slug;
         }
 
         $condition = [
-            'id'     => $slug->reference_id,
+            'id' => $slug->reference_id,
             'status' => BaseStatusEnum::PUBLISHED,
         ];
 
@@ -51,7 +48,7 @@ class PageService
             $meta->setImage(RvMedia::getImageUrl($page->image));
         }
 
-        if (!BaseHelper::isHomepage($page->id)) {
+        if (! BaseHelper::isHomepage($page->id)) {
             SeoHelper::setTitle($page->name)
                 ->setDescription($page->description);
 
@@ -73,14 +70,16 @@ class PageService
 
         SeoHelper::setSeoOpenGraph($meta);
 
+        SeoHelper::meta()->setUrl($page->url);
+
         if ($page->template) {
             Theme::uses(Theme::getThemeName())
                 ->layout($page->template);
         }
 
-        if (function_exists('admin_bar') && Auth::check() && Auth::user()->hasPermission('pages.edit')) {
+        if (function_exists('admin_bar')) {
             admin_bar()
-                ->registerLink(trans('packages/page::pages.edit_this_page'), route('pages.edit', $page->id));
+                ->registerLink(trans('packages/page::pages.edit_this_page'), route('pages.edit', $page->id), 'pages.edit');
         }
 
         do_action(BASE_ACTION_PUBLIC_RENDER_SINGLE, PAGE_MODULE_SCREEN_NAME, $page);
@@ -89,11 +88,15 @@ class PageService
             ->add(__('Home'), route('public.index'))
             ->add($page->name, $page->url);
 
+        Theme::asset()->add('ckeditor-content-styles', 'vendor/core/core/base/libraries/ckeditor/content-styles.css');
+
+        $page->content = Html::tag('div', (string)$page->content, ['class' => 'ck-content'])->toHtml();
+
         return [
-            'view'         => 'page',
+            'view' => 'page',
             'default_view' => 'packages/page::themes.page',
-            'data'         => compact('page'),
-            'slug'         => $page->slug,
+            'data' => compact('page'),
+            'slug' => $page->slug,
         ];
     }
 }

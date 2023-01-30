@@ -4,55 +4,26 @@ namespace Botble\Base\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use Symfony\Component\Console\Attribute\AsCommand;
 
+#[AsCommand('cms:log:clear', 'Clear log files')]
 class ClearLogCommand extends Command
 {
-    /**
-     * The filesystem instance.
-     *
-     * @var Filesystem
-     */
-    protected $files;
-
-    /**
-     * The console command signature.
-     *
-     * @var string
-     */
-    protected $signature = 'cms:log:clear';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Clear log files';
-
-    /**
-     * Create a new key generator command.
-     *
-     * @param Filesystem $files
-     */
-    public function __construct(Filesystem $files)
-    {
-        parent::__construct();
-
-        $this->files = $files;
-    }
-
-    /**
-     * Execute the console command.
-     */
-    public function handle()
+    public function handle(Filesystem $filesystem): int
     {
         $logPath = storage_path('logs');
 
-        if ($this->files->isDirectory($logPath)) {
-            foreach ($this->files->allFiles($logPath) as $file) {
-                $this->files->delete($file->getPathname());
-            }
+        if ($filesystem->isDirectory($logPath)) {
+            $this->components->task('Clearing log files', function () use ($filesystem, $logPath) {
+                foreach ($filesystem->allFiles($logPath) as $file) {
+                    $this->components->info(sprintf('Deleting [%s]', $file->getPathname()));
+                    $filesystem->delete($file->getPathname());
+                }
+            });
         }
 
-        $this->info('Clear log files successfully!');
+        $this->components->info('Clear log files successfully!');
+
+        return self::SUCCESS;
     }
 }

@@ -16,11 +16,11 @@ class Plugin extends PluginOperationAbstract
     {
         Setting::insertOrIgnore([
             [
-                'key'   => 'payment_cod_status',
+                'key' => 'payment_cod_status',
                 'value' => 1,
             ],
             [
-                'key'   => 'payment_bank_transfer_status',
+                'key' => 'payment_bank_transfer_status',
                 'value' => 1,
             ],
         ]);
@@ -99,5 +99,7 @@ class Plugin extends PluginOperationAbstract
         Schema::dropIfExists('ec_option_value');
         Schema::dropIfExists('ec_invoice_items');
         Schema::dropIfExists('ec_invoices');
+        Schema::dropIfExists('ec_tax_products');
+        Schema::dropIfExists('ec_product_views');
     }
 }

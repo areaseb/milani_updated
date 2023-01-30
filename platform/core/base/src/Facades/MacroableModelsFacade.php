@@ -5,12 +5,12 @@ namespace Botble\Base\Facades;
 use Botble\Base\Supports\MacroableModels;
 use Illuminate\Support\Facades\Facade;
 
+/**
+ * @see \Botble\Base\Supports\MacroableModels
+ */
 class MacroableModelsFacade extends Facade
 {
-    /**
-     * @return string
-     */
-    protected static function getFacadeAccessor()
+    protected static function getFacadeAccessor(): string
     {
         return MacroableModels::class;
     }

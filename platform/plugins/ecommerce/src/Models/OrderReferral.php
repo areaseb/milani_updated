@@ -7,14 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderReferral extends BaseModel
 {
-    /**
-     * @var string
-     */
     protected $table = 'ec_order_referrals';
 
-    /**
-     * @var array
-     */
     protected $fillable = [
         'ip',
         'landing_domain',
@@ -33,9 +27,6 @@ class OrderReferral extends BaseModel
         'order_id',
     ];
 
-    /**
-     * @return BelongsTo
-     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class)->withDefault();

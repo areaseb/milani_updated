@@ -5,14 +5,12 @@ namespace Botble\AuditLog\Facades;
 use Botble\AuditLog\AuditLog;
 use Illuminate\Support\Facades\Facade;
 
+/**
+ * @see \Botble\AuditLog\AuditLog
+ */
 class AuditLogFacade extends Facade
 {
-    /**
-     * Get the registered name of the component.
-     *
-     * @return string
-     */
-    protected static function getFacadeAccessor()
+    protected static function getFacadeAccessor(): string
     {
         return AuditLog::class;
     }

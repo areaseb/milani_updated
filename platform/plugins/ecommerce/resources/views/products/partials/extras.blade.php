@@ -14,7 +14,7 @@
 
                 </div>
             </div>
-            @include('plugins/ecommerce::products.partials.selected-products-list', ['products' => $product ? $product->products : collect([]), 'includeVariation' => false])
+            @include('plugins/ecommerce::products.partials.selected-products-list', ['products' => $product ? $product->products : collect(), 'includeVariation' => false])
         </div>
         <hr>
         <div class="form-group mb-3">
@@ -28,7 +28,7 @@
 
                 </div>
             </div>
-            @include('plugins/ecommerce::products.partials.selected-products-list', ['products' => $product ? $product->crossSales : collect([]), 'includeVariation' => false])
+            @include('plugins/ecommerce::products.partials.selected-products-list', ['products' => $product ? $product->crossSales : collect(), 'includeVariation' => false])
         </div>
 
         @if (false)
@@ -44,7 +44,7 @@
 
                     </div>
                 </div>
-                @include('plugins/ecommerce::products.partials.selected-products-list', ['products' => $product ? $product->upSales : collect([]), 'includeVariation' => false])
+                @include('plugins/ecommerce::products.partials.selected-products-list', ['products' => $product ? $product->upSales : collect(), 'includeVariation' => false])
             </div>
 
             <hr>
@@ -59,7 +59,7 @@
 
                     </div>
                 </div>
-                @include('plugins/ecommerce::products.partials.selected-products-list', ['products' => $product ? $product->groupedProduct : collect([]), 'includeVariation' => false])
+                @include('plugins/ecommerce::products.partials.selected-products-list', ['products' => $product ? $product->groupedProduct : collect(), 'includeVariation' => false])
             </div>
         @endif
     </div>

@@ -5,12 +5,12 @@ namespace Botble\Base\Facades;
 use Botble\Base\Supports\BreadcrumbsManager;
 use Illuminate\Support\Facades\Facade;
 
+/**
+ * @see \Botble\Base\Supports\BreadcrumbsManager
+ */
 class BreadcrumbsFacade extends Facade
 {
-    /**
-     * @return string
-     */
-    protected static function getFacadeAccessor()
+    protected static function getFacadeAccessor(): string
     {
         return BreadcrumbsManager::class;
     }

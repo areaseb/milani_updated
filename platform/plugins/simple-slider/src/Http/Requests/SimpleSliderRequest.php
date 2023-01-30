@@ -8,18 +8,13 @@ use Illuminate\Validation\Rule;
 
 class SimpleSliderRequest extends Request
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
-    public function rules()
+    public function rules(): array
     {
         return [
-            'name'        => 'required',
-            'key'         => 'required',
+            'name' => 'required',
+            'key' => 'required',
             'description' => 'max:1000',
-            'status'      => Rule::in(BaseStatusEnum::values()),
+            'status' => Rule::in(BaseStatusEnum::values()),
         ];
     }
 }

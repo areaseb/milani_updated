@@ -7,76 +7,36 @@ use Botble\Theme\Commands\Traits\ThemeTrait;
 use Botble\Theme\Services\ThemeService;
 use Botble\Widget\Models\Widget;
 use Illuminate\Console\Command;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem as File;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Input\InputArgument;
 
+#[AsCommand('cms:theme:rename', 'Rename theme to the new name')]
 class ThemeRenameCommand extends Command
 {
     use ThemeTrait;
 
-    /**
-     * @var ThemeService
-     */
-    public $themeService;
-
-    /**
-     * The console command name.
-     *
-     * @var string
-     */
-    protected $signature = 'cms:theme:rename {name : The theme that you want to rename} {newName : The new name}';
-
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Rename theme to the new name';
-
-    /**
-     * @var File
-     */
-    protected $files;
-
-    /**
-     * Create a new command instance.
-     *
-     * @param File $files
-     * @param ThemeService $themeService
-     */
-    public function __construct(File $files, ThemeService $themeService)
-    {
-        parent::__construct();
-        $this->files = $files;
-        $this->themeService = $themeService;
-    }
-
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     * @throws \League\Flysystem\FileNotFoundException
-     * @throws FileNotFoundException
-     */
-    public function handle()
+    public function handle(File $files, ThemeService $themeService): int
     {
         $theme = $this->getTheme();
 
         $newName = $this->argument('newName');
 
         if ($theme == $newName) {
-            $this->error('Theme name are the same!');
-            return 1;
+            $this->components->error('Theme name are the same!');
+
+            return self::FAILURE;
         }
 
-        if ($this->files->isDirectory(theme_path($newName))) {
-            $this->error('Theme "' . $theme . '" is already exists.');
-            return 1;
+        if ($files->isDirectory(theme_path($newName))) {
+            $this->components->error('Theme "' . $theme . '" is already exists.');
+
+            return self::FAILURE;
         }
 
-        $this->files->move(theme_path($theme), theme_path($newName));
+        $files->move(theme_path($theme), theme_path($newName));
 
-        $this->themeService->activate($newName);
+        $themeService->activate($newName);
 
         $themeOptions = SettingModel::where('key', 'LIKE', 'theme-' . $theme . '-%')->get();
 
@@ -94,8 +54,14 @@ class ThemeRenameCommand extends Command
             $widget->save();
         }
 
-        $this->info('Theme "' . $theme . '" has been renamed to ' . $newName . '!');
+        $this->components->info('Theme "' . $theme . '" has been renamed to ' . $newName . '!');
 
-        return 0;
+        return self::SUCCESS;
+    }
+
+    protected function configure(): void
+    {
+        $this->addArgument('name', InputArgument::REQUIRED, 'The theme name that you want to rename');
+        $this->addArgument('newName', InputArgument::REQUIRED, 'The new name');
     }
 }

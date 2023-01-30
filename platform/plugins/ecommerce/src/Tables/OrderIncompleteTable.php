@@ -4,23 +4,21 @@ namespace Botble\Ecommerce\Tables;
 
 use BaseHelper;
 use Html;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class OrderIncompleteTable extends OrderTable
 {
-    /**
-     * @var bool
-     */
     protected $hasCheckbox = true;
 
-    /**
-     * @var bool
-     */
     protected $hasActions = true;
 
-    /**
-     * {@inheritDoc}
-     */
-    public function ajax()
+    public function ajax(): JsonResponse
     {
         $data = $this->table
             ->eloquent($this->query())
@@ -44,8 +42,8 @@ class OrderIncompleteTable extends OrderTable
                     route('orders.view-incomplete-order', $item->id),
                     Html::tag('i', '', ['class' => 'fa fa-eye'])->toHtml(),
                     [
-                        'class'                  => 'btn btn-icon btn-sm btn-primary',
-                        'data-bs-toggle'         => 'tooltip',
+                        'class' => 'btn btn-icon btn-sm btn-primary',
+                        'data-bs-toggle' => 'tooltip',
                         'data-bs-original-title' => trans('core/base::tables.edit'),
                     ],
                     null,
@@ -57,9 +55,14 @@ class OrderIncompleteTable extends OrderTable
             ->filter(function ($query) {
                 $keyword = $this->request->input('search.value');
                 if ($keyword) {
-                    return $query->whereHas('address', function ($subQuery) use ($keyword) {
-                        return $subQuery->where('ec_order_addresses.name', 'LIKE', '%' . $keyword . '%');
-                    });
+                    return $query
+                        ->whereHas('address', function ($subQuery) use ($keyword) {
+                            return $subQuery->where('name', 'LIKE', '%' . $keyword . '%');
+                        })
+                        ->orWhereHas('user', function ($subQuery) use ($keyword) {
+                            return $subQuery->where('name', 'LIKE', '%' . $keyword . '%');
+                        })
+                        ->orWhere('code', 'LIKE', '%' . $keyword . '%');
                 }
 
                 return $query;
@@ -68,18 +71,7 @@ class OrderIncompleteTable extends OrderTable
         return $this->toJson($data);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected function tableActions($item)
-    {
-        return $this->getOperations('orders.view-incomplete-order', null, $item);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function query()
+    public function query(): Relation|Builder|QueryBuilder
     {
         $query = $this->repository->getModel()
             ->select([
@@ -94,14 +86,11 @@ class OrderIncompleteTable extends OrderTable
         return $this->applyScopes($query);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function renderTable($data = [], $mergeData = [])
+    public function renderTable($data = [], $mergeData = []): View|Factory|Response
     {
         if ($this->query()->count() === 0 &&
-            !$this->request()->wantsJson() &&
-            $this->request()->input('filter_table_id') !== $this->getOption('id') && !$this->request()->ajax()
+            ! $this->request()->wantsJson() &&
+            $this->request()->input('filter_table_id') !== $this->getOption('id') && ! $this->request()->ajax()
         ) {
             return view('plugins/ecommerce::orders.incomplete-intro');
         }
@@ -109,22 +98,19 @@ class OrderIncompleteTable extends OrderTable
         return parent::renderTable($data, $mergeData);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function columns()
+    public function columns(): array
     {
         return [
-            'id'         => [
+            'id' => [
                 'title' => trans('core/base::tables.id'),
                 'width' => '20px',
                 'class' => 'text-start',
             ],
-            'user_id'    => [
+            'user_id' => [
                 'title' => trans('plugins/ecommerce::order.customer_label'),
                 'class' => 'text-start',
             ],
-            'amount'     => [
+            'amount' => [
                 'title' => trans('plugins/ecommerce::order.amount'),
                 'class' => 'text-center',
             ],
@@ -136,9 +122,6 @@ class OrderIncompleteTable extends OrderTable
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function bulkActions(): array
     {
         return $this->addDeleteAction(route('orders.deletes'), 'orders.destroy', parent::bulkActions());

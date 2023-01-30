@@ -20,7 +20,7 @@ class NewsletterServiceProvider extends ServiceProvider
 {
     use LoadAndPublishDataTrait;
 
-    public function register()
+    public function register(): void
     {
         $this->app->singleton(NewsletterInterface::class, function () {
             return new NewsletterCacheDecorator(
@@ -29,14 +29,14 @@ class NewsletterServiceProvider extends ServiceProvider
         });
     }
 
-    public function boot()
+    public function boot(): void
     {
         $this
             ->setNamespace('plugins/newsletter')
             ->loadHelpers()
             ->loadAndPublishConfigurations(['permissions', 'email'])
             ->loadAndPublishTranslations()
-            ->loadRoutes(['web'])
+            ->loadRoutes()
             ->loadAndPublishViews()
             ->loadMigrations();
 
@@ -44,12 +44,12 @@ class NewsletterServiceProvider extends ServiceProvider
 
         Event::listen(RouteMatched::class, function () {
             dashboard_menu()->registerItem([
-                'id'          => 'cms-plugins-newsletter',
-                'priority'    => 6,
-                'parent_id'   => null,
-                'name'        => 'plugins/newsletter::newsletter.name',
-                'icon'        => 'far fa-newspaper',
-                'url'         => route('newsletter.index'),
+                'id' => 'cms-plugins-newsletter',
+                'priority' => 6,
+                'parent_id' => null,
+                'name' => 'plugins/newsletter::newsletter.name',
+                'icon' => 'far fa-newspaper',
+                'url' => route('newsletter.index'),
                 'permissions' => ['newsletter.index'],
             ]);
 
@@ -63,18 +63,13 @@ class NewsletterServiceProvider extends ServiceProvider
             $mailchimpListId = setting('newsletter_mailchimp_list_id');
 
             config([
-                'newsletter.apiKey'               => $mailchimpApiKey,
+                'newsletter.apiKey' => $mailchimpApiKey,
                 'newsletter.lists.subscribers.id' => $mailchimpListId,
             ]);
         });
     }
 
-    /**
-     * @param null $data
-     * @return string
-     * @throws \Throwable
-     */
-    public function addSettings($data = null)
+    public function addSettings(?string $data = null): string
     {
         $mailchimpContactList = [];
         $mailchimpApiKey = setting('newsletter_mailchimp_api_key');

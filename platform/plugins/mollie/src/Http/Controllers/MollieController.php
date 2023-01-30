@@ -10,16 +10,9 @@ use Illuminate\Http\Request;
 use Mollie;
 use Mollie\Api\Exceptions\ApiException;
 use Mollie\Api\Types\PaymentStatus;
-use Throwable;
 
 class MollieController extends BaseController
 {
-    /**
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     * @throws Throwable
-     */
     public function paymentCallback(Request $request, BaseHttpResponse $response)
     {
         try {
@@ -42,7 +35,7 @@ class MollieController extends BaseController
                 ->setMessage(__('Payment failed!'));
         }
 
-        if (!$result->isPaid()) {
+        if (! $result->isPaid()) {
             return $response
                 ->setError()
                 ->setNextUrl(PaymentHelper::getCancelURL())
@@ -58,15 +51,15 @@ class MollieController extends BaseController
         $orderIds = (array)$result->metadata->order_id;
 
         do_action(PAYMENT_ACTION_PAYMENT_PROCESSED, [
-            'amount'          => $request->input('amount'),
-            'currency'        => $result->amount->currency,
-            'charge_id'       => $result->id,
+            'amount' => $request->input('amount'),
+            'currency' => $result->amount->currency,
+            'charge_id' => $result->id,
             'payment_channel' => MOLLIE_PAYMENT_METHOD_NAME,
-            'status'          => $status,
-            'customer_id'     => $request->input('customer_id'),
-            'customer_type'   => $request->input('customer_type'),
-            'payment_type'    => 'direct',
-            'order_id'        => $orderIds,
+            'status' => $status,
+            'customer_id' => $request->input('customer_id'),
+            'customer_type' => $request->input('customer_type'),
+            'payment_type' => 'direct',
+            'order_id' => $orderIds,
         ]);
 
         return $response

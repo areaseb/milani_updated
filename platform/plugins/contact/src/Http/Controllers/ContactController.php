@@ -24,24 +24,13 @@ class ContactController extends BaseController
 {
     use HasDeleteManyItemsTrait;
 
-    /**
-     * @var ContactInterface
-     */
-    protected $contactRepository;
+    protected ContactInterface $contactRepository;
 
-    /**
-     * @param ContactInterface $contactRepository
-     */
     public function __construct(ContactInterface $contactRepository)
     {
         $this->contactRepository = $contactRepository;
     }
 
-    /**
-     * @param ContactTable $dataTable
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
-     * @throws \Throwable
-     */
     public function index(ContactTable $dataTable)
     {
         page_title()->setTitle(trans('plugins/contact::contact.menu'));
@@ -49,13 +38,7 @@ class ContactController extends BaseController
         return $dataTable->renderTable();
     }
 
-    /**
-     * @param $id
-     * @param FormBuilder $formBuilder
-     * @param Request $request
-     * @return string
-     */
-    public function edit($id, FormBuilder $formBuilder, Request $request)
+    public function edit(int $id, FormBuilder $formBuilder, Request $request)
     {
         page_title()->setTitle(trans('plugins/contact::contact.edit'));
 
@@ -66,13 +49,7 @@ class ContactController extends BaseController
         return $formBuilder->create(ContactForm::class, ['model' => $contact])->renderForm();
     }
 
-    /**
-     * @param $id
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function update($id, EditContactRequest $request, BaseHttpResponse $response)
+    public function update(int $id, EditContactRequest $request, BaseHttpResponse $response)
     {
         $contact = $this->contactRepository->findOrFail($id);
 
@@ -87,13 +64,7 @@ class ContactController extends BaseController
             ->setMessage(trans('core/base::notices.update_success_message'));
     }
 
-    /**
-     * @param $id
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function destroy($id, Request $request, BaseHttpResponse $response)
+    public function destroy(int $id, Request $request, BaseHttpResponse $response)
     {
         try {
             $contact = $this->contactRepository->findOrFail($id);
@@ -108,26 +79,13 @@ class ContactController extends BaseController
         }
     }
 
-    /**
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     * @throws Exception
-     */
     public function deletes(Request $request, BaseHttpResponse $response)
     {
         return $this->executeDeleteItems($request, $response, $this->contactRepository, CONTACT_MODULE_SCREEN_NAME);
     }
 
-    /**
-     * @param int $id
-     * @param ContactReplyRequest $request
-     * @param BaseHttpResponse $response
-     * @param ContactReplyInterface $contactReplyRepository
-     * @return BaseHttpResponse
-     */
     public function postReply(
-        $id,
+        int $id,
         ContactReplyRequest $request,
         BaseHttpResponse $response,
         ContactReplyInterface $contactReplyRepository
@@ -137,7 +95,7 @@ class ContactController extends BaseController
         EmailHandler::send($request->input('message'), 'Re: ' . $contact->subject, $contact->email);
 
         $contactReplyRepository->create([
-            'message'    => $request->input('message'),
+            'message' => $request->input('message'),
             'contact_id' => $id,
         ]);
 

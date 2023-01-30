@@ -5,29 +5,16 @@ namespace Botble\Ecommerce\Supports;
 use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Ecommerce\Repositories\Eloquent\ProductAttributeSetRepository;
 use Botble\Ecommerce\Repositories\Interfaces\ProductAttributeSetInterface;
-use Throwable;
 
 class RenderProductAttributeSetsOnSearchPageSupport
 {
-    /**
-     * @var ProductAttributeSetRepository
-     */
-    protected $productAttributeSetRepository;
+    protected ProductAttributeSetInterface|ProductAttributeSetRepository $productAttributeSetRepository;
 
-    /**
-     * RenderProductAttributeSetsOnSearchPageSupport constructor.
-     * @param ProductAttributeSetInterface $productAttributeSetRepository
-     */
     public function __construct(ProductAttributeSetInterface $productAttributeSetRepository)
     {
         $this->productAttributeSetRepository = $productAttributeSetRepository;
     }
 
-    /**
-     * @param array $params
-     * @return string
-     * @throws Throwable
-     */
     public function render(array $params = []): string
     {
         $params = array_merge(['view' => 'plugins/ecommerce::themes.attributes.attributes-filter-renderer'], $params);
@@ -41,13 +28,13 @@ class RenderProductAttributeSetsOnSearchPageSupport
         $attributeSets = $this->productAttributeSetRepository
             ->advancedGet([
                 'condition' => [
-                    'status'        => BaseStatusEnum::PUBLISHED,
+                    'status' => BaseStatusEnum::PUBLISHED,
                     'is_searchable' => 1,
                 ],
-                'order_by'  => [
+                'order_by' => [
                     'order' => 'ASC',
                 ],
-                'with'      => $with,
+                'with' => $with,
             ]);
 
         return view($params['view'], compact('attributeSets'))->render();

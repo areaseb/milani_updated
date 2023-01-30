@@ -49,14 +49,10 @@ class AuthenticationController extends Controller
      * }
      *
      * @group Authentication
-     *
-     * @param RegisterRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
      */
     public function register(RegisterRequest $request, BaseHttpResponse $response)
     {
-        $request->merge(['password' => bcrypt($request->input('password'))]);
+        $request->merge(['password' => Hash::make($request->input('password'))]);
 
         $request->merge(['name' => $request->input('first_name') . ' ' . $request->input('last_name')]);
 
@@ -100,16 +96,11 @@ class AuthenticationController extends Controller
      * }
      *
      * @group Authentication
-     *
-     * @param LoginRequest $request
-     * @param BaseHttpResponse $response
-     *
-     * @return BaseHttpResponse
      */
     public function login(LoginRequest $request, BaseHttpResponse $response)
     {
         if (Auth::guard(ApiHelper::guard())->attempt([
-            'email'    => $request->input('email'),
+            'email' => $request->input('email'),
             'password' => $request->input('password'),
         ])) {
             $token = $request->user(ApiHelper::guard())->createToken($request->input('token_name', 'Personal Access Token'));
@@ -129,14 +120,10 @@ class AuthenticationController extends Controller
      *
      * @group Authentication
      * @authenticated
-     *
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
      */
     public function logout(Request $request, BaseHttpResponse $response)
     {
-        if (!$request->user()) {
+        if (! $request->user()) {
             abort(401);
         }
 

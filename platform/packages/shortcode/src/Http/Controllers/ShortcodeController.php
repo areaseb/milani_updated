@@ -4,30 +4,22 @@ namespace Botble\Shortcode\Http\Controllers;
 
 use Botble\Base\Http\Controllers\BaseController;
 use Botble\Base\Http\Responses\BaseHttpResponse;
+use Botble\Shortcode\Http\Requests\GetShortcodeDataRequest;
 use Closure;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 
 class ShortcodeController extends BaseController
 {
-    /**
-     * @param string $key
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function ajaxGetAdminConfig($key, Request $request, BaseHttpResponse $response)
+    public function ajaxGetAdminConfig(?string $key, GetShortcodeDataRequest $request, BaseHttpResponse $response)
     {
         $registered = shortcode()->getAll();
 
         $data = Arr::get($registered, $key . '.admin_config');
 
-        $code = $request->input('code');
-
         $attributes = [];
         $content = null;
 
-        if ($code) {
+        if ($code = $request->input('code')) {
             $compiler = shortcode()->getCompiler();
             $attributes = $compiler->getAttributes(html_entity_decode($code));
             $content = $compiler->getContent();

@@ -12,11 +12,6 @@ use Botble\SslCommerz\Library\SslCommerz\SslCommerzNotification;
 
 class SslCommerzPaymentController extends BaseController
 {
-    /**
-     * @param PaymentRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function success(PaymentRequest $request, BaseHttpResponse $response)
     {
         $transactionId = $request->input('tran_id');
@@ -28,7 +23,7 @@ class SslCommerzPaymentController extends BaseController
 
         $validation = $sslc->orderValidate($request->input(), $transactionId, $amount, $currency);
 
-        if (!$validation) {
+        if (! $validation) {
             return $response
                 ->setError()
                 ->setNextUrl(PaymentHelper::getCancelURL($checkoutToken))
@@ -38,27 +33,22 @@ class SslCommerzPaymentController extends BaseController
         $orderIds = explode(';', $request->input('value_a'));
 
         do_action(PAYMENT_ACTION_PAYMENT_PROCESSED, [
-            'amount'          => $request->input('amount'),
-            'currency'        => $currency,
-            'charge_id'       => $transactionId,
+            'amount' => $request->input('amount'),
+            'currency' => $currency,
+            'charge_id' => $transactionId,
             'payment_channel' => SSLCOMMERZ_PAYMENT_METHOD_NAME,
-            'status'          => PaymentStatusEnum::COMPLETED,
-            'customer_id'     => $request->input('value_c'),
-            'customer_type'   => urldecode($request->input('value_d')),
-            'payment_type'    => 'direct',
-            'order_id'        => $orderIds,
+            'status' => PaymentStatusEnum::COMPLETED,
+            'customer_id' => $request->input('value_c'),
+            'customer_type' => urldecode($request->input('value_d')),
+            'payment_type' => 'direct',
+            'order_id' => $orderIds,
         ]);
 
         return $response
-            ->setNextUrl(route('public.account.package.subscribe.callback', $checkoutToken) . '?charge_id=' . $transactionId)
+            ->setNextUrl(PaymentHelper::getRedirectURL($checkoutToken))
             ->setMessage(__('Checkout successfully!'));
     }
 
-    /**
-     * @param PaymentRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function fail(PaymentRequest $request, BaseHttpResponse $response)
     {
         $checkoutToken = $request->input('value_b');
@@ -69,11 +59,6 @@ class SslCommerzPaymentController extends BaseController
             ->setMessage(__('Payment failed!'));
     }
 
-    /**
-     * @param PaymentRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function cancel(PaymentRequest $request, BaseHttpResponse $response)
     {
         $checkoutToken = $request->input('value_b');
@@ -84,16 +69,11 @@ class SslCommerzPaymentController extends BaseController
             ->setMessage(__('Payment failed!'));
     }
 
-    /**
-     * @param PaymentRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function ipn(PaymentRequest $request, BaseHttpResponse $response)
     {
         // Received all the payment information from the gateway
         // Check transaction id is posted or not.
-        if (!$request->input('tran_id')) {
+        if (! $request->input('tran_id')) {
             return $response
                 ->setError()
                 ->setMessage(__('Invalid Data!'));
@@ -105,7 +85,7 @@ class SslCommerzPaymentController extends BaseController
         $transaction = Payment::where('charge_id', $transactionId)
             ->select(['charge_id', 'status'])->first();
 
-        if (!$transaction) {
+        if (! $transaction) {
             return $response
                 ->setError()
                 ->setMessage(__('Invalid Transaction!'));

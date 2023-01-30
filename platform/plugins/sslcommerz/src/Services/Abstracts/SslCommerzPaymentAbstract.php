@@ -105,6 +105,7 @@ abstract class SslCommerzPaymentAbstract implements ProduceServiceInterface
             $payment = $this->client->getPaymentDetails($paymentId);
         } catch (Exception $exception) {
             $this->setErrorMessageAndLogging($exception, 1);
+
             return false;
         }
 
@@ -124,26 +125,29 @@ abstract class SslCommerzPaymentAbstract implements ProduceServiceInterface
                 $status = Arr::get($response, 'status');
                 if ($status == 'success') {
                     $response = array_merge($response, ['_refund_id' => Arr::get($response, 'refund_ref_id')]);
+
                     return [
-                        'error'   => false,
+                        'error' => false,
                         'message' => $status,
-                        'data'    => (array) $response,
+                        'data' => (array) $response,
                     ];
                 }
+
                 return [
-                    'error'   => true,
+                    'error' => true,
                     'message' => trans('plugins/payment::payment.status_is_not_completed'),
                 ];
             }
 
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => 'Payment ' . $paymentId . ' can not found bank_tran_id',
             ];
         } catch (Exception $exception) {
             $this->setErrorMessageAndLogging($exception, 1);
+
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => $exception->getMessage(),
             ];
         }
@@ -157,16 +161,18 @@ abstract class SslCommerzPaymentAbstract implements ProduceServiceInterface
         try {
             $response = (array) $this->client->refundDetail($refundRefId);
             $status = Arr::get($response, 'status');
+
             return [
-                'error'   => false,
+                'error' => false,
                 'message' => $status,
-                'data'    => (array) $response,
-                'status'  => $status,
+                'data' => (array) $response,
+                'status' => $status,
             ];
         } catch (Exception $exception) {
             $this->setErrorMessageAndLogging($exception, 1);
+
             return [
-                'error'   => true,
+                'error' => true,
                 'message' => $exception->getMessage(),
             ];
         }
@@ -185,6 +191,7 @@ abstract class SslCommerzPaymentAbstract implements ProduceServiceInterface
             return $this->makePayment($request);
         } catch (Exception $exception) {
             $this->setErrorMessageAndLogging($exception, 1);
+
             return false;
         }
     }

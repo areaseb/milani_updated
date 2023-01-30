@@ -19,24 +19,13 @@ use Botble\Ecommerce\Services\StoreProductTagService;
 use Botble\Ecommerce\Tables\ProductTable;
 use Botble\Ecommerce\Traits\ProductActionsTrait;
 use EcommerceHelper;
-use Exception;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\View\View;
-use Throwable;
 
 class ProductController extends BaseController
 {
     use ProductActionsTrait;
 
-    /**
-     * @param ProductTable $dataTable
-     * @return Factory|View
-     * @throws Throwable
-     */
     public function index(ProductTable $dataTable)
     {
         page_title()->setTitle(trans('plugins/ecommerce::products.name'));
@@ -47,11 +36,6 @@ class ProductController extends BaseController
         return $dataTable->renderTable();
     }
 
-    /**
-     * @param FormBuilder $formBuilder
-     * @param Request $request
-     * @return string
-     */
     public function create(FormBuilder $formBuilder, Request $request)
     {
         if (EcommerceHelper::isEnabledSupportDigitalProducts()) {
@@ -67,17 +51,9 @@ class ProductController extends BaseController
         return $formBuilder->create(ProductForm::class)->renderForm();
     }
 
-    /**
-     * @param int $id
-     * @param Request $request
-     * @param FormBuilder $formBuilder
-     * @return string
-     */
-    public function edit($id, Request $request, FormBuilder $formBuilder)
+    public function edit(int $id, Request $request, FormBuilder $formBuilder)
     {
-        $product = $this->productRepository->findOrFail($id, ["options" => function($query) {
-            return $query->with(['values']);
-        }]);
+        $product = $this->productRepository->findOrFail($id);
 
         if ($product->is_variation) {
             abort(404);
@@ -92,18 +68,6 @@ class ProductController extends BaseController
             ->renderForm();
     }
 
-    /**
-     * @param ProductRequest $request
-     * @param StoreProductService $service
-     * @param BaseHttpResponse $response
-     * @param ProductVariationInterface $variationRepository
-     * @param ProductVariationItemInterface $productVariationItemRepository
-     * @param GroupedProductInterface $groupedProductRepository
-     * @param StoreAttributesOfProductService $storeAttributesOfProductService
-     * @param StoreProductTagService $storeProductTagService
-     * @return BaseHttpResponse
-     * @throws Exception
-     */
     public function store(
         ProductRequest $request,
         StoreProductService $service,
@@ -155,7 +119,7 @@ class ProductController extends BaseController
         if ($request->has('grouped_products')) {
             $groupedProductRepository->createGroupedProducts($product->id, array_map(function ($item) {
                 return [
-                    'id'  => $item,
+                    'id' => $item,
                     'qty' => 1,
                 ];
             }, array_filter(explode(',', $request->input('grouped_products', '')))));
@@ -167,19 +131,8 @@ class ProductController extends BaseController
             ->setMessage(trans('core/base::notices.create_success_message'));
     }
 
-    /**
-     * @param int $id
-     * @param ProductRequest $request
-     * @param StoreProductService $service
-     * @param GroupedProductInterface $groupedProductRepository
-     * @param BaseHttpResponse $response
-     * @param ProductVariationInterface $variationRepository
-     * @param ProductVariationItemInterface $productVariationItemRepository
-     * @param StoreProductTagService $storeProductTagService
-     * @return BaseHttpResponse|JsonResponse|RedirectResponse
-     */
     public function update(
-        $id,
+        int $id,
         ProductRequest $request,
         StoreProductService $service,
         GroupedProductInterface $groupedProductRepository,
@@ -239,7 +192,7 @@ class ProductController extends BaseController
         if ($request->has('grouped_products')) {
             $groupedProductRepository->createGroupedProducts($product->id, array_map(function ($item) {
                 return [
-                    'id'  => $item,
+                    'id' => $item,
                     'qty' => 1,
                 ];
             }, array_filter(explode(',', $request->input('grouped_products', '')))));

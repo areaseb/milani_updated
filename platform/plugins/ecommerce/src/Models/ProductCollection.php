@@ -2,26 +2,16 @@
 
 namespace Botble\Ecommerce\Models;
 
+use Botble\Base\Casts\SafeContent;
 use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Base\Models\BaseModel;
-use Botble\Base\Traits\EnumCastable;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ProductCollection extends BaseModel
 {
-    use EnumCastable;
-
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
     protected $table = 'ec_product_collections';
 
-    /**
-     * @var array
-     */
     protected $fillable = [
         'name',
         'slug',
@@ -31,11 +21,9 @@ class ProductCollection extends BaseModel
         'is_featured',
     ];
 
-    /**
-     * @var array
-     */
     protected $casts = [
         'status' => BaseStatusEnum::class,
+        'name' => SafeContent::class,
     ];
 
     protected static function boot()
@@ -47,18 +35,12 @@ class ProductCollection extends BaseModel
         });
     }
 
-    /**
-     * @return BelongsToMany
-     */
-    public function discounts()
+    public function discounts(): BelongsToMany
     {
         return $this->belongsToMany(Discount::class, 'ec_discount_customers', 'customer_id', 'id');
     }
 
-    /**
-     * @return BelongsToMany
-     */
-    public function products()
+    public function products(): BelongsToMany
     {
         return $this
             ->belongsToMany(
@@ -70,10 +52,7 @@ class ProductCollection extends BaseModel
             ->where('is_variation', 0);
     }
 
-    /**
-     * @return BelongsToMany
-     */
-    public function promotions()
+    public function promotions(): BelongsToMany
     {
         return $this
             ->belongsToMany(Discount::class, 'ec_discount_product_collections', 'product_collection_id')

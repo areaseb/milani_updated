@@ -9,43 +9,35 @@ use Botble\Table\Abstracts\TableAbstract;
 use EcommerceHelper;
 use Html;
 use Illuminate\Contracts\Routing\UrlGenerator;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 use Yajra\DataTables\DataTables;
 
 class CustomerTable extends TableAbstract
 {
-    /**
-     * @var bool
-     */
     protected $hasActions = true;
 
-    /**
-     * @var bool
-     */
     protected $hasFilter = true;
 
-    /**
-     * CustomerTable constructor.
-     * @param DataTables $table
-     * @param UrlGenerator $urlGenerator
-     * @param CustomerInterface $customerRepository
-     */
     public function __construct(DataTables $table, UrlGenerator $urlGenerator, CustomerInterface $customerRepository)
     {
         parent::__construct($table, $urlGenerator);
 
         $this->repository = $customerRepository;
 
-        if (!Auth::user()->hasAnyPermission(['customers.edit', 'customers.destroy'])) {
+        if (! Auth::user()->hasAnyPermission(['customers.edit', 'customers.destroy'])) {
             $this->hasOperations = false;
             $this->hasActions = false;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function ajax()
+    public function ajax(): JsonResponse
     {
         $data = $this->table
             ->eloquent($this->query())
@@ -58,7 +50,7 @@ class CustomerTable extends TableAbstract
                 return Html::tag('img', '', ['src' => $item->avatar_url, 'alt' => BaseHelper::clean($item->name), 'width' => 50]);
             })
             ->editColumn('name', function ($item) {
-                if (!Auth::user()->hasPermission('customers.edit')) {
+                if (! Auth::user()->hasPermission('customers.edit')) {
                     return BaseHelper::clean($item->name);
                 }
 
@@ -96,10 +88,7 @@ class CustomerTable extends TableAbstract
         return $this->toJson($data);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function query()
+    public function query(): Relation|Builder|QueryBuilder
     {
         $query = $this->repository->getModel()->select([
             'id',
@@ -114,27 +103,24 @@ class CustomerTable extends TableAbstract
         return $this->applyScopes($query);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function columns()
+    public function columns(): array
     {
         $columns = [
-            'id'         => [
+            'id' => [
                 'title' => trans('core/base::tables.id'),
                 'width' => '20px',
                 'class' => 'text-start',
             ],
-            'avatar'      => [
+            'avatar' => [
                 'title' => trans('plugins/ecommerce::customer.avatar'),
                 'class' => 'text-center',
             ],
-            'name'       => [
+            'name' => [
                 'title' => trans('core/base::forms.name'),
                 'class' => 'text-start',
             ],
-            'email'      => [
-                'title' => trans('plugins/ecommerce::customer.name'),
+            'email' => [
+                'title' => trans('plugins/ecommerce::customer.email'),
                 'class' => 'text-start',
             ],
             'created_at' => [
@@ -142,7 +128,7 @@ class CustomerTable extends TableAbstract
                 'width' => '100px',
                 'class' => 'text-start',
             ],
-            'status'     => [
+            'status' => [
                 'title' => trans('core/base::tables.status'),
                 'width' => '100px',
             ],
@@ -160,58 +146,46 @@ class CustomerTable extends TableAbstract
         return $columns;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function buttons()
+    public function buttons(): array
     {
         return $this->addCreateButton(route('customers.create'), 'customers.create');
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function bulkActions(): array
     {
         return $this->addDeleteAction(route('customers.deletes'), 'customers.destroy', parent::bulkActions());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getBulkChanges(): array
     {
         return [
-            'name'       => [
-                'title'    => trans('core/base::tables.name'),
-                'type'     => 'text',
+            'name' => [
+                'title' => trans('core/base::tables.name'),
+                'type' => 'text',
                 'validate' => 'required|max:120',
             ],
-            'email'      => [
-                'title'    => trans('core/base::tables.email'),
-                'type'     => 'text',
+            'email' => [
+                'title' => trans('core/base::tables.email'),
+                'type' => 'text',
                 'validate' => 'required|max:120',
             ],
-            'status'     => [
-                'title'    => trans('core/base::tables.status'),
-                'type'     => 'select',
-                'choices'  => CustomerStatusEnum::labels(),
+            'status' => [
+                'title' => trans('core/base::tables.status'),
+                'type' => 'select',
+                'choices' => CustomerStatusEnum::labels(),
                 'validate' => 'required|in:' . implode(',', CustomerStatusEnum::values()),
             ],
             'created_at' => [
                 'title' => trans('core/base::tables.created_at'),
-                'type'  => 'date',
+                'type' => 'datePicker',
             ],
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function renderTable($data = [], $mergeData = [])
+    public function renderTable($data = [], $mergeData = []): View|Factory|Response
     {
         if ($this->query()->count() === 0 &&
-            $this->request()->input('filter_table_id') !== $this->getOption('id') && !$this->request()->ajax()
+            $this->request()->input('filter_table_id') !== $this->getOption('id') && ! $this->request()->ajax()
         ) {
             return view('plugins/ecommerce::customers.intro');
         }
@@ -219,9 +193,6 @@ class CustomerTable extends TableAbstract
         return parent::renderTable($data, $mergeData);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getDefaultButtons(): array
     {
         return [

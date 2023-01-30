@@ -13,51 +13,27 @@ use Botble\Ecommerce\Repositories\Interfaces\ProductInterface;
 use Botble\Ecommerce\Tables\OrderReturnTable;
 use EcommerceHelper;
 use Exception;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OrderReturnHelper;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
-use Throwable;
 
 class OrderReturnController extends BaseController
 {
-    /**
-     * @var OrderReturnInterface
-     */
-    protected $orderReturnRepository;
+    protected OrderReturnInterface $orderReturnRepository;
 
-    /**
-     * @var OrderReturnInterface
-     */
-    protected $orderReturnItemRepository;
+    protected OrderReturnInterface $orderReturnItemRepository;
 
-    /**
-     * @var ProductInterface
-     */
-    protected $productRepository;
+    protected ProductInterface $productRepository;
 
-    /**
-     * @param OrderReturnInterface $orderReturnRepository
-     * @param OrderReturnInterface $orderReturnItemRepository
-     * @param ProductInterface $productRepository
-     */
     public function __construct(
         OrderReturnInterface $orderReturnRepository,
         OrderReturnInterface $orderReturnItemRepository,
-        ProductInterface     $productRepository
+        ProductInterface $productRepository
     ) {
         $this->orderReturnRepository = $orderReturnRepository;
         $this->orderReturnItemRepository = $orderReturnItemRepository;
         $this->productRepository = $productRepository;
     }
 
-    /**
-     * @param OrderReturnTable $orderReturnTable
-     * @return JsonResponse|View
-     * @throws Throwable
-     */
     public function index(OrderReturnTable $orderReturnTable)
     {
         page_title()->setTitle(trans('plugins/ecommerce::order.order_return'));
@@ -65,10 +41,6 @@ class OrderReturnController extends BaseController
         return $orderReturnTable->renderTable();
     }
 
-    /**
-     * @param int $id
-     * @return Application|Factory|View
-     */
     public function edit(int $id)
     {
         Assets::addStylesDirectly(['vendor/core/plugins/ecommerce/css/ecommerce.css'])
@@ -91,13 +63,7 @@ class OrderReturnController extends BaseController
         return view('plugins/ecommerce::order-returns.edit', compact('returnRequest', 'defaultStore'));
     }
 
-    /**
-     * @param int $id
-     * @param UpdateOrderReturnRequest $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function update($id, UpdateOrderReturnRequest $request, BaseHttpResponse $response)
+    public function update(int $id, UpdateOrderReturnRequest $request, BaseHttpResponse $response)
     {
         $returnRequest = $this->orderReturnRepository->findOrFail($id);
 
@@ -113,7 +79,7 @@ class OrderReturnController extends BaseController
 
         [$status, $returnRequest] = OrderReturnHelper::updateReturnOrder($returnRequest, $data);
 
-        if (!$status) {
+        if (! $status) {
             return $response
                 ->setError()
                 ->setMessage(trans('plugins/ecommerce::order.notices.update_return_order_status_error'));
@@ -124,19 +90,14 @@ class OrderReturnController extends BaseController
             ->setMessage(trans('core/base::notices.update_success_message'));
     }
 
-    /**
-     * @param int $id
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
-    public function destroy($id, Request $request, BaseHttpResponse $response)
+    public function destroy(Request $request, int $id, BaseHttpResponse $response)
     {
         $order = $this->orderReturnRepository->findOrFail($id);
 
         try {
             $this->orderReturnRepository->deleteBy(['id' => $id]);
             event(new DeletedContentEvent(ORDER_RETURN_MODULE_SCREEN_NAME, $request, $order));
+
             return $response->setMessage(trans('core/base::notices.delete_success_message'));
         } catch (Exception $exception) {
             return $response
@@ -145,12 +106,6 @@ class OrderReturnController extends BaseController
         }
     }
 
-    /**
-     * @param Request $request
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     * @throws Exception
-     */
     public function deletes(Request $request, BaseHttpResponse $response)
     {
         $ids = $request->input('ids');

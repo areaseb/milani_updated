@@ -38,12 +38,14 @@ class EditorManagement {
                     onEdit: (shortcode, name = () => {
                     }) => {
                         let description = null;
-                        this.shortcodes.forEach(function (item) {
-                            if (item.key === name) {
-                                description = item.description;
-                                return true;
-                            }
-                        });
+                        if (this.shortcodes.length) {
+                            this.shortcodes.forEach(function (item) {
+                                if (item.key === name) {
+                                    description = item.description;
+                                    return true;
+                                }
+                            });
+                        }
 
                         this.shortcodeCallback({
                             key: name,
@@ -52,16 +54,16 @@ class EditorManagement {
                                 code: shortcode,
                             },
                             description: description,
-                            preview_image: '',
+                            previewImage: '',
                             update: true
                         })
                     },
-                    shortcodes: this.getShortcodesAvailable(editor),
+                    shortcodes: this.getShortcodesAvailable(editor) || [],
                     onCallback: (shortcode, options) => {
                         this.shortcodeCallback({
                             key: shortcode,
                             href: options.url,
-                            preview_image: ''
+                            previewImage: ''
                         });
                     }
                 },
@@ -111,7 +113,11 @@ class EditorManagement {
                         'codeBlock',
                     ]
                 },
-                language: 'en',
+                language: {
+                    ui: 'en',
+
+                    content: window.siteEditorLocale || 'en',
+                },
                 image: {
                     toolbar: [
                         'imageTextAlternative',
@@ -124,6 +130,25 @@ class EditorManagement {
                     upload: {
                         types: ['jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'svg+xml']
                     }
+                },
+                codeBlock: {
+                    languages: [
+                        {language: 'plaintext', label: 'Plain text'},
+                        {language: 'c', label: 'C'},
+                        {language: 'cs', label: 'C#'},
+                        {language: 'cpp', label: 'C++'},
+                        {language: 'css', label: 'CSS'},
+                        {language: 'diff', label: 'Diff'},
+                        {language: 'html', label: 'HTML'},
+                        {language: 'java', label: 'Java'},
+                        {language: 'javascript', label: 'JavaScript'},
+                        {language: 'php', label: 'PHP'},
+                        {language: 'python', label: 'Python'},
+                        {language: 'ruby', label: 'Ruby'},
+                        {language: 'typescript', label: 'TypeScript'},
+                        {language: 'xml', label: 'XML'},
+                        {language: 'dart', label: 'Dart', class: 'language-dart'},
+                    ]
                 },
                 link: {
                     defaultProtocol: 'http://',
@@ -211,7 +236,7 @@ class EditorManagement {
         const $dropdown = $(editor).parents('.form-group').find('.add_shortcode_btn_trigger')?.next('.dropdown-menu');
         const lists = [];
 
-        if ($dropdown) {
+        if ($dropdown && $dropdown.find('> li').length) {
             $dropdown.find('> li').each(function () {
                 let item = $(this).find('> a');
                 lists.push({
@@ -258,7 +283,7 @@ class EditorManagement {
             selector: '#' + element,
             min_height: $('#' + element).prop('rows') * 110,
             resize: 'vertical',
-            plugins: 'code autolink advlist visualchars link image media table charmap hr pagebreak nonbreaking hanbiroclip anchor insertdatetime lists textcolor wordcount imagetools  contextmenu  visualblocks',
+            plugins: 'code autolink advlist visualchars link image media table charmap hr pagebreak nonbreaking anchor insertdatetime lists wordcount imagetools visualblocks',
             extended_valid_elements: 'input[id|name|value|type|class|style|required|placeholder|autocomplete|onclick]',
             toolbar: 'formatselect | bold italic strikethrough forecolor backcolor | link image table | alignleft aligncenter alignright alignjustify  | numlist bullist indent  |  visualblocks code',
             convert_urls: false,
@@ -348,7 +373,7 @@ class EditorManagement {
             description = null,
             data = {},
             update = false,
-            preview_image = null
+            previewImage = null
         } = params;
         $('.short-code-admin-config').html('');
 
@@ -360,12 +385,12 @@ class EditorManagement {
             $addShortcodeButton.text($addShortcodeButton.data('add-text'));
         }
 
-        if (description !== '' && description != null) {
+        if (description != null) {
             $('.short_code_modal .modal-title strong').text(description);
         }
 
-        if (preview_image !== '' && preview_image != null) {
-            $('.short_code_modal .shortcode-preview-image-link').attr('href', preview_image).show();
+        if (previewImage != null && previewImage !== '') {
+            $('.short_code_modal .shortcode-preview-image-link').attr('href', previewImage).show();
         } else {
             $('.short_code_modal .shortcode-preview-image-link').hide();
         }
@@ -374,7 +399,7 @@ class EditorManagement {
         $('.half-circle-spinner').show();
 
         $.ajax({
-            type: 'GET',
+            type: 'POST',
             data: data,
             url: href,
             success: res => {
@@ -407,7 +432,7 @@ class EditorManagement {
                     href: $(this).prop('href'),
                     key: $(this).data('key'),
                     description: $(this).data('description'),
-                    preview_image: $(this).data('preview-image'),
+                    previewImage: $(this).data('preview-image'),
                 });
 
             } else {
@@ -417,7 +442,7 @@ class EditorManagement {
 
                 if ($('.editor-ckeditor').length > 0) {
                     self.CKEDITOR[editorInstance].commands.execute('shortcode', shortcode);
-                } else {
+                } else if ($('.editor-tinymce').length > 0) {
                     tinymce.get(editorInstance).execCommand('mceInsertContent', false, shortcode);
                 }
             }
@@ -472,8 +497,11 @@ class EditorManagement {
 
             if ($('.editor-ckeditor').length > 0) {
                 self.CKEDITOR[editorInstance].commands.execute('shortcode', shortcode);
-            } else {
+            } else if ($('.editor-tinymce').length > 0) {
                 tinymce.get(editorInstance).execCommand('mceInsertContent', false, shortcode);
+            } else {
+                const coreInsertShortCodeEvent = new CustomEvent('core-insert-shortcode', { detail: { shortcode: shortcode } })
+                document.dispatchEvent(coreInsertShortCodeEvent)
             }
 
             $(this).closest('.modal').modal('hide');

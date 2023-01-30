@@ -29,7 +29,7 @@ abstract class AbstractSslCommerz implements SslCommerzInterface
     {
         $curl = curl_init();
 
-        if (!$setLocalhost) {
+        if (! $setLocalhost) {
             curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
             curl_setopt(
                 $curl,
@@ -60,7 +60,7 @@ abstract class AbstractSslCommerz implements SslCommerzInterface
         $curlErrorNo = curl_errno($curl);
         curl_close($curl);
 
-        if ($code == 200 & !($curlErrorNo)) {
+        if ($code == 200 & ! ($curlErrorNo)) {
             return $response;
         }
 
@@ -102,14 +102,14 @@ abstract class AbstractSslCommerz implements SslCommerzInterface
             if ($this->getApiUrl() != null && $this->getApiUrl() == 'https://securepay.sslcommerz.com') {
                 $response = json_encode([
                     'status' => 'SUCCESS',
-                    'data'   => $sslcz['GatewayPageURL'],
-                    'logo'   => $sslcz['storeLogo'],
+                    'data' => $sslcz['GatewayPageURL'],
+                    'logo' => $sslcz['storeLogo'],
                 ]);
             } else {
                 $response = json_encode([
                     'status' => 'success',
-                    'data'   => $sslcz['GatewayPageURL'],
-                    'logo'   => $sslcz['storeLogo'],
+                    'data' => $sslcz['GatewayPageURL'],
+                    'logo' => $sslcz['storeLogo'],
                 ]);
             }
         } else {

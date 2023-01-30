@@ -5,12 +5,15 @@ namespace Botble\SimpleSlider\Providers;
 use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Shortcode\Compilers\Shortcode;
 use Botble\SimpleSlider\Repositories\Interfaces\SimpleSliderInterface;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\ServiceProvider;
 use Theme;
 
 class HookServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         if (function_exists('shortcode')) {
             add_shortcode(
@@ -32,15 +35,10 @@ class HookServiceProvider extends ServiceProvider
         add_filter(BASE_FILTER_AFTER_SETTING_CONTENT, [$this, 'addSettings'], 301);
     }
 
-    /**
-     * @param Shortcode $shortcode
-     * @return null
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
-     */
-    public function render($shortcode)
+    public function render(Shortcode $shortcode): View|Factory|Application|null
     {
         $slider = $this->app->make(SimpleSliderInterface::class)->getFirstBy([
-            'key'    => $shortcode->key,
+            'key' => $shortcode->key,
             'status' => BaseStatusEnum::PUBLISHED,
         ]);
 
@@ -62,18 +60,13 @@ class HookServiceProvider extends ServiceProvider
         }
 
         return view(apply_filters(SIMPLE_SLIDER_VIEW_TEMPLATE, 'plugins/simple-slider::sliders'), [
-            'sliders'   => $slider->sliderItems,
+            'sliders' => $slider->sliderItems,
             'shortcode' => $shortcode,
-            'slider'    => $slider,
+            'slider' => $slider,
         ]);
     }
 
-    /**
-     * @param null $data
-     * @return string
-     * @throws \Throwable
-     */
-    public function addSettings($data = null)
+    public function addSettings(?string $data = null): string
     {
         return $data . view('plugins/simple-slider::setting')->render();
     }

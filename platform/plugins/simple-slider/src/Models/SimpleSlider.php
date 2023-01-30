@@ -2,24 +2,15 @@
 
 namespace Botble\SimpleSlider\Models;
 
+use Botble\Base\Casts\SafeContent;
 use Botble\Base\Enums\BaseStatusEnum;
-use Botble\Base\Traits\EnumCastable;
 use Botble\Base\Models\BaseModel;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SimpleSlider extends BaseModel
 {
-    use EnumCastable;
-
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
     protected $table = 'simple_sliders';
 
-    /**
-     * @var array
-     */
     protected $fillable = [
         'name',
         'key',
@@ -27,17 +18,13 @@ class SimpleSlider extends BaseModel
         'status',
     ];
 
-    /**
-     * @var array
-     */
     protected $casts = [
         'status' => BaseStatusEnum::class,
+        'name' => SafeContent::class,
+        'description' => SafeContent::class,
     ];
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function sliderItems()
+    public function sliderItems(): HasMany
     {
         return $this->hasMany(SimpleSliderItem::class)->orderBy('simple_slider_items.order');
     }

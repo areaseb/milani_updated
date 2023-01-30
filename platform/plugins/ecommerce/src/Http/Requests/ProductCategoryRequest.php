@@ -6,15 +6,10 @@ use Botble\Support\Http\Requests\Request;
 
 class ProductCategoryRequest extends Request
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
-    public function rules()
+    public function rules(): array
     {
         return [
-            'name'  => 'required',
+            'name' => 'required',
             'order' => 'required|integer|min:0',
         ];
     }

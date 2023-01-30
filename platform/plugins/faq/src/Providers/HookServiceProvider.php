@@ -11,22 +11,19 @@ use MetaBox;
 
 class HookServiceProvider extends ServiceProvider
 {
-    /**
-     * @throws \Throwable
-     */
-    public function boot()
+    public function boot(): void
     {
-        add_action(BASE_ACTION_META_BOXES, function ($context, $object) {
-            if (!$object || $context != 'advanced') {
-                return false;
+        add_action(BASE_ACTION_META_BOXES, function ($context, $object): void {
+            if (! $object || $context != 'advanced') {
+                return;
             }
 
-            if (!in_array(get_class($object), config('plugins.faq.general.schema_supported', []))) {
-                return false;
+            if (! in_array(get_class($object), config('plugins.faq.general.schema_supported', []))) {
+                return;
             }
 
-            if (!setting('enable_faq_schema', 0)) {
-                return false;
+            if (! setting('enable_faq_schema', 0)) {
+                return;
             }
 
             Assets::addStylesDirectly(['vendor/core/plugins/faq/css/faq.css'])
@@ -49,7 +46,7 @@ class HookServiceProvider extends ServiceProvider
                         $value = MetaBox::getMetaData($args[0], 'faq_schema_config', true);
                     }
 
-                    $hasValue = !empty($value);
+                    $hasValue = ! empty($value);
 
                     $value = json_encode((array)$value);
 
@@ -58,47 +55,45 @@ class HookServiceProvider extends ServiceProvider
                 get_class($object),
                 $context
             );
-
-            return true;
         }, 39, 2);
 
-        add_action(BASE_ACTION_PUBLIC_RENDER_SINGLE, function ($screen, $object) {
-            add_filter(THEME_FRONT_HEADER, function ($html) use ($object) {
-                if (!in_array(get_class($object), config('plugins.faq.general.schema_supported', []))) {
+        add_action(BASE_ACTION_PUBLIC_RENDER_SINGLE, function ($screen, $object): void {
+            add_filter(THEME_FRONT_HEADER, function ($html) use ($object): ?string {
+                if (! in_array(get_class($object), config('plugins.faq.general.schema_supported', []))) {
                     return $html;
                 }
 
-                if (!setting('enable_faq_schema', 0)) {
+                if (! setting('enable_faq_schema', 0)) {
                     return $html;
                 }
 
                 $value = MetaBox::getMetaData($object, 'faq_schema_config', true);
 
-                if (!$value || !is_array($value)) {
+                if (! $value || ! is_array($value)) {
                     return $html;
                 }
 
-                if (!empty($value)) {
+                if (! empty($value)) {
                     foreach ($value as $key => $item) {
-                        if (!$item[0]['value'] && !$item[1]['value']) {
+                        if (! $item[0]['value'] && ! $item[1]['value']) {
                             Arr::forget($value, $key);
                         }
                     }
                 }
 
                 $schema = [
-                    '@context'   => 'https://schema.org',
-                    '@type'      => 'FAQPage',
+                    '@context' => 'https://schema.org',
+                    '@type' => 'FAQPage',
                     'mainEntity' => [],
                 ];
 
                 foreach ($value as $item) {
                     $schema['mainEntity'][] = [
-                        '@type'          => 'Question',
-                        'name'           => BaseHelper::clean($item[0]['value']),
+                        '@type' => 'Question',
+                        'name' => BaseHelper::clean($item[0]['value']),
                         'acceptedAnswer' => [
                             '@type' => 'Answer',
-                            'text'  => BaseHelper::clean($item[1]['value']),
+                            'text' => BaseHelper::clean($item[1]['value']),
                         ],
                     ];
                 }
@@ -112,10 +107,6 @@ class HookServiceProvider extends ServiceProvider
         add_filter(BASE_FILTER_AFTER_SETTING_CONTENT, [$this, 'addSettings'], 59);
     }
 
-    /**
-     * @param string|null $data
-     * @return string
-     */
     public function addSettings(?string $data = null): string
     {
         return $data . view('plugins/faq::settings')->render();

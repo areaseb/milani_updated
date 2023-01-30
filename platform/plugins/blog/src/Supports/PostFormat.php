@@ -4,37 +4,24 @@ namespace Botble\Blog\Supports;
 
 class PostFormat
 {
-    /**
-     * @var array
-     */
-    protected static $formats = [
+    protected static array $formats = [
         '' => [
-            'key'  => '',
+            'key' => '',
             'icon' => null,
             'name' => 'Default',
         ],
     ];
 
-    /**
-     * @param array $formats
-     * @return void
-     * @since 16-09-2016
-     */
-    public static function registerPostFormat(array $formats = [])
+    public static function registerPostFormat(array $formats = []): void
     {
         foreach ($formats as $key => $format) {
             self::$formats[$key] = $format;
         }
     }
 
-    /**
-     * @param bool $isConvertToList
-     * @return array
-     * @since 16-09-2016
-     */
-    public static function getPostFormats($isConvertToList = false)
+    public static function getPostFormats(bool $toArray = false): array
     {
-        if ($isConvertToList) {
+        if ($toArray) {
             $results = [];
             foreach (self::$formats as $key => $item) {
                 $results[$key] = [
@@ -42,6 +29,7 @@ class PostFormat
                     $item['name'],
                 ];
             }
+
             return $results;
         }
 

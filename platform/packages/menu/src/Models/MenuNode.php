@@ -3,22 +3,16 @@
 namespace Botble\Menu\Models;
 
 use Botble\Base\Models\BaseModel;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Request;
 
 class MenuNode extends BaseModel
 {
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
     protected $table = 'menu_nodes';
 
-    /**
-     * @var array
-     */
     protected $fillable = [
         'menu_id',
         'parent_id',
@@ -33,116 +27,66 @@ class MenuNode extends BaseModel
         'position',
     ];
 
-    /**
-     * @return BelongsTo
-     */
-    public function parent()
+    public function parent(): BelongsTo
     {
         return $this->belongsTo(MenuNode::class, 'parent_id');
     }
 
-    /**
-     * @return HasMany
-     */
-    public function child()
+    public function child(): HasMany
     {
         return $this->hasMany(MenuNode::class, 'parent_id')->orderBy('position');
     }
 
-    /**
-     * @return BelongsTo
-     */
-    public function reference()
+    public function reference(): MorphTo
     {
         return $this->morphTo()->with(['slugable']);
     }
 
-    /**
-     * @param string $value
-     * @return string
-     */
-    public function getUrlAttribute($value)
+    protected function url(): Attribute
     {
-        if ($value) {
-            return apply_filters(MENU_FILTER_NODE_URL, $value);
-        }
+        return Attribute::make(
+            get: function ($value) {
+                if ($value) {
+                    return apply_filters(MENU_FILTER_NODE_URL, $value);
+                }
 
-        if (!$this->reference_type) {
-            return '/';
-        }
+                if (! $this->reference_type) {
+                    return '/';
+                }
 
-        if (!$this->reference) {
-            return '/';
-        }
+                if (! $this->reference) {
+                    return '/';
+                }
 
-        return (string)$this->reference->url;
+                return (string)$this->reference->url;
+            },
+        );
     }
 
-    /**
-     * @param string $value
-     */
-    public function setUrlAttribute($value)
+    protected function title(): Attribute
     {
-        $this->attributes['url'] = $value;
+        return Attribute::make(
+            get: function ($value) {
+                if ($value) {
+                    return $value;
+                }
+
+                if (! $this->reference_type || ! $this->reference) {
+                    return $value;
+                }
+
+                return $this->reference->name;
+            },
+            set: fn ($value) => str_replace('&amp;', '&', $value),
+        );
     }
 
-    /**
-     * @param string $value
-     */
-    public function setTitleAttribute($value)
+    protected function active(): Attribute
     {
-        $this->attributes['title'] = str_replace('&amp;', '&', $value);
-    }
-
-    /**
-     * @param string $value
-     * @return string
-     */
-    public function getTitleAttribute($value)
-    {
-        if ($value) {
-            return $value;
-        }
-
-        if (!$this->reference_type || !$this->reference) {
-            return $value;
-        }
-
-        return $this->reference->name;
-    }
-
-    /**
-     * @return bool
-     */
-    public function getActiveAttribute()
-    {
-        return rtrim(url($this->url), '/') == rtrim(Request::url(), '/');
-    }
-
-    /**
-     * @return mixed
-     * @deprecated
-     */
-    public function hasChild()
-    {
-        return $this->has_child;
-    }
-
-    /**
-     * @return $this
-     * @deprecated
-     */
-    public function getRelated()
-    {
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     * @deprecated
-     */
-    public function getNameAttribute()
-    {
-        return $this->title;
+        return Attribute::make(
+            get: function () {
+                return rtrim(url($this->url), '/') == rtrim(Request::url(), '/');
+            },
+        );
     }
 }

@@ -1,21 +1,13 @@
 <?php
 
-if (!function_exists('render_cart_form')) {
-    /**
-     * @return string
-     * @throws Throwable
-     */
+if (! function_exists('render_cart_form')) {
     function render_cart_form(): string
     {
         return view('plugins/ecommerce::orders.partials.cart')->render();
     }
 }
 
-if (!function_exists('get_order_code')) {
-    /**
-     * @param int $orderId
-     * @return string
-     */
+if (! function_exists('get_order_code')) {
     function get_order_code(int $orderId): string
     {
         $prefix = get_ecommerce_setting('store_order_prefix') ? get_ecommerce_setting('store_order_prefix') . '-' : '';
@@ -25,11 +17,7 @@ if (!function_exists('get_order_code')) {
     }
 }
 
-if (!function_exists('get_order_id_from_order_code')) {
-    /**
-     * @param string $code
-     * @return int
-     */
+if (! function_exists('get_order_id_from_order_code')) {
     function get_order_id_from_order_code(string $code): int
     {
         $prefix = '#' . (get_ecommerce_setting('store_order_prefix') ? (get_ecommerce_setting('store_order_prefix') . '-') : '');

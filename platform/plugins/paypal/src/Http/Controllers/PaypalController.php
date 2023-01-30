@@ -10,20 +10,14 @@ use Illuminate\Routing\Controller;
 
 class PaypalController extends Controller
 {
-    /**
-     * @param PayPalPaymentCallbackRequest $request
-     * @param PayPalPaymentService $payPalPaymentService
-     * @param BaseHttpResponse $response
-     * @return BaseHttpResponse
-     */
     public function getCallback(
         PayPalPaymentCallbackRequest $request,
-        PayPalPaymentService         $payPalPaymentService,
-        BaseHttpResponse             $response
+        PayPalPaymentService $payPalPaymentService,
+        BaseHttpResponse $response
     ) {
         $status = $payPalPaymentService->getPaymentStatus($request);
 
-        if (!$status) {
+        if (! $status) {
             return $response
                 ->setError()
                 ->setNextUrl(PaymentHelper::getCancelURL())

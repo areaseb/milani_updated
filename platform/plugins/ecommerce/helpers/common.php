@@ -3,7 +3,7 @@
 use Botble\Ecommerce\Models\StoreLocator;
 use Botble\Ecommerce\Repositories\Interfaces\StoreLocatorInterface;
 
-if (!function_exists('array_equal')) {
+if (! function_exists('array_equal')) {
     /**
      * @param array $first
      * @param array $second
@@ -15,11 +15,11 @@ if (!function_exists('array_equal')) {
             return false;
         }
 
-        return !array_diff($first, $second) && !array_diff($second, $first);
+        return ! array_diff($first, $second) && ! array_diff($second, $first);
     }
 }
 
-if (!function_exists('esc_sql')) {
+if (! function_exists('esc_sql')) {
     /**
      * @param string|null $string
      * @return string
@@ -30,7 +30,7 @@ if (!function_exists('esc_sql')) {
     }
 }
 
-if (!function_exists('rv_get_image_list')) {
+if (! function_exists('rv_get_image_list')) {
     /**
      * @param array $imagesList
      * @param array $sizes
@@ -52,7 +52,7 @@ if (!function_exists('rv_get_image_list')) {
         return $result;
     }
 }
-if (!function_exists('get_ecommerce_setting')) {
+if (! function_exists('get_ecommerce_setting')) {
     /**
      * @param string $key
      * @param string|null $default
@@ -64,7 +64,7 @@ if (!function_exists('get_ecommerce_setting')) {
     }
 }
 
-if (!function_exists('get_shipment_code')) {
+if (! function_exists('get_shipment_code')) {
     /**
      * @param int $shipmentId
      * @return string
@@ -75,7 +75,7 @@ if (!function_exists('get_shipment_code')) {
     }
 }
 
-if (!function_exists('get_primary_store_locator')) {
+if (! function_exists('get_primary_store_locator')) {
     /**
      * @return StoreLocator|mixed
      */
@@ -87,7 +87,7 @@ if (!function_exists('get_primary_store_locator')) {
     }
 }
 
-if (!function_exists('ecommerce_convert_weight')) {
+if (! function_exists('ecommerce_convert_weight')) {
     /**
      * @param int|float $weight
      * @return float|int
@@ -99,6 +99,7 @@ if (!function_exists('ecommerce_convert_weight')) {
                 break;
             case 'kg':
                 $weight = $weight * 1000;
+
                 break;
         }
 
@@ -106,7 +107,7 @@ if (!function_exists('ecommerce_convert_weight')) {
     }
 }
 
-if (!function_exists('ecommerce_convert_width_height')) {
+if (! function_exists('ecommerce_convert_width_height')) {
     /**
      * @param int|float $data
      * @return float|int
@@ -118,6 +119,7 @@ if (!function_exists('ecommerce_convert_width_height')) {
                 break;
             case 'm':
                 $data = $data * 100;
+
                 break;
         }
 
@@ -125,7 +127,7 @@ if (!function_exists('ecommerce_convert_width_height')) {
     }
 }
 
-if (!function_exists('ecommerce_weight_unit')) {
+if (! function_exists('ecommerce_weight_unit')) {
     /**
      * @param bool $full
      * @return array|string
@@ -134,16 +136,18 @@ if (!function_exists('ecommerce_weight_unit')) {
     {
         $unit = get_ecommerce_setting('store_weight_unit', 'g');
 
-        if (!$full) {
+        if (! $full) {
             return $unit;
         }
 
         switch ($unit) {
             case 'g':
                 $unit = __('grams');
+
                 break;
             case 'kg':
                 $unit = __('kilograms');
+
                 break;
         }
 
@@ -151,7 +155,7 @@ if (!function_exists('ecommerce_weight_unit')) {
     }
 }
 
-if (!function_exists('ecommerce_width_height_unit')) {
+if (! function_exists('ecommerce_width_height_unit')) {
     /**
      * @param bool $full
      * @return array|string
@@ -160,16 +164,18 @@ if (!function_exists('ecommerce_width_height_unit')) {
     {
         $unit = get_ecommerce_setting('store_width_height_unit', 'cm');
 
-        if (!$full) {
+        if (! $full) {
             return $unit;
         }
 
         switch ($unit) {
             case 'cm':
                 $unit = __('centimeters');
+
                 break;
             case 'm':
                 $unit = __('meters');
+
                 break;
         }
 
@@ -177,7 +183,7 @@ if (!function_exists('ecommerce_width_height_unit')) {
     }
 }
 
-if (!function_exists('mapped_implode')) {
+if (! function_exists('mapped_implode')) {
     /**
      * @param string $glue
      * @param array $array

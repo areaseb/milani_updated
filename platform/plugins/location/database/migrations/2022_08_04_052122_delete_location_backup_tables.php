@@ -3,14 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Schema;
 
-class DeleteLocationBackupTables extends Migration
-{
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
+return new class () extends Migration {
+    public function up(): void
     {
         Schema::dropIfExists('countries_backup');
         Schema::dropIfExists('states_backup');
@@ -18,13 +12,8 @@ class DeleteLocationBackupTables extends Migration
         Schema::dropIfExists('language_meta_backup');
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function down(): void
     {
         //
     }
-}
+};

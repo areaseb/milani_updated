@@ -4,18 +4,20 @@ namespace Botble\Ecommerce\Supports;
 
 use Barryvdh\DomPDF\PDF as PDFHelper;
 use BaseHelper;
-use Botble\Base\Models\BaseModel;
 use Botble\Base\Supports\EmailHandler as EmailHandlerSupport;
 use Botble\Ecommerce\Cart\CartItem;
 use Botble\Ecommerce\Enums\OrderStatusEnum;
 use Botble\Ecommerce\Enums\ShippingMethodEnum;
 use Botble\Ecommerce\Events\OrderCancelledEvent;
+use Botble\Ecommerce\Events\OrderCompletedEvent;
 use Botble\Ecommerce\Events\OrderPaymentConfirmedEvent;
+use Botble\Ecommerce\Events\ProductQuantityUpdatedEvent;
 use Botble\Ecommerce\Models\Option;
 use Botble\Ecommerce\Models\OptionValue;
 use Botble\Ecommerce\Models\Order;
 use Botble\Ecommerce\Models\OrderHistory;
 use Botble\Ecommerce\Models\Product;
+use Botble\Ecommerce\Models\Shipment;
 use Botble\Ecommerce\Models\ShipmentHistory;
 use Botble\Ecommerce\Repositories\Interfaces\AddressInterface;
 use Botble\Ecommerce\Repositories\Interfaces\OrderAddressInterface;
@@ -24,42 +26,38 @@ use Botble\Ecommerce\Repositories\Interfaces\OrderInterface;
 use Botble\Ecommerce\Repositories\Interfaces\OrderProductInterface;
 use Botble\Ecommerce\Repositories\Interfaces\ProductInterface;
 use Botble\Ecommerce\Repositories\Interfaces\ShippingRuleInterface;
+use Botble\Payment\Enums\PaymentMethodEnum;
 use Botble\Payment\Enums\PaymentStatusEnum;
 use Botble\Payment\Repositories\Interfaces\PaymentInterface;
+use Carbon\Carbon;
 use Cart;
 use EcommerceHelper as EcommerceHelperFacade;
 use EmailHandler;
 use Exception;
 use Html;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use InvoiceHelper as InvoiceHelperFacade;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use RvMedia;
-use Throwable;
 use Validator;
 
 class OrderHelper
 {
-    /**
-     * @param string|array $orderIds
-     * @param string|null $chargeId
-     *
-     * @return BaseModel|bool
-     * @throws FileNotFoundException
-     * @throws Throwable
-     */
-    public function processOrder($orderIds, ?string $chargeId = null)
+    public function processOrder(string|array|null $orderIds, ?string $chargeId = null): bool|Collection|array|Model
     {
         $orderIds = (array)$orderIds;
 
         $orders = app(OrderInterface::class)->allBy([['id', 'IN', $orderIds]]);
 
-        if (!$orders->count()) {
+        if (! $orders->count()) {
             return false;
         }
 
@@ -108,12 +106,12 @@ class OrderHelper
 
         foreach ($orders as $order) {
             app(OrderHistoryInterface::class)->createOrUpdate([
-                'action'      => 'create_order',
+                'action' => 'create_order',
                 'description' => trans('plugins/ecommerce::order.new_order_from', [
                     'order_id' => $order->code,
                     'customer' => BaseHelper::clean($order->user->name ?: $order->address->name),
                 ]),
-                'order_id'    => $order->id,
+                'order_id' => $order->id,
             ]);
         }
 
@@ -122,16 +120,16 @@ class OrderHelper
                 $product = $orderProduct->product->original_product;
 
                 $flashSale = $product->latestFlashSales()->first();
-                if (!$flashSale) {
+                if (! $flashSale) {
                     continue;
                 }
 
                 $flashSale->products()->detach([$product->id]);
                 $flashSale->products()->attach([
                     $product->id => [
-                        'price'    => $flashSale->pivot->price,
+                        'price' => $flashSale->pivot->price,
                         'quantity' => (int)$flashSale->pivot->quantity,
-                        'sold'     => (int)$flashSale->pivot->sold + $orderProduct->qty,
+                        'sold' => (int)$flashSale->pivot->sold + $orderProduct->qty,
                     ],
                 ]);
             }
@@ -140,28 +138,31 @@ class OrderHelper
         return $orders;
     }
 
-    /**
-     * @param Order $order
-     *
-     * @return EmailHandlerSupport
-     * @throws Throwable
-     */
     public function setEmailVariables(Order $order): EmailHandlerSupport
     {
+        $paymentMethod = $order->payment->payment_channel->label();
+
+        if ($order->payment->payment_channel == PaymentMethodEnum::BANK_TRANSFER && $order->payment->status == PaymentStatusEnum::PENDING) {
+            $paymentMethod .= '<div>' . trans('plugins/ecommerce::order.payment_info') . ': <strong>' .
+                BaseHelper::clean(get_payment_setting('description', $order->payment->payment_channel)) .
+                '</strong</div>';
+        }
+
         return EmailHandler::setModule(ECOMMERCE_MODULE_SCREEN_NAME)
             ->setVariableValues([
-                'store_address'        => get_ecommerce_setting('store_address'),
-                'store_phone'          => get_ecommerce_setting('store_phone'),
-                'order_id'             => $order->code,
-                'order_token'          => $order->token,
-                'customer_name'        => BaseHelper::clean($order->user->name ?: $order->address->name),
-                'customer_email'       => $order->user->email ?: $order->address->email,
-                'customer_phone'       => $order->user->phone ?: $order->address->phone,
-                'customer_address'     => $order->full_address,
-                'product_list'         => view('plugins/ecommerce::emails.partials.order-detail', compact('order'))
+                'store_address' => get_ecommerce_setting('store_address'),
+                'store_phone' => get_ecommerce_setting('store_phone'),
+                'order_id' => $order->code,
+                'order_token' => $order->token,
+                'order_note' => $order->description,
+                'customer_name' => BaseHelper::clean($order->user->name ?: $order->address->name),
+                'customer_email' => $order->user->email ?: $order->address->email,
+                'customer_phone' => $order->user->phone ?: $order->address->phone,
+                'customer_address' => $order->full_address,
+                'product_list' => view('plugins/ecommerce::emails.partials.order-detail', compact('order'))
                     ->render(),
-                'shipping_method'      => $order->shipping_method_name,
-                'payment_method'       => $order->payment->payment_channel->label(),
+                'shipping_method' => $order->shipping_method_name,
+                'payment_method' => $paymentMethod,
                 'order_delivery_notes' => view(
                     'plugins/ecommerce::emails.partials.order-delivery-notes',
                     compact('order')
@@ -170,13 +171,6 @@ class OrderHelper
             ]);
     }
 
-    /**
-     * @param Order $order
-     * @param bool $saveHistory
-     *
-     * @return boolean
-     * @throws Throwable
-     */
     public function sendOrderConfirmationEmail(Order $order, bool $saveHistory = false): bool
     {
         try {
@@ -192,9 +186,9 @@ class OrderHelper
 
                 if ($saveHistory) {
                     app(OrderHistoryInterface::class)->createOrUpdate([
-                        'action'      => 'send_order_confirmation_email',
+                        'action' => 'send_order_confirmation_email',
                         'description' => trans('plugins/ecommerce::order.confirmation_email_was_sent_to_customer'),
-                        'order_id'    => $order->id,
+                        'order_id' => $order->id,
                     ]);
                 }
             }
@@ -208,10 +202,6 @@ class OrderHelper
     }
 
     /**
-     * @param Order $order
-     *
-     * @return PDFHelper
-     *
      * @deprecated
      */
     public function makeInvoicePDF(Order $order): PDFHelper
@@ -220,10 +210,6 @@ class OrderHelper
     }
 
     /**
-     * @param Order $order
-     *
-     * @return string
-     *
      * @deprecated
      */
     public function generateInvoice(Order $order): string
@@ -232,10 +218,6 @@ class OrderHelper
     }
 
     /**
-     * @param Order $order
-     *
-     * @return Response
-     *
      * @deprecated
      */
     public function downloadInvoice(Order $order): Response
@@ -244,10 +226,6 @@ class OrderHelper
     }
 
     /**
-     * @param Order $order
-     *
-     * @return Response
-     *
      * @deprecated
      */
     public function streamInvoice(Order $order): Response
@@ -255,48 +233,38 @@ class OrderHelper
         return InvoiceHelperFacade::streamInvoice($order->invoice);
     }
 
-    /**
-     * @param string $method
-     * @param null $option
-     *
-     * @return array|null|string
-     */
-    public function getShippingMethod(string $method, $option = null)
+    public function getShippingMethod(string $method, array|string|null $option = null): array|string|null
     {
         $name = null;
 
-        switch ($method) {
-            default:
-                if ($option) {
-                    $rule = app(ShippingRuleInterface::class)->findById($option);
-                    if ($rule) {
-                        $name = $rule->name;
-                    }
+        if ($method == ShippingMethodEnum::DEFAULT) {
+            if ($option) {
+                $rule = app(ShippingRuleInterface::class)->findById($option);
+                if ($rule) {
+                    $name = $rule->name;
                 }
+            }
 
-                if (empty($name)) {
-                    $name = trans('plugins/ecommerce::order.default');
-                }
-
-                break;
+            if (empty($name)) {
+                $name = trans('plugins/ecommerce::order.default');
+            }
         }
 
-        return $name;
+        if (! $name && ShippingMethodEnum::search($method)) {
+            $name = ShippingMethodEnum::getLabel($method);
+        }
+
+        return $name ?: $method;
     }
 
-    /**
-     * @param OrderHistory|ShipmentHistory $history
-     *
-     * @return mixed
-     */
-    public function processHistoryVariables($history)
+    public function processHistoryVariables(OrderHistory|ShipmentHistory $history): ?string
     {
         if (empty($history)) {
             return null;
         }
 
         $variables = [
-            'order_id'  => Html::link(
+            'order_id' => Html::link(
                 route('orders.edit', $history->order->id),
                 $history->order->code . ' <i class="fa fa-external-link-alt"></i>',
                 ['target' => '_blank'],
@@ -306,8 +274,8 @@ class OrderHelper
                 ->toHtml(),
             'user_name' => $history->user_id === 0 ? trans('plugins/ecommerce::order.system') :
                 BaseHelper::clean($history->user ? $history->user->name : (
-                $history->order->user->name ?:
-                    $history->order->address->name
+                    $history->order->user->name ?:
+                        $history->order->address->name
                 )),
         ];
 
@@ -323,15 +291,9 @@ class OrderHelper
         return $content;
     }
 
-    /**
-     * @param string|null $token
-     * @param string|array $data
-     *
-     * @return array
-     */
-    public function setOrderSessionData(?string $token, $data): array
+    public function setOrderSessionData(?string $token, string|array $data): array
     {
-        if (!$token) {
+        if (! $token) {
             $token = $this->getOrderSessionToken();
         }
 
@@ -344,9 +306,6 @@ class OrderHelper
         return $data;
     }
 
-    /**
-     * @return string
-     */
     public function getOrderSessionToken(): string
     {
         if (session()->has('tracked_start_checkout')) {
@@ -359,14 +318,9 @@ class OrderHelper
         return $token;
     }
 
-    /**
-     * @param string|null $token
-     *
-     * @return array
-     */
     public function getOrderSessionData(?string $token = null): array
     {
-        if (!$token) {
+        if (! $token) {
             $token = $this->getOrderSessionToken();
         }
 
@@ -379,15 +333,10 @@ class OrderHelper
         return $this->cleanData($data);
     }
 
-    /**
-     * @param array $data
-     *
-     * @return array
-     */
     protected function cleanData(array $data): array
     {
         foreach ($data as $key => $item) {
-            if (!is_string($item)) {
+            if (! is_string($item)) {
                 continue;
             }
 
@@ -397,15 +346,9 @@ class OrderHelper
         return $data;
     }
 
-    /**
-     * @param string|null $token
-     * @param string|array $data
-     *
-     * @return array
-     */
-    public function mergeOrderSessionData(?string $token, $data): array
+    public function mergeOrderSessionData(?string $token, string|array $data): array
     {
-        if (!$token) {
+        if (! $token) {
             $token = $this->getOrderSessionToken();
         }
 
@@ -416,10 +359,7 @@ class OrderHelper
         return $this->cleanData($data);
     }
 
-    /**
-     * @param string|null $token
-     */
-    public function clearSessions(?string $token)
+    public function clearSessions(?string $token): void
     {
         Cart::instance('cart')->destroy();
         session()->forget('applied_coupon_code');
@@ -428,12 +368,6 @@ class OrderHelper
         session()->forget('tracked_start_checkout');
     }
 
-    /**
-     * @param Product $product
-     * @param Request $request
-     *
-     * @return array
-     */
     public function handleAddCart(Product $product, Request $request): array
     {
         $parentProduct = $product->original_product;
@@ -449,15 +383,15 @@ class OrderHelper
          */
         Cart::instance('cart')->add(
             $product->id,
-            BaseHelper::clean($parentProduct->name),
+            BaseHelper::clean($parentProduct->name ?: $product->name),
             $request->input('qty', 1),
             $product->original_price,
             [
-                'image'      => RvMedia::getImageUrl($image, 'thumb', false, RvMedia::getDefaultImage()),
+                'image' => RvMedia::getImageUrl($image, 'thumb', false, RvMedia::getDefaultImage()),
                 'attributes' => $product->is_variation ? $product->variation_attributes : '',
-                'taxRate'    => $parentProduct->tax->percentage,
-                'options'    => $options,
-                'extras'     => $request->input('extras', []),
+                'taxRate' => $parentProduct->total_taxes_percentage,
+                'options' => $options,
+                'extras' => $request->input('extras', []),
             ]
         );
 
@@ -473,14 +407,10 @@ class OrderHelper
         return $cartItems;
     }
 
-    /**
-     * @param $data
-     * @return array
-     */
-    protected function getProductOptionData($data): array
+    protected function getProductOptionData(array $data): array
     {
         $result = [];
-        if (!empty($data)) {
+        if (! empty($data)) {
             foreach ($data as $key => $option) {
                 if (empty($option)) {
                     continue;
@@ -508,21 +438,14 @@ class OrderHelper
         return $result;
     }
 
-    /**
-     * @param int $currentUserId
-     * @param array $sessionData
-     * @param Request $request
-     *
-     * @return array
-     */
     public function processAddressOrder(int $currentUserId, array $sessionData, Request $request): array
     {
         $address = null;
 
-        if ($currentUserId && !Arr::get($sessionData, 'address_id')) {
+        if ($currentUserId && ! Arr::get($sessionData, 'address_id')) {
             $address = app(AddressInterface::class)->getFirstBy([
                 'customer_id' => auth('customer')->id(),
-                'is_default'  => true,
+                'is_default' => true,
             ]);
 
             if ($address) {
@@ -530,7 +453,7 @@ class OrderHelper
             }
         } elseif ($request->input('address.address_id') && $request->input('address.address_id') !== 'new') {
             $address = app(AddressInterface::class)->findById($request->input('address.address_id'));
-            if (!empty($address)) {
+            if (! empty($address)) {
                 $sessionData['address_id'] = $address->id;
             }
         }
@@ -539,15 +462,15 @@ class OrderHelper
             $address = app(AddressInterface::class)->findById(Arr::get($sessionData, 'address_id'));
         }
 
-        if (!empty($address)) {
+        if (! empty($address)) {
             $addressData = [
-                'name'     => $address->name,
-                'phone'    => $address->phone,
-                'email'    => $address->email,
-                'country'  => $address->country,
-                'state'    => $address->state,
-                'city'     => $address->city,
-                'address'  => $address->address,
+                'name' => $address->name,
+                'phone' => $address->phone,
+                'email' => $address->email,
+                'country' => $address->country,
+                'state' => $address->state,
+                'city' => $address->city,
+                'address' => $address->address,
                 'zip_code' => $address->zip_code,
                 'order_id' => Arr::get($sessionData, 'created_order_id', 0),
             ];
@@ -558,13 +481,13 @@ class OrderHelper
             );
         } else {
             $addressData = [
-                'name'     => Arr::get($sessionData, 'name'),
-                'phone'    => Arr::get($sessionData, 'phone'),
-                'email'    => Arr::get($sessionData, 'email'),
-                'country'  => Arr::get($sessionData, 'country'),
-                'state'    => Arr::get($sessionData, 'state'),
-                'city'     => Arr::get($sessionData, 'city'),
-                'address'  => Arr::get($sessionData, 'address'),
+                'name' => Arr::get($sessionData, 'name'),
+                'phone' => Arr::get($sessionData, 'phone'),
+                'email' => Arr::get($sessionData, 'email'),
+                'country' => Arr::get($sessionData, 'country'),
+                'state' => Arr::get($sessionData, 'state'),
+                'city' => Arr::get($sessionData, 'city'),
+                'address' => Arr::get($sessionData, 'address'),
                 'zip_code' => Arr::get($sessionData, 'zip_code'),
                 'order_id' => Arr::get($sessionData, 'created_order_id', 0),
             ];
@@ -572,8 +495,8 @@ class OrderHelper
 
         $addressData = $this->cleanData($addressData);
 
-        if ($addressData && !empty($addressData['name']) && !empty($addressData['phone']) && !empty($addressData['address'])) {
-            if (!isset($sessionData['created_order_address'])) {
+        if ($addressData && ! empty($addressData['name']) && ! empty($addressData['phone']) && ! empty($addressData['address'])) {
+            if (! isset($sessionData['created_order_address'])) {
                 $createdOrderAddress = $this->createOrderAddress($addressData);
                 if ($createdOrderAddress) {
                     $sessionData['created_order_address'] = true;
@@ -592,12 +515,6 @@ class OrderHelper
         return $sessionData;
     }
 
-    /**
-     * @param array $data
-     * @param int|null $orderAddressId
-     *
-     * @return false|mixed
-     */
     protected function createOrderAddress(array $data, ?int $orderAddressId = null)
     {
         if ($orderAddressId) {
@@ -605,11 +522,11 @@ class OrderHelper
         }
 
         $rules = [
-            'name'    => 'required|max:255',
-            'email'   => 'email|nullable|max:60',
-            'phone'   => EcommerceHelperFacade::getPhoneValidationRule(),
-            'state'   => 'required|max:120',
-            'city'    => 'required|max:120',
+            'name' => 'required|max:255',
+            'email' => 'email|nullable|max:60',
+            'phone' => EcommerceHelperFacade::getPhoneValidationRule(),
+            'state' => 'required|max:120',
+            'city' => 'required|max:120',
             'address' => 'required|max:120',
         ];
 
@@ -626,13 +543,7 @@ class OrderHelper
         return app(OrderAddressInterface::class)->create($data);
     }
 
-    /**
-     * @param array $products
-     * @param array $sessionData
-     *
-     * @return array
-     */
-    public function processOrderProductData($products, array $sessionData): array
+    public function processOrderProductData(array|Collection $products, array $sessionData): array
     {
         $createdOrderProduct = Arr::get($sessionData, 'created_order_product');
 
@@ -641,23 +552,23 @@ class OrderHelper
         $lastUpdatedAt = Cart::instance('cart')->getLastUpdatedAt();
 
         // Check latest updated at of cart
-        if (!$createdOrderProduct || !$createdOrderProduct->eq($lastUpdatedAt)) {
+        if (! $createdOrderProduct || ! $createdOrderProduct->eq($lastUpdatedAt)) {
             $orderProducts = app(OrderProductInterface::class)->allBy(['order_id' => $sessionData['created_order_id']]);
             $productIds = [];
             foreach ($cartItems as $cartItem) {
                 $productByCartItem = $products['products']->firstWhere('id', $cartItem->id);
 
                 $data = [
-                    'order_id'      => $sessionData['created_order_id'],
-                    'product_id'    => $cartItem->id,
-                    'product_name'  => $cartItem->name,
+                    'order_id' => $sessionData['created_order_id'],
+                    'product_id' => $cartItem->id,
+                    'product_name' => $cartItem->name,
                     'product_image' => $productByCartItem->original_product->image,
-                    'qty'           => $cartItem->qty,
-                    'weight'        => $productByCartItem->weight * $cartItem->qty,
-                    'price'         => $cartItem->price,
-                    'tax_amount'    => $cartItem->tax,
-                    'options'       => [],
-                    'product_type'  => $productByCartItem->product_type,
+                    'qty' => $cartItem->qty,
+                    'weight' => $productByCartItem->weight * $cartItem->qty,
+                    'price' => $cartItem->price,
+                    'tax_amount' => $cartItem->tax,
+                    'options' => [],
+                    'product_type' => $productByCartItem->product_type,
                 ];
 
                 if ($cartItem->options->extras) {
@@ -682,7 +593,7 @@ class OrderHelper
 
             // Delete orderProducts not exists;
             foreach ($orderProducts as $orderProduct) {
-                if (!in_array($orderProduct->product_id, $productIds)) {
+                if (! in_array($orderProduct->product_id, $productIds)) {
                     $orderProduct->delete();
                 }
             }
@@ -701,6 +612,8 @@ class OrderHelper
      * @param array $generalData
      *
      * @return array
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     public function processOrderInCheckout(
         $sessionData,
@@ -708,34 +621,33 @@ class OrderHelper
         $cartItems,
         $order,
         array $generalData
-    ): array
-    {
+    ): array {
         $createdOrder = Arr::get($sessionData, 'created_order');
         $createdOrderId = Arr::get($sessionData, 'created_order_id');
 
         $lastUpdatedAt = Cart::instance('cart')->getLastUpdatedAt();
 
         $data = array_merge([
-            'amount'          => Cart::instance('cart')->rawTotalByItems($cartItems),
+            'amount' => Cart::instance('cart')->rawTotalByItems($cartItems),
             'shipping_method' => $request->input('shipping_method', ShippingMethodEnum::DEFAULT),
             'shipping_option' => $request->input('shipping_option'),
-            'tax_amount'      => Cart::instance('cart')->rawTaxByItems($cartItems),
-            'sub_total'       => Cart::instance('cart')->rawSubTotalByItems($cartItems),
-            'coupon_code'     => session()->get('applied_coupon_code'),
+            'tax_amount' => Cart::instance('cart')->rawTaxByItems($cartItems),
+            'sub_total' => Cart::instance('cart')->rawSubTotalByItems($cartItems),
+            'coupon_code' => session()->get('applied_coupon_code'),
         ], $generalData);
 
         if ($createdOrder && $createdOrderId) {
-            if ($order && (is_string($createdOrder) || !$createdOrder->eq($lastUpdatedAt))) {
+            if ($order && (is_string($createdOrder) || ! $createdOrder->eq($lastUpdatedAt))) {
                 $order->fill($data);
             }
         }
 
-        if (!$order) {
+        if (! $order) {
             $data = array_merge($data, [
                 'shipping_amount' => 0,
                 'discount_amount' => 0,
-                'status'          => OrderStatusEnum::PENDING,
-                'is_finished'     => false,
+                'status' => OrderStatusEnum::PENDING,
+                'is_finished' => false,
             ]);
             $order = app(OrderInterface::class)->createOrUpdate($data);
         }
@@ -757,35 +669,28 @@ class OrderHelper
     public function createOrder(Request $request, int $currentUserId, string $token, array $cartItems)
     {
         $request->merge([
-            'amount'          => Cart::instance('cart')->rawTotalByItems($cartItems),
-            'user_id'         => $currentUserId,
+            'amount' => Cart::instance('cart')->rawTotalByItems($cartItems),
+            'user_id' => $currentUserId,
             'shipping_method' => $request->input('shipping_method', ShippingMethodEnum::DEFAULT),
             'shipping_option' => $request->input('shipping_option'),
             'shipping_amount' => 0,
-            'tax_amount'      => Cart::instance('cart')->rawTaxByItems($cartItems),
-            'sub_total'       => Cart::instance('cart')->rawSubTotalByItems($cartItems),
-            'coupon_code'     => session()->get('applied_coupon_code'),
+            'tax_amount' => Cart::instance('cart')->rawTaxByItems($cartItems),
+            'sub_total' => Cart::instance('cart')->rawSubTotalByItems($cartItems),
+            'coupon_code' => session()->get('applied_coupon_code'),
             'discount_amount' => 0,
-            'status'          => OrderStatusEnum::PENDING,
-            'is_finished'     => false,
-            'token'           => $token,
+            'status' => OrderStatusEnum::PENDING,
+            'is_finished' => false,
+            'token' => $token,
         ]);
 
         return app(OrderInterface::class)->createOrUpdate($request->input());
     }
 
-    /**
-     * @param Order $order
-     *
-     * @return bool
-     * @throws FileNotFoundException
-     * @throws Throwable
-     */
     public function confirmPayment(Order $order): bool
     {
         $payment = $order->payment;
 
-        if (!$payment) {
+        if (! $payment) {
             return false;
         }
 
@@ -807,24 +712,17 @@ class OrderHelper
         }
 
         app(OrderHistoryInterface::class)->createOrUpdate([
-            'action'      => 'confirm_payment',
+            'action' => 'confirm_payment',
             'description' => trans('plugins/ecommerce::order.payment_was_confirmed_by', [
                 'money' => format_price($order->amount),
             ]),
-            'order_id'    => $order->id,
-            'user_id'     => Auth::id(),
+            'order_id' => $order->id,
+            'user_id' => Auth::id(),
         ]);
 
         return true;
     }
 
-    /**
-     * @param Order $order
-     *
-     * @return Order
-     * @throws FileNotFoundException
-     * @throws Throwable
-     */
     public function cancelOrder(Order $order): Order
     {
         $order->status = OrderStatusEnum::CANCELED;
@@ -846,6 +744,8 @@ class OrderHelper
                     $originalProduct->save();
                 }
             }
+
+            event(new ProductQuantityUpdatedEvent($product));
         }
 
         $mailer = EmailHandler::setModule(ECOMMERCE_MODULE_SCREEN_NAME);
@@ -860,22 +760,46 @@ class OrderHelper
         return $order;
     }
 
-    /**
-     * @param Order $order
-     *
-     * @return bool
-     */
     public function decreaseProductQuantity(Order $order): bool
     {
         foreach ($order->products as $orderProduct) {
             $product = app(ProductInterface::class)->findById($orderProduct->product_id);
 
             if ($product) {
-                $product->quantity = $product->quantity >= $orderProduct->qty ? $product->quantity - $orderProduct->qty : 0;
-                $product->save();
+                if ($product->with_storehouse_management || $product->quantity >= $orderProduct->qty) {
+                    $product->quantity = $product->quantity >= $orderProduct->qty ? $product->quantity - $orderProduct->qty : 0;
+                    $product->save();
+
+                    event(new ProductQuantityUpdatedEvent($product));
+                }
             }
         }
 
         return true;
+    }
+
+    public function shippingStatusDelivered(Shipment $shipment, Request $request, int $userId = 0): Order
+    {
+        // Update status and time order complete
+        $order = app(OrderInterface::class)->createOrUpdate(
+            [
+                'status' => OrderStatusEnum::COMPLETED,
+                'completed_at' => Carbon::now(),
+            ],
+            ['id' => $shipment->order_id]
+        );
+
+        event(new OrderCompletedEvent($order));
+
+        do_action(ACTION_AFTER_ORDER_STATUS_COMPLETED_ECOMMERCE, $order, $request);
+
+        app(OrderHistoryInterface::class)->createOrUpdate([
+            'action' => 'update_status',
+            'description' => trans('plugins/ecommerce::shipping.order_confirmed_by'),
+            'order_id' => $shipment->order_id,
+            'user_id' => $userId,
+        ]);
+
+        return $order;
     }
 }

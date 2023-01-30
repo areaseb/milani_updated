@@ -5,18 +5,16 @@ namespace Botble\Widget\Providers;
 use BaseHelper;
 use Botble\Base\Traits\LoadAndPublishDataTrait;
 use Botble\Widget\Factories\WidgetFactory;
-use Botble\Widget\Misc\LaravelApplicationWrapper;
 use Botble\Widget\Models\Widget;
 use Botble\Widget\Repositories\Caches\WidgetCacheDecorator;
 use Botble\Widget\Repositories\Eloquent\WidgetRepository;
 use Botble\Widget\Repositories\Interfaces\WidgetInterface;
 use Botble\Widget\WidgetGroupCollection;
 use Botble\Widget\Widgets\Text;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
-use Illuminate\Routing\Events\RouteMatched;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Theme;
 use WidgetGroup;
@@ -25,39 +23,29 @@ class WidgetServiceProvider extends ServiceProvider
 {
     use LoadAndPublishDataTrait;
 
-    /**
-     * Register the service provider.
-     *
-     * @return void
-     */
-    public function register()
+    public function register(): void
     {
         $this->app->bind(WidgetInterface::class, function () {
             return new WidgetCacheDecorator(new WidgetRepository(new Widget()));
         });
 
-        $this->app->bind('botble.widget', function () {
-            return new WidgetFactory(new LaravelApplicationWrapper());
+        $this->app->bind('botble.widget', function (Application $app) {
+            return new WidgetFactory($app);
         });
 
-        $this->app->singleton('botble.widget-group-collection', function () {
-            return new WidgetGroupCollection(new LaravelApplicationWrapper());
+        $this->app->singleton('botble.widget-group-collection', function (Application $app) {
+            return new WidgetGroupCollection($app);
         });
 
         $this->setNamespace('packages/widget')
             ->loadHelpers();
     }
 
-    /**
-     * Bootstrap the application events.
-     *
-     * @return void
-     */
-    public function boot()
+    public function boot(): void
     {
         $this
             ->loadAndPublishConfigurations(['permissions'])
-            ->loadRoutes(['web'])
+            ->loadRoutes()
             ->loadMigrations()
             ->loadAndPublishViews()
             ->loadAndPublishTranslations()
@@ -65,8 +53,8 @@ class WidgetServiceProvider extends ServiceProvider
 
         $this->app->booted(function () {
             WidgetGroup::setGroup([
-                'id'          => 'primary_sidebar',
-                'name'        => trans('packages/widget::widget.primary_sidebar_name'),
+                'id' => 'primary_sidebar',
+                'name' => trans('packages/widget::widget.primary_sidebar_name'),
                 'description' => trans('packages/widget::widget.primary_sidebar_description'),
             ]);
 
@@ -74,7 +62,7 @@ class WidgetServiceProvider extends ServiceProvider
 
             $widgetPath = theme_path(Theme::getThemeName() . '/widgets');
             $widgets = BaseHelper::scanFolder($widgetPath);
-            if (!empty($widgets) && is_array($widgets)) {
+            if (! empty($widgets) && is_array($widgets)) {
                 foreach ($widgets as $widget) {
                     $registration = $widgetPath . '/' . $widget . '/registration.php';
                     if (File::exists($registration)) {
@@ -87,21 +75,17 @@ class WidgetServiceProvider extends ServiceProvider
         Event::listen(RouteMatched::class, function () {
             dashboard_menu()
                 ->registerItem([
-                    'id'          => 'cms-core-widget',
-                    'priority'    => 3,
-                    'parent_id'   => 'cms-core-appearance',
-                    'name'        => 'packages/widget::widget.name',
-                    'icon'        => null,
-                    'url'         => route('widgets.index'),
+                    'id' => 'cms-core-widget',
+                    'priority' => 3,
+                    'parent_id' => 'cms-core-appearance',
+                    'name' => 'packages/widget::widget.name',
+                    'icon' => null,
+                    'url' => route('widgets.index'),
                     'permissions' => ['widgets.index'],
                 ]);
 
             if (function_exists('admin_bar')) {
-                View::composer('*', function () {
-                    if (Auth::check() && Auth::user()->hasPermission('menus.index')) {
-                        admin_bar()->registerLink(trans('packages/widget::widget.name'), route('widgets.index'), 'appearance');
-                    }
-                });
+                admin_bar()->registerLink(trans('packages/widget::widget.name'), route('widgets.index'), 'appearance', 'menus.index');
             }
         });
     }

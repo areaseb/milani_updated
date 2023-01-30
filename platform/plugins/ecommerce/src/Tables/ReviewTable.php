@@ -8,55 +8,48 @@ use Botble\Ecommerce\Repositories\Interfaces\ReviewInterface;
 use Botble\Table\Abstracts\TableAbstract;
 use Html;
 use Illuminate\Contracts\Routing\UrlGenerator;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use RvMedia;
+use Symfony\Component\HttpFoundation\Response;
 use Yajra\DataTables\DataTables;
 
 class ReviewTable extends TableAbstract
 {
-    /**
-     * @var bool
-     */
     protected $hasActions = true;
 
-    /**
-     * @var bool
-     */
     protected $hasFilter = true;
 
-    /**
-     * ReviewTable constructor.
-     * @param DataTables $table
-     * @param UrlGenerator $urlGenerator
-     * @param ReviewInterface $reviewRepository
-     */
     public function __construct(DataTables $table, UrlGenerator $urlGenerator, ReviewInterface $reviewRepository)
     {
         parent::__construct($table, $urlGenerator);
 
         $this->repository = $reviewRepository;
 
-        if (!Auth::user()->hasAnyPermission(['review.edit', 'review.destroy'])) {
+        if (! Auth::user()->hasAnyPermission(['review.edit', 'review.destroy'])) {
             $this->hasOperations = false;
             $this->hasActions = false;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function ajax()
+    public function ajax(): JsonResponse
     {
         $data = $this->table
             ->eloquent($this->query())
             ->editColumn('product_id', function ($item) {
-                if (!empty($item->product)) {
+                if (! empty($item->product)) {
                     return Html::link(
                         $item->product->url,
                         BaseHelper::clean($item->product_name),
                         ['target' => '_blank']
                     );
                 }
+
                 return null;
             })
             ->editColumn('customer_id', function ($item) {
@@ -72,7 +65,7 @@ class ReviewTable extends TableAbstract
                 return BaseHelper::clean($item->status->toHtml());
             })
             ->editColumn('images', function ($item) {
-                if (!is_array($item->images)) {
+                if (! is_array($item->images)) {
                     return '&mdash;';
                 }
 
@@ -88,9 +81,9 @@ class ReviewTable extends TableAbstract
                     RvMedia::getImageUrl($item->images[0], 'thumb'),
                     RvMedia::getImageUrl($item->images[0]),
                     [
-                        'width'         => 60,
-                        'class'         => 'fancybox m-1 rounded-top rounded-end rounded-bottom rounded-start border d-inline-block',
-                        'href'          => RvMedia::getImageUrl($item->images[0]),
+                        'width' => 60,
+                        'class' => 'fancybox m-1 rounded-top rounded-end rounded-bottom rounded-start border d-inline-block',
+                        'href' => RvMedia::getImageUrl($item->images[0]),
                         'data-fancybox' => $galleryID,
                     ]
                 );
@@ -101,9 +94,9 @@ class ReviewTable extends TableAbstract
                             RvMedia::getImageUrl($item->images[1], 'thumb'),
                             RvMedia::getImageUrl($item->images[1]),
                             [
-                                'width'         => 60,
-                                'class'         => 'fancybox m-1 rounded-top rounded-end rounded-bottom rounded-start border d-inline-block',
-                                'href'          => RvMedia::getImageUrl($item->images[1]),
+                                'width' => 60,
+                                'class' => 'fancybox m-1 rounded-top rounded-end rounded-bottom rounded-start border d-inline-block',
+                                'href' => RvMedia::getImageUrl($item->images[1]),
                                 'data-fancybox' => $galleryID,
                             ]
                         );
@@ -114,11 +107,11 @@ class ReviewTable extends TableAbstract
                             [
                                     'width' => 60,
                                     'class' => 'm-1 rounded-top rounded-end rounded-bottom rounded-start border',
-                                    'src'   => RvMedia::getImageUrl($item->images[1]),
+                                    'src' => RvMedia::getImageUrl($item->images[1]),
                                 ]
                         )->toHtml() . Html::tag('span', '+' . ($count - 2))->toHtml(), [
-                            'class'         => 'fancybox more-review-images',
-                            'href'          => RvMedia::getImageUrl($item->images[1]),
+                            'class' => 'fancybox more-review-images',
+                            'href' => RvMedia::getImageUrl($item->images[1]),
                             'data-fancybox' => $galleryID,
                         ]);
                     }
@@ -131,9 +124,9 @@ class ReviewTable extends TableAbstract
                                 RvMedia::getImageUrl($item->images[$index], 'thumb'),
                                 RvMedia::getImageUrl($item->images[$index]),
                                 [
-                                    'width'         => 60,
-                                    'class'         => 'fancybox d-none',
-                                    'href'          => RvMedia::getImageUrl($item->images[$index]),
+                                    'width' => 60,
+                                    'class' => 'fancybox d-none',
+                                    'href' => RvMedia::getImageUrl($item->images[$index]),
                                     'data-fancybox' => $galleryID,
                                 ]
                             );
@@ -159,7 +152,8 @@ class ReviewTable extends TableAbstract
                             })
                             ->orWhereHas('user', function ($subQuery) use ($keyword) {
                                 return $subQuery->where('ec_customers.name', 'LIKE', '%' . $keyword . '%');
-                            });
+                            })
+                            ->orWhere('comment', 'LIKE', '%' . $keyword . '%');
                     });
                 }
 
@@ -169,10 +163,7 @@ class ReviewTable extends TableAbstract
         return $this->toJson($data);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function query()
+    public function query(): Relation|Builder|QueryBuilder
     {
         $query = $this->repository->getModel()
             ->select([
@@ -190,18 +181,15 @@ class ReviewTable extends TableAbstract
         return $this->applyScopes($query);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function columns()
+    public function columns(): array
     {
         return [
-            'id'          => [
+            'id' => [
                 'title' => trans('core/base::tables.id'),
                 'width' => '20px',
                 'class' => 'text-start',
             ],
-            'product_id'  => [
+            'product_id' => [
                 'title' => trans('plugins/ecommerce::review.product'),
                 'class' => 'text-start',
             ],
@@ -209,26 +197,26 @@ class ReviewTable extends TableAbstract
                 'title' => trans('plugins/ecommerce::review.user'),
                 'class' => 'text-start',
             ],
-            'star'        => [
+            'star' => [
                 'title' => trans('plugins/ecommerce::review.star'),
                 'class' => 'text-center',
             ],
-            'comment'     => [
+            'comment' => [
                 'title' => trans('plugins/ecommerce::review.comment'),
                 'class' => 'text-start',
             ],
-            'images'      => [
-                'title'      => trans('plugins/ecommerce::review.images'),
-                'width'      => '150px',
-                'class'      => 'text-start',
+            'images' => [
+                'title' => trans('plugins/ecommerce::review.images'),
+                'width' => '150px',
+                'class' => 'text-start',
                 'searchable' => false,
-                'orderable'  => false,
+                'orderable' => false,
             ],
-            'status'      => [
+            'status' => [
                 'title' => trans('plugins/ecommerce::review.status'),
                 'class' => 'text-center',
             ],
-            'created_at'  => [
+            'created_at' => [
                 'title' => trans('core/base::tables.created_at'),
                 'width' => '70px',
                 'class' => 'text-start',
@@ -236,54 +224,42 @@ class ReviewTable extends TableAbstract
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getOperationsHeading()
+    public function getOperationsHeading(): array
     {
         return [
             'operations' => [
-                'title'      => trans('core/base::tables.operations'),
-                'width'      => '50px',
-                'class'      => 'text-end',
-                'orderable'  => false,
+                'title' => trans('core/base::tables.operations'),
+                'width' => '50px',
+                'class' => 'text-end',
+                'orderable' => false,
                 'searchable' => false,
                 'exportable' => false,
-                'printable'  => false,
+                'printable' => false,
             ],
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function bulkActions(): array
     {
         return $this->addDeleteAction(route('reviews.deletes'), 'review.destroy', parent::bulkActions());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function getBulkChanges(): array
     {
         return [
-            'status'     => [
-                'title'    => trans('core/base::tables.status'),
-                'type'     => 'select',
-                'choices'  => BaseStatusEnum::labels(),
+            'status' => [
+                'title' => trans('core/base::tables.status'),
+                'type' => 'select',
+                'choices' => BaseStatusEnum::labels(),
                 'validate' => 'required|in:' . implode(',', BaseStatusEnum::values()),
             ],
             'created_at' => [
                 'title' => trans('core/base::tables.created_at'),
-                'type'  => 'date',
+                'type' => 'datePicker',
             ],
         ];
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public function htmlDrawCallbackFunction(): ?string
     {
         return parent::htmlDrawCallbackFunction() . 'if (jQuery().fancybox) {
@@ -299,14 +275,11 @@ class ReviewTable extends TableAbstract
         }';
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function renderTable($data = [], $mergeData = [])
+    public function renderTable($data = [], $mergeData = []): View|Factory|Response
     {
         if ($this->query()->count() === 0 &&
-            !$this->request()->wantsJson() &&
-            $this->request()->input('filter_table_id') !== $this->getOption('id') && !$this->request()->ajax()
+            ! $this->request()->wantsJson() &&
+            $this->request()->input('filter_table_id') !== $this->getOption('id') && ! $this->request()->ajax()
         ) {
             return view('plugins/ecommerce::reviews.intro');
         }

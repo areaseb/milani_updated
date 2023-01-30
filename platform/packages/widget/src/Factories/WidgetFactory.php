@@ -8,15 +8,8 @@ use Illuminate\Support\HtmlString;
 
 class WidgetFactory extends AbstractWidgetFactory
 {
-    /**
-     * @var array
-     */
-    protected $widgets = [];
+    protected array $widgets = [];
 
-    /**
-     * @param string $widget
-     * @return $this
-     */
     public function registerWidget(string $widget): WidgetFactory
     {
         $this->widgets[] = new $widget();
@@ -24,38 +17,25 @@ class WidgetFactory extends AbstractWidgetFactory
         return $this;
     }
 
-    /**
-     * @return array
-     */
     public function getWidgets(): array
     {
         return $this->widgets;
     }
 
-    /**
-     * Run widget without magic method.
-     *
-     * @return HtmlString|string|null
-     */
-    public function run()
+    public function run(): HtmlString|string|null
     {
         $args = func_get_args();
 
         try {
             $this->instantiateWidget($args);
         } catch (InvalidWidgetClassException | Exception $exception) {
-            return config('app.debug') ? $exception->getMessage() : null;
+            return app()->hasDebugModeEnabled() ? $exception->getMessage() : null;
         }
 
         return $this->convertToViewExpression($this->getContent());
     }
 
-    /**
-     * Make call and get return widget content.
-     *
-     * @return mixed
-     */
-    protected function getContent()
+    protected function getContent(): ?string
     {
         $content = $this->app->call([$this->widget, 'run'], $this->widgetParams);
 

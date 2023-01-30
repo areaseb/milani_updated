@@ -1,12 +1,7 @@
-import Vue from 'vue';
-import RepeaterComponent from './form/fields/RepeaterComponent';
+import RepeaterComponent from './form/fields/RepeaterComponent.vue';
 
-Vue.prototype.__ = key => {
-    return _.get(window.trans, key, key);
-};
-
-Vue.component('repeater-component', RepeaterComponent);
-
-new Vue({
-    el: '#main'
-});
+if (typeof vueApp !== 'undefined') {
+    vueApp.booting(vue => {
+        vue.component('repeater-component', RepeaterComponent);
+    });
+}

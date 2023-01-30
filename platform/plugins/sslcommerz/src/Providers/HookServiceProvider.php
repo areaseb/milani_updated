@@ -13,7 +13,7 @@ use Throwable;
 
 class HookServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         add_filter(PAYMENT_FILTER_ADDITIONAL_PAYMENT_METHODS, [$this, 'registerSslCommerzMethod'], 18, 2);
 
@@ -75,14 +75,16 @@ class HookServiceProvider extends ServiceProvider
         add_filter(PAYMENT_FILTER_GET_REFUND_DETAIL, function ($data, $payment, $refundId) {
             if ($payment->payment_channel == SSLCOMMERZ_PAYMENT_METHOD_NAME) {
                 $refundDetail = (new SslCommerzPaymentService())->refundDetail($refundId);
-                if (!Arr::get($refundDetail, 'error')) {
+                if (! Arr::get($refundDetail, 'error')) {
                     $refunds = Arr::get($payment->metadata, 'refunds', []);
                     $refund = collect($refunds)->firstWhere('refund_ref_id', $refundId);
                     $refund = array_merge((array) $refund, Arr::get($refundDetail, 'data'));
+
                     return array_merge($refundDetail, [
                         'view' => view('plugins/sslcommerz::refund-detail', ['refund' => $refund, 'paymentModel' => $payment])->render(),
                     ]);
                 }
+
                 return $refundDetail;
             }
 

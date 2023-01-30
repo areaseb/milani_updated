@@ -4,23 +4,15 @@ namespace Botble\Ecommerce\Models;
 
 use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Base\Models\BaseModel;
-use Botble\Base\Traits\EnumCastable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use RvMedia;
 
 class ProductAttribute extends BaseModel
 {
-    use EnumCastable;
-
-    /**
-     * The database table used by the model.
-     *
-     * @var string
-     */
     protected $table = 'ec_product_attributes';
 
-    /**
-     * @var array
-     */
     protected $fillable = [
         'title',
         'slug',
@@ -32,36 +24,21 @@ class ProductAttribute extends BaseModel
         'is_default',
     ];
 
-    /**
-     * @var array
-     */
     protected $casts = [
         'status' => BaseStatusEnum::class,
     ];
 
-    /**
-     * @param int $value
-     * @return int
-     */
-    public function getAttributeSetIdAttribute($value)
+    public function getAttributeSetIdAttribute(?int $value): int
     {
         return (int)$value;
     }
 
-    /**
-     * @param int $value
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function productAttributeSet()
+    public function productAttributeSet(): BelongsTo
     {
         return $this->belongsTo(ProductAttributeSet::class, 'attribute_set_id');
     }
 
-    /**
-     * @param int $value
-     * @return int
-     */
-    public function getGroupIdAttribute($value)
+    public function getGroupIdAttribute(?int $value): int
     {
         return (int)$value;
     }
@@ -75,20 +52,12 @@ class ProductAttribute extends BaseModel
         });
     }
 
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function productVariationItems()
+    public function productVariationItems(): HasMany
     {
         return $this->hasMany(ProductVariationItem::class, 'attribute_id');
     }
 
-    /**
-     * @param ProductAttributeSet $attributeSet
-     * @param array $productVariations
-     * @return string
-     */
-    public function getAttributeStyle($attributeSet = null, $productVariations = [])
+    public function getAttributeStyle(?ProductAttributeSet $attributeSet = null, array|Collection $productVariations = []): string
     {
         if ($attributeSet && $attributeSet->use_image_from_product_variation) {
             foreach ($productVariations as $productVariation) {
