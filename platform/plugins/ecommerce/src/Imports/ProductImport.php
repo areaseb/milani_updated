@@ -20,6 +20,7 @@ use Botble\Ecommerce\Repositories\Interfaces\ProductTagInterface;
 use Botble\Ecommerce\Repositories\Interfaces\ProductVariationInterface;
 use Botble\Ecommerce\Repositories\Interfaces\TaxInterface;
 use Botble\Ecommerce\Services\Products\StoreProductService;
+use Botble\Ecommerce\Services\Products\UpdateDefaultProductService;
 use Botble\Ecommerce\Services\StoreProductTagService;
 use Botble\Media\Models\MediaFile;
 use Carbon\Carbon;
@@ -203,7 +204,9 @@ class ProductImport implements
         ProductLabelInterface        $productLabelRepository,
         TaxInterface                 $taxRepository,
         ProductCollectionInterface   $productCollectionRepository,
+
         ProductAttributeSetInterface $productAttributeSetRepository,
+
         ProductAttributeInterface    $productAttributeRepository,
         ProductVariationInterface    $productVariationRepository,
         BrandInterface               $brandRepository,
@@ -218,7 +221,10 @@ class ProductImport implements
         $this->productCollectionRepository = $productCollectionRepository;
         $this->storeProductTagService = $storeProductTagService;
         $this->brandRepository = $brandRepository;
+
         $this->productAttributeSetRepository = $productAttributeSetRepository;
+
+
         $this->request = $request;
         $this->categories = collect();
         $this->brands = collect();
@@ -226,7 +232,11 @@ class ProductImport implements
         $this->labels = collect();
         $this->productCollections = collect();
         $this->productLabels = collect();
+
+
         $this->productAttributeSets = $this->productAttributeSetRepository->all(['attributes']);
+
+
         $this->productAttributeRepository = $productAttributeRepository;
         $this->productVariationRepository = $productVariationRepository;
 
@@ -299,6 +309,11 @@ class ProductImport implements
             return $this->storeVariant($product);
         }
 
+        if ($importType == 'all') {
+            $productExist = Product::where('sku', $row['sku'])->firstOrFail();
+            return (new UpdateDefaultProductService())->execute($productExist, $row);
+        }
+
         return $this->storeProduct();
     }
 
@@ -359,7 +374,9 @@ class ProductImport implements
             $this->request->merge(['content' => BaseHelper::clean($content)]);
         }
 
+
         $product = (new StoreProductService($this->productRepository))->execute($this->request, $product);
+
 
         $tagsInput = (array) $this->request->input('tags', []);
         if ($tagsInput) {
@@ -460,6 +477,7 @@ class ProductImport implements
      */
     public function storeVariant($product): ?ProductVariation
     {
+
         if (!$product) {
             if (method_exists($this, 'onFailure')) {
                 $failures[] = new Failure(
@@ -474,8 +492,19 @@ class ProductImport implements
             return null;
         }
 
+
+
         $addedAttributes = $this->request->input('attribute_sets', []);
+
+
+
+
+
         $result = $this->productVariationRepository->getVariationByAttributesOrCreate($product->id, $addedAttributes);
+
+
+
+
         if (!$result['created']) {
             if (method_exists($this, 'onFailure')) {
                 $failures[] = new Failure(
@@ -490,7 +519,10 @@ class ProductImport implements
             return null;
         }
 
+
+
         $variation = $result['variation'];
+
 
         $version = array_merge($variation->toArray(), $this->request->toArray());
         $version['variation_default_id'] = Arr::get($version, 'is_variation_default') ? $version['id'] : null;
@@ -837,6 +869,7 @@ class ProductImport implements
      */
     public function mapLocalization(array $row): array
     {
+
         $row['stock_status'] = (string)Arr::get($row, 'stock_status');
         if (!in_array($row['stock_status'], StockStatusEnum::values())) {
             $row['stock_status'] = StockStatusEnum::IN_STOCK;
@@ -861,7 +894,6 @@ class ProductImport implements
         $row['is_slug_editable'] = true;
 
         $this->setValues($row, [
-            ['key' => 'bullet_1', 'type' => 'string'],
             ['key' => 'slug', 'type' => 'string', 'default' => 'name'],
             ['key' => 'sku', 'type' => 'string'],
             ['key' => 'price', 'type' => 'number'],
@@ -904,6 +936,7 @@ class ProductImport implements
         }
 
         $attributeSets = Arr::get($row, 'product_attributes');
+
         $row['attribute_sets'] = [];
         $row['product_attributes'] = [];
 
@@ -914,11 +947,18 @@ class ProductImport implements
                 $valueX = Arr::get($attrSet, 1);
 
                 if($title && $valueX) {
+
+
                     $attribute = $this->productAttributeSets->filter(function ($value) use ($title) {
                         return $value['title'] == $title;
                     })->first();
 
+
+
+
+
                     if ($attribute) {
+
                         $attr = $attribute->attributes->filter(function ($value) use ($valueX) {
                             return $value['title'] == $valueX;
                         })->first();
@@ -927,9 +967,14 @@ class ProductImport implements
                             $row['attribute_sets'][$attribute->id] = $attr->id;
                         }
                     }
+
                 }
+
             }
         }
+
+
+
 
         if ($row['import_type'] == 'product') {
             foreach ($attributeSets as $attrSet) {

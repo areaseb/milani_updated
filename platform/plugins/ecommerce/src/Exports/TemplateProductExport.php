@@ -176,7 +176,7 @@ class TemplateProductExport implements
             'peso_con_imballo_collo_4'          => '',
             'peso_con_imballo_collo_5'          => '',
             'assemblato'                        => '',
-            'kit_e_istruzioni_incluse'            => '',
+            'kit_e_istruzioni_incluse'          => '',
             'sku_set'                           => '',
             'sku_parent'                        => ''
         ];

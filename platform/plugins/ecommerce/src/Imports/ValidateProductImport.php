@@ -2,11 +2,19 @@
 
 namespace Botble\Ecommerce\Imports;
 
+use Botble\Ecommerce\Models\Product;
 use Botble\Ecommerce\Models\ProductVariation;
 use Maatwebsite\Excel\Validators\Failure;
 
 class ValidateProductImport extends ProductImport
 {
+
+    public function getProductByName($name)
+    {
+        return Product::where('name', $name)->first();
+    }
+
+
     /**
      * @param array $row
      *

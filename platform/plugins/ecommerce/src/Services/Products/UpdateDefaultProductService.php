@@ -10,7 +10,7 @@ class UpdateDefaultProductService
      * @param Product $product
      * @return mixed
      */
-    public function execute(Product $product)
+    public function execute(Product $product, $row)
     {
         $parent = $product->original_product;
 
@@ -45,6 +45,7 @@ class UpdateDefaultProductService
         }
 
         $parent->save();
+
 
         return $parent;
     }
