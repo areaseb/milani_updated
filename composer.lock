@@ -1199,16 +1199,16 @@
         },
         {
             "name": "doctrine/dbal",
-            "version": "3.5.3",
+            "version": "3.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/dbal.git",
-                "reference": "88fa7e5189fd5ec6682477044264dc0ed4e3aa1e"
+                "reference": "85b98cb23c8af471a67abfe14485da696bcabc2e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/dbal/zipball/88fa7e5189fd5ec6682477044264dc0ed4e3aa1e",
-                "reference": "88fa7e5189fd5ec6682477044264dc0ed4e3aa1e",
+                "url": "https://api.github.com/repos/doctrine/dbal/zipball/85b98cb23c8af471a67abfe14485da696bcabc2e",
+                "reference": "85b98cb23c8af471a67abfe14485da696bcabc2e",
                 "shasum": ""
             },
             "require": {
@@ -1221,11 +1221,12 @@
                 "psr/log": "^1|^2|^3"
             },
             "require-dev": {
-                "doctrine/coding-standard": "11.0.0",
+                "doctrine/coding-standard": "11.1.0",
+                "fig/log-test": "^1",
                 "jetbrains/phpstorm-stubs": "2022.3",
-                "phpstan/phpstan": "1.9.4",
+                "phpstan/phpstan": "1.9.14",
                 "phpstan/phpstan-strict-rules": "^1.4",
-                "phpunit/phpunit": "9.5.27",
+                "phpunit/phpunit": "9.6.3",
                 "psalm/plugin-phpunit": "0.18.4",
                 "squizlabs/php_codesniffer": "3.7.1",
                 "symfony/cache": "^5.4|^6.0",
@@ -1290,7 +1291,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/dbal/issues",
-                "source": "https://github.com/doctrine/dbal/tree/3.5.3"
+                "source": "https://github.com/doctrine/dbal/tree/3.6.0"
             },
             "funding": [
                 {
@@ -1306,7 +1307,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-01-12T10:21:44+00:00"
+            "time": "2023-02-07T22:52:03+00:00"
         },
         {
             "name": "doctrine/deprecations",
@@ -2691,30 +2692,30 @@
         },
         {
             "name": "google/recaptcha",
-            "version": "1.2.4",
+            "version": "1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/google/recaptcha.git",
-                "reference": "614f25a9038be4f3f2da7cbfd778dc5b357d2419"
+                "reference": "d59a801e98a4e9174814a6d71bbc268dff1202df"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/google/recaptcha/zipball/614f25a9038be4f3f2da7cbfd778dc5b357d2419",
-                "reference": "614f25a9038be4f3f2da7cbfd778dc5b357d2419",
+                "url": "https://api.github.com/repos/google/recaptcha/zipball/d59a801e98a4e9174814a6d71bbc268dff1202df",
+                "reference": "d59a801e98a4e9174814a6d71bbc268dff1202df",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.5"
+                "php": ">=8"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^2.2.20|^2.15",
-                "php-coveralls/php-coveralls": "^2.1",
-                "phpunit/phpunit": "^4.8.36|^5.7.27|^6.59|^7.5.11"
+                "friendsofphp/php-cs-fixer": "^3.14",
+                "php-coveralls/php-coveralls": "^2.5",
+                "phpunit/phpunit": "^10"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.2.x-dev"
+                    "dev-master": "1.3.x-dev"
                 }
             },
             "autoload": {
@@ -2739,7 +2740,7 @@
                 "issues": "https://github.com/google/recaptcha/issues",
                 "source": "https://github.com/google/recaptcha"
             },
-            "time": "2020-03-31T17:50:54+00:00"
+            "time": "2023-02-18T17:41:46+00:00"
         },
         {
             "name": "graham-campbell/result-type",
@@ -3264,19 +3265,20 @@
         },
         {
             "name": "khaled.alshamaa/ar-php",
-            "version": "v6.3.0",
+            "version": "v6.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/khaled-alshamaa/ar-php.git",
-                "reference": "a35d61400a646a0c685a98d3fc7eea8721bc404e"
+                "reference": "590da34e9897ef8b9fedb678647c436253e91da0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/khaled-alshamaa/ar-php/zipball/a35d61400a646a0c685a98d3fc7eea8721bc404e",
-                "reference": "a35d61400a646a0c685a98d3fc7eea8721bc404e",
+                "url": "https://api.github.com/repos/khaled-alshamaa/ar-php/zipball/590da34e9897ef8b9fedb678647c436253e91da0",
+                "reference": "590da34e9897ef8b9fedb678647c436253e91da0",
                 "shasum": ""
             },
             "require": {
+                "ext-calendar": "*",
                 "ext-mbstring": "*",
                 "php": ">=5.6.0"
             },
@@ -3297,7 +3299,8 @@
                 {
                     "name": "Khaled Al-Sham'aa",
                     "email": "khaled@ar-php.org",
-                    "homepage": "http://www.ar-php.org"
+                    "homepage": "http://www.ar-php.org",
+                    "role": "Developer"
                 }
             ],
             "description": "Set of functionalities enable Arabic website developers to serve professional search, present and process Arabic content in PHP",
@@ -3313,9 +3316,15 @@
             ],
             "support": {
                 "issues": "https://github.com/khaled-alshamaa/ar-php/issues",
-                "source": "https://github.com/khaled-alshamaa/ar-php/tree/v6.3.0"
+                "source": "https://github.com/khaled-alshamaa/ar-php/tree/v6.3.2"
             },
-            "time": "2022-06-17T18:17:40+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/khaled-alshamaa",
+                    "type": "github"
+                }
+            ],
+            "time": "2023-01-21T07:19:15+00:00"
         },
         {
             "name": "knuckleswtf/scribe",
@@ -3794,75 +3803,6 @@
                 "source": "https://github.com/laravel/serializable-closure"
             },
             "time": "2022-09-08T13:45:54+00:00"
-        },
-        {
-            "name": "laravel/socialite",
-            "version": "v5.6.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/laravel/socialite.git",
-                "reference": "dae03ca4ecfe3badafcdfb81965d2279080051f4"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/laravel/socialite/zipball/dae03ca4ecfe3badafcdfb81965d2279080051f4",
-                "reference": "dae03ca4ecfe3badafcdfb81965d2279080051f4",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "guzzlehttp/guzzle": "^6.0|^7.0",
-                "illuminate/contracts": "^6.0|^7.0|^8.0|^9.0|^10.0",
-                "illuminate/http": "^6.0|^7.0|^8.0|^9.0|^10.0",
-                "illuminate/support": "^6.0|^7.0|^8.0|^9.0|^10.0",
-                "league/oauth1-client": "^1.10.1",
-                "php": "^7.2|^8.0"
-            },
-            "require-dev": {
-                "mockery/mockery": "^1.0",
-                "orchestra/testbench": "^4.0|^5.0|^6.0|^7.0|^8.0",
-                "phpunit/phpunit": "^8.0|^9.3"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "5.x-dev"
-                },
-                "laravel": {
-                    "providers": [
-                        "Laravel\\Socialite\\SocialiteServiceProvider"
-                    ],
-                    "aliases": {
-                        "Socialite": "Laravel\\Socialite\\Facades\\Socialite"
-                    }
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Laravel\\Socialite\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Taylor Otwell",
-                    "email": "taylor@laravel.com"
-                }
-            ],
-            "description": "Laravel wrapper around OAuth 1 & OAuth 2 libraries.",
-            "homepage": "https://laravel.com",
-            "keywords": [
-                "laravel",
-                "oauth"
-            ],
-            "support": {
-                "issues": "https://github.com/laravel/socialite/issues",
-                "source": "https://github.com/laravel/socialite"
-            },
-            "time": "2023-01-13T15:04:44+00:00"
         },
         {
             "name": "laravel/tinker",
@@ -4410,82 +4350,6 @@
             "time": "2022-04-17T13:12:02+00:00"
         },
         {
-            "name": "league/oauth1-client",
-            "version": "v1.10.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/thephpleague/oauth1-client.git",
-                "reference": "d6365b901b5c287dd41f143033315e2f777e1167"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/oauth1-client/zipball/d6365b901b5c287dd41f143033315e2f777e1167",
-                "reference": "d6365b901b5c287dd41f143033315e2f777e1167",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "ext-openssl": "*",
-                "guzzlehttp/guzzle": "^6.0|^7.0",
-                "guzzlehttp/psr7": "^1.7|^2.0",
-                "php": ">=7.1||>=8.0"
-            },
-            "require-dev": {
-                "ext-simplexml": "*",
-                "friendsofphp/php-cs-fixer": "^2.17",
-                "mockery/mockery": "^1.3.3",
-                "phpstan/phpstan": "^0.12.42",
-                "phpunit/phpunit": "^7.5||9.5"
-            },
-            "suggest": {
-                "ext-simplexml": "For decoding XML-based responses."
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.0-dev",
-                    "dev-develop": "2.0-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "League\\OAuth1\\Client\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Ben Corlett",
-                    "email": "bencorlett@me.com",
-                    "homepage": "http://www.webcomm.com.au",
-                    "role": "Developer"
-                }
-            ],
-            "description": "OAuth 1.0 Client Library",
-            "keywords": [
-                "Authentication",
-                "SSO",
-                "authorization",
-                "bitbucket",
-                "identity",
-                "idp",
-                "oauth",
-                "oauth1",
-                "single sign on",
-                "trello",
-                "tumblr",
-                "twitter"
-            ],
-            "support": {
-                "issues": "https://github.com/thephpleague/oauth1-client/issues",
-                "source": "https://github.com/thephpleague/oauth1-client/tree/v1.10.1"
-            },
-            "time": "2022-04-15T14:02:14+00:00"
-        },
-        {
             "name": "maatwebsite/excel",
             "version": "3.1.45",
             "source": {
@@ -4902,31 +4766,30 @@
         },
         {
             "name": "mollie/laravel-mollie",
-            "version": "v2.21.1",
+            "version": "v2.22.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/mollie/laravel-mollie.git",
-                "reference": "5fa08188d67153c407f42b2004658b38ee4fa9aa"
+                "reference": "039eec4f8e8a138e0539d77e0dcce3bc34df25f8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/mollie/laravel-mollie/zipball/5fa08188d67153c407f42b2004658b38ee4fa9aa",
-                "reference": "5fa08188d67153c407f42b2004658b38ee4fa9aa",
+                "url": "https://api.github.com/repos/mollie/laravel-mollie/zipball/039eec4f8e8a138e0539d77e0dcce3bc34df25f8",
+                "reference": "039eec4f8e8a138e0539d77e0dcce3bc34df25f8",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "illuminate/support": "^8.0|^9.0",
-                "mollie/mollie-api-php": "^2.49",
+                "illuminate/support": "^9.0|^10.0",
+                "mollie/mollie-api-php": "^2.50",
                 "php": "^8.0"
             },
             "require-dev": {
-                "graham-campbell/testbench": "^5.0",
                 "laravel/pint": "^1.1",
-                "laravel/socialite": "^5.0",
-                "mockery/mockery": "^1.0",
-                "phpunit/phpunit": "^9.0",
-                "symfony/finder": "^5.0|^6.0"
+                "laravel/socialite": "^5.5",
+                "mockery/mockery": "^1.4",
+                "orchestra/testbench": "^7.18|^8.0",
+                "phpunit/phpunit": "^9.0|^10.0"
             },
             "suggest": {
                 "laravel/socialite": "Use Mollie Connect (OAuth) to authenticate via Laravel Socialite with the Mollie API. This is needed for some endpoints."
@@ -4995,9 +4858,9 @@
             ],
             "support": {
                 "issues": "https://github.com/mollie/laravel-mollie/issues",
-                "source": "https://github.com/mollie/laravel-mollie/tree/v2.21.1"
+                "source": "https://github.com/mollie/laravel-mollie/tree/v2.22.0"
             },
-            "time": "2022-12-15T12:22:41+00:00"
+            "time": "2023-02-16T12:04:20+00:00"
         },
         {
             "name": "mollie/mollie-api-php",
@@ -7958,25 +7821,25 @@
         },
         {
             "name": "symfony/cache",
-            "version": "v6.0.18",
+            "version": "v6.2.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/cache.git",
-                "reference": "079ec0afe323fdcd5ac1f16e3ffdb4991fb5d4c9"
+                "reference": "01a36b32f930018764bcbde006fbbe421fa6b61e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/cache/zipball/079ec0afe323fdcd5ac1f16e3ffdb4991fb5d4c9",
-                "reference": "079ec0afe323fdcd5ac1f16e3ffdb4991fb5d4c9",
+                "url": "https://api.github.com/repos/symfony/cache/zipball/01a36b32f930018764bcbde006fbbe421fa6b61e",
+                "reference": "01a36b32f930018764bcbde006fbbe421fa6b61e",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.0.2",
+                "php": ">=8.1",
                 "psr/cache": "^2.0|^3.0",
                 "psr/log": "^1.1|^2|^3",
                 "symfony/cache-contracts": "^1.1.7|^2|^3",
                 "symfony/service-contracts": "^1.1|^2|^3",
-                "symfony/var-exporter": "^5.4|^6.0"
+                "symfony/var-exporter": "^6.2.7"
             },
             "conflict": {
                 "doctrine/dbal": "<2.13.1",
@@ -8006,6 +7869,9 @@
                 "psr-4": {
                     "Symfony\\Component\\Cache\\": ""
                 },
+                "classmap": [
+                    "Traits/ValueWrapper.php"
+                ],
                 "exclude-from-classmap": [
                     "/Tests/"
                 ]
@@ -8031,7 +7897,7 @@
                 "psr6"
             ],
             "support": {
-                "source": "https://github.com/symfony/cache/tree/v6.0.18"
+                "source": "https://github.com/symfony/cache/tree/v6.2.7"
             },
             "funding": [
                 {
@@ -8047,7 +7913,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-12-29T16:27:58+00:00"
+            "time": "2023-02-21T16:15:44+00:00"
         },
         {
             "name": "symfony/cache-contracts",
@@ -10671,20 +10537,20 @@
         },
         {
             "name": "symfony/var-exporter",
-            "version": "v6.0.17",
+            "version": "v6.2.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/var-exporter.git",
-                "reference": "d87c15d59421d38fe5eb4f6724eb75891479e3da"
+                "reference": "86062dd0103530e151588c8f60f5b85a139f1442"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/var-exporter/zipball/d87c15d59421d38fe5eb4f6724eb75891479e3da",
-                "reference": "d87c15d59421d38fe5eb4f6724eb75891479e3da",
+                "url": "https://api.github.com/repos/symfony/var-exporter/zipball/86062dd0103530e151588c8f60f5b85a139f1442",
+                "reference": "86062dd0103530e151588c8f60f5b85a139f1442",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.0.2"
+                "php": ">=8.1"
             },
             "require-dev": {
                 "symfony/var-dumper": "^5.4|^6.0"
@@ -10720,10 +10586,12 @@
                 "export",
                 "hydrate",
                 "instantiate",
+                "lazy loading",
+                "proxy",
                 "serialize"
             ],
             "support": {
-                "source": "https://github.com/symfony/var-exporter/tree/v6.0.17"
+                "source": "https://github.com/symfony/var-exporter/tree/v6.2.7"
             },
             "funding": [
                 {
@@ -10739,7 +10607,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-12-22T17:53:58+00:00"
+            "time": "2023-02-24T10:42:00+00:00"
         },
         {
             "name": "symfony/yaml",
@@ -14442,5 +14310,5 @@
         "ext-zip": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.1.0"
 }
