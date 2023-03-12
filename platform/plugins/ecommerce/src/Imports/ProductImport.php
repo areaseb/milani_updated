@@ -277,34 +277,11 @@ class ProductImport implements
         $name = $this->request->input('name');
         $slug = $this->request->input('slug');
 
-        if ($importType == 'products' && $row['import_type'] == 'product') {
+        if (in_array($importType, ['products', 'all']) && $row['import_type'] == 'product') {
             return $this->storeProduct();
-        }
 
-        if ($importType == 'variations' && $row['import_type'] == 'variation') {
+        } else if (in_array($importType, ['variations', 'all']) && $row['import_type'] == 'variation') {
             $product = $this->getProduct($name, $slug);
-
-            return $this->storeVariant($product);
-        }
-
-        if ($row['import_type'] == 'variation') {
-            if ($slug) {
-                $collection = $this->successes()
-                    ->where('import_type', 'product')
-                    ->where('slug', $slug)
-                    ->last();
-            } else {
-                $collection = $this->successes()
-                    ->where('import_type', 'product')
-                    ->where('name', $name)
-                    ->last();
-            }
-
-            if ($collection) {
-                $product = $collection['model'];
-            } else {
-                $product = $this->getProduct($name, $slug);
-            }
 
             return $this->storeVariant($product);
         }

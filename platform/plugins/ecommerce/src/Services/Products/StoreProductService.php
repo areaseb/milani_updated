@@ -98,7 +98,7 @@ class StoreProductService
         /**
          * @var Product $product
          */
-        $product = $this->productRepository->createOrUpdate($product);
+        $product = $this->productRepository->createOrUpdate($product, ['sku' => $product->sku]);
 
 
         if (!$exists) {
