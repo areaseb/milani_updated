@@ -27,8 +27,7 @@ class ValidateProductImport extends ProductImport
 
             // If we are storing a variant we need to be sure
             // that the parent product exists
-            $product = $this->getProduct($name, null);
-            if (!$product) {
+            if (!$this->getProductData($name)) {
                 return $this->fails();
             }
 
@@ -57,24 +56,18 @@ class ValidateProductImport extends ProductImport
         return null;
     }
 
-    protected function getProduct(string $name, ?string $slug)
-    {
-        return $this->getProductFromCollection($name) ?? $this->getProductFromDatabase($name);
-    }
-
-    protected function getProductFromCollection($name)
+    protected function getProductData($name)
     {
         $collection = $this->successes()
             ->where('import_type', 'product')
             ->where('name', $name)
             ->first();
 
-        return $collection['model'] ?? null;
-    }
+        if (!($collection['model'] ?? false)) {
+            return Product::where('name', $name)->first();
+        }
 
-    protected function getProductFromDatabase($name)
-    {
-        return Product::where('name', $name)->first();
+        return $collection['model'];
     }
 
     protected function fails()
