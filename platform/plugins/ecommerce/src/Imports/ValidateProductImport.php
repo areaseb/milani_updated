@@ -4,16 +4,10 @@ namespace Botble\Ecommerce\Imports;
 
 use Botble\Ecommerce\Models\Product;
 use Botble\Ecommerce\Models\ProductVariation;
-use Exception;
 use Maatwebsite\Excel\Validators\Failure;
 
 class ValidateProductImport extends ProductImport
 {
-    public function getProductByName($name)
-    {
-        return Product::where('name', $name)->first();
-    }
-
     /**
      * @param array $row
      *
@@ -25,70 +19,77 @@ class ValidateProductImport extends ProductImport
 
         $name = $this->request->input('name');
 
-        if ($importType == 'products' && $row['import_type'] == 'product') {
-            return $this->storeProduction();
-        }
+        if (in_array($importType, ['products', 'all']) && $row['import_type'] == 'product') {
+            // Storing a product is always successful
+            return $this->storeProduct();
 
-        if ($importType == 'variations' && $row['import_type'] == 'variation') {
-            $product = $this->getProductByName($name);
+        } else if (in_array($importType, ['variations', 'all']) && $row['import_type'] == 'variation') {
 
-            return $this->storeVariant($product);
-        }
-
-        if ($row['import_type'] == 'variation') {
-            $collection = $this->successes()
-                ->where('import_type', 'product')
-                ->where('name', $name)
-                ->first();
-
-            if ($collection) {
-                $product = $collection['model'];
-            } else {
-                $product = $this->getProductByName($name);
-            }
-
-            return $this->storeVariant($product);
-        }
-
-        return $this->storeProduction();
-    }
-
-    /**
-     * @return null
-     */
-    public function storeProduction()
-    {
-        $product = collect($this->request->all());
-        $collect = collect([
-            'name'        => $product['name'],
-            'import_type' => 'product',
-            'model'       => $product,
-        ]);
-        $this->onSuccess($collect);
-
-        return null;
-    }
-
-    /**
-     * @param $product
-     * @return ProductVariation|null
-     */
-    public function storeVariant($product): ?ProductVariation
-    {
-        if (!$product) {
-            if (method_exists($this, 'onFailure')) {
-                $failures[] = new Failure(
-                    $this->rowCurrent,
-                    'Product Name',
-                    [__('Product name ":name" does not exists', ['name' => $this->request->input('name')])],
-                    []
-                );
-                $this->onFailure(...$failures);
+            // If we are storing a variant we need to be sure
+            // that the parent product exists
+            $product = $this->getProduct($name, null);
+            if (!$product) {
+                return $this->fails();
             }
 
             return null;
         }
 
+        // We cannot understand what we are importing
+        // so we fail
+        $this->fails();
+    }
+
+    /**
+     * @return null
+     */
+    public function storeProduct(): ?Product
+    {
+        $product = collect($this->request->all());
+        $collect = collect([
+            'name' => $product['name'],
+            'import_type' => 'product',
+            'model' => $product,
+        ]);
+
+        $this->onSuccess($collect);
+
         return null;
+    }
+
+    protected function getProduct(string $name, ?string $slug)
+    {
+        return $this->getProductFromCollection($name) ?? $this->getProductFromDatabase($name);
+    }
+
+    protected function getProductFromCollection($name)
+    {
+        $collection = $this->successes()
+            ->where('import_type', 'product')
+            ->where('name', $name)
+            ->first();
+
+        return $collection['model'] ?? null;
+    }
+
+    protected function getProductFromDatabase($name)
+    {
+        return Product::where('name', $name)->first();
+    }
+
+    protected function fails()
+    {
+        if (method_exists($this, 'onFailure')) {
+            $failures[] = new Failure(
+                $this->rowCurrent,
+                'Product Name',
+                [__('Product name ":name" does not exists', ['name' => $this->request->input('name')])],
+                []
+            );
+
+            $this->onFailure(...$failures);
+
+            return null;
+        }
     }
 }
