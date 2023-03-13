@@ -2,7 +2,6 @@
 
 namespace Botble\Ecommerce\Services\Products;
 
-use App\Http\Repository\MyProductRepository;
 use Botble\Base\Events\CreatedContentEvent;
 use Botble\Base\Events\UpdatedContentEvent;
 use Botble\Ecommerce\Enums\ProductTypeEnum;
@@ -98,7 +97,11 @@ class StoreProductService
         /**
          * @var Product $product
          */
-        $product = $this->productRepository->createOrUpdate($product, ['sku' => $product->sku]);
+        $conditions = ['sku' => $product->sku];
+        if ($exists) {
+            $conditions = ['id', $product->id];
+        }
+        $product = $this->productRepository->createOrUpdate($product, $conditions);
 
 
         if (!$exists) {
