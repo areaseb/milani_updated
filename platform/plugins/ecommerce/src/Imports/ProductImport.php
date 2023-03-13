@@ -204,9 +204,7 @@ class ProductImport implements
         ProductLabelInterface        $productLabelRepository,
         TaxInterface                 $taxRepository,
         ProductCollectionInterface   $productCollectionRepository,
-
         ProductAttributeSetInterface $productAttributeSetRepository,
-
         ProductAttributeInterface    $productAttributeRepository,
         ProductVariationInterface    $productVariationRepository,
         BrandInterface               $brandRepository,
@@ -221,9 +219,7 @@ class ProductImport implements
         $this->productCollectionRepository = $productCollectionRepository;
         $this->storeProductTagService = $storeProductTagService;
         $this->brandRepository = $brandRepository;
-
         $this->productAttributeSetRepository = $productAttributeSetRepository;
-
 
         $this->request = $request;
         $this->categories = collect();
@@ -232,10 +228,6 @@ class ProductImport implements
         $this->labels = collect();
         $this->productCollections = collect();
         $this->productLabels = collect();
-
-
-        $this->productAttributeSets = $this->productAttributeSetRepository->all(['attributes']);
-
 
         $this->productAttributeRepository = $productAttributeRepository;
         $this->productVariationRepository = $productVariationRepository;
@@ -351,9 +343,7 @@ class ProductImport implements
             $this->request->merge(['content' => BaseHelper::clean($content)]);
         }
 
-
         $product = (new StoreProductService($this->productRepository))->execute($this->request, $product);
-
 
         $tagsInput = (array) $this->request->input('tags', []);
         if ($tagsInput) {
@@ -367,7 +357,9 @@ class ProductImport implements
 
         $attributeSets = $this->request->input('attribute_sets', []);
 
-        $product->productAttributeSets()->sync($attributeSets);
+        if ($attributeSets) {
+            $product->productAttributeSets()->sync($attributeSets);
+        }
 
         $collect = collect([
             'name'           => $product->name,
@@ -454,7 +446,6 @@ class ProductImport implements
      */
     public function storeVariant($product): ?ProductVariation
     {
-
         if (!$product) {
             if (method_exists($this, 'onFailure')) {
                 $failures[] = new Failure(
@@ -469,18 +460,9 @@ class ProductImport implements
             return null;
         }
 
-
-
-        $addedAttributes = $this->request->input('attribute_sets', []);
-
-
-
-
+        $addedAttributes = $this->request->input('product_attributes', []);
 
         $result = $this->productVariationRepository->getVariationByAttributesOrCreate($product->id, $addedAttributes);
-
-
-
 
         if (!$result['created']) {
             if (method_exists($this, 'onFailure')) {
@@ -496,10 +478,7 @@ class ProductImport implements
             return null;
         }
 
-
-
         $variation = $result['variation'];
-
 
         $version = array_merge($variation->toArray(), $this->request->toArray());
         $version['variation_default_id'] = Arr::get($version, 'is_variation_default') ? $version['id'] : null;
@@ -912,56 +891,65 @@ class ProductImport implements
             $row['allow_checkout_when_out_of_stock'] = false;
         }
 
-        $attributeSets = Arr::get($row, 'product_attributes');
+        $attributeSets = [];
+        foreach (Arr::get($row, 'product_attributes') as $key => $value) {
+            $valueExploded = explode(':', $value);
+            $key = trim(Arr::get($valueExploded, 0));
+            $value = trim(Arr::get($valueExploded, 1, ''));
+
+            $attributeSets[$key] = $value;
+        }
 
         $row['attribute_sets'] = [];
         $row['product_attributes'] = [];
 
         if ($row['import_type'] == 'variation') {
-            foreach ($attributeSets as $attrSet) {
-                $attrSet = explode(':', $attrSet);
-                $title = Arr::get($attrSet, 0);
-                $valueX = Arr::get($attrSet, 1);
-
-                if($title && $valueX) {
-
-
-                    $attribute = $this->productAttributeSets->filter(function ($value) use ($title) {
-                        return $value['title'] == $title;
-                    })->first();
-
-
-
-
-
-                    if ($attribute) {
-
-                        $attr = $attribute->attributes->filter(function ($value) use ($valueX) {
-                            return $value['title'] == $valueX;
-                        })->first();
-
-                        if ($attr) {
-                            $row['attribute_sets'][$attribute->id] = $attr->id;
-                        }
-                    }
-
+            foreach ($attributeSets as $title => $value) {
+                if (!$title || !$value) {
+                    continue;
                 }
 
+                $attributeSet = $this->productAttributeSetRepository
+                    ->firstOrCreate(['title' => $title], [
+                        'slug' => Str::slug($title),
+                        'status' => 'published',
+                        'order' => $this->productAttributeSetRepository->getModel()->max('order') + 1,
+                        'display_layout' => 'text',
+                        'is_searchable' => 1,
+                        'is_comparable' => 1,
+                        'is_use_in_product_listing' => 1,
+                        'use_image_from_product_variation' => 0,
+                    ]);
+
+                $attribute = $attributeSet->attributes()
+                    ->firstOrCreate(['title' => $value], [
+                        'slug' => Str::slug($value),
+                        'color' => null,
+                        'status' => 'published',
+                        'order' => $attributeSet->attributes()->max('order') + 1,
+                        'image' => null,
+                        'is_default' => 0,
+                    ]);
+
+                $row['product_attributes'][$attributeSet->id] = $attribute->id;
             }
         }
 
-
-
-
         if ($row['import_type'] == 'product') {
-            foreach ($attributeSets as $attrSet) {
-                $attribute = $this->productAttributeSets->filter(function ($value) use ($attrSet) {
-                    return $value['title'] == $attrSet;
-                })->first();
+            foreach ($attributeSets as $title => $value) {
+                $attributeSet = $this->productAttributeSetRepository
+                    ->firstOrCreate(['title' => $title], [
+                        'slug' => Str::slug($title),
+                        'status' => 'published',
+                        'order' => $this->productAttributeSetRepository->getModel()->max('order') + 1,
+                        'display_layout' => 'text',
+                        'is_searchable' => 1,
+                        'is_comparable' => 1,
+                        'is_use_in_product_listing' => 1,
+                        'use_image_from_product_variation' => 0,
+                    ]);
 
-                if ($attribute) {
-                    $row['attribute_sets'][] = $attribute->id;
-                }
+                $row['attribute_sets'][] = $attributeSet->id;
             }
         }
 
