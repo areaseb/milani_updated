@@ -171,18 +171,18 @@ class ProductForm extends FormAbstract
         if (EcommerceHelper::isTaxEnabled()) {
             $taxes = app(TaxInterface::class)->all()->pluck('title_with_percentage', 'id');
 
-            $selectedTaxes = [];
+            $selectedTax = [];
             if ($this->getModel() && $this->getModel()->id) {
-                $selectedTaxes = $this->getModel()->taxes()->pluck('tax_id')->all();
+                $selectedTax = $this->getModel()->tax->id ?? 0;
             } elseif ($defaultTaxRate = get_ecommerce_setting('default_tax_rate')) {
-                $selectedTaxes = [$defaultTaxRate];
+                $selectedTax = $defaultTaxRate;
             }
 
-            $this->add('taxes[]', 'multiCheckList', [
+            $this->add('tax_id', 'customSelect', [
                 'label' => trans('plugins/ecommerce::products.form.taxes'),
                 'label_attr' => ['class' => 'control-label'],
-                'choices' => $taxes,
-                'value' => old('taxes', $selectedTaxes),
+                'choices' => $taxes->toArray(),
+                'value' => old('tax_id', $selectedTax),
             ]);
         }
 
