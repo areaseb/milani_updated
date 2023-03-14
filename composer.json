@@ -30,6 +30,7 @@
         "laravel/framework": "^9.21",
         "laravel/sanctum": "^3.0",
         "laravel/tinker": "^2.7",
+        "league/csv": "^9.0",
         "league/flysystem-aws-s3-v3": "^3.0",
         "predis/predis": "^2.0",
         "wikimedia/composer-merge-plugin": "^2.0"
