@@ -953,6 +953,14 @@ class ProductImport implements
             }
         }
 
+        // Let's fix the sku_set attribute
+        if ($row['sku_set'] ?? false) {
+            // If there is written "tempesta", then the quantity is 99
+            if (Str::contains($row['sku_set'], 'tempesta')) {
+                $row['quantity'] = 99;
+            }
+        }
+
         return $row;
     }
 
