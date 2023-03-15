@@ -25,7 +25,7 @@ class ShippingSeeder extends BaseSeeder
         ShippingRule::create([
             'name'        => 'Free shipping',
             'shipping_id' => 1,
-            'type'        => 'base_on_price',
+            'type'        => 'based_on_price',
             'from'        => 0,
             'to'          => null,
             'price'       => 0,
@@ -34,7 +34,7 @@ class ShippingSeeder extends BaseSeeder
         ShippingRule::create([
             'name'        => 'Local Pickup',
             'shipping_id' => 1,
-            'type'        => 'base_on_price',
+            'type'        => 'based_on_price',
             'from'        => 0,
             'to'          => null,
             'price'       => 20,
@@ -43,7 +43,7 @@ class ShippingSeeder extends BaseSeeder
         ShippingRule::create([
             'name'        => 'Flat Rate',
             'shipping_id' => 1,
-            'type'        => 'base_on_price',
+            'type'        => 'based_on_price',
             'from'        => 0,
             'to'          => null,
             'price'       => 25,
