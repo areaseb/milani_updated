@@ -39,6 +39,7 @@ class Order extends BaseModel
         'is_finished',
         'token',
         'completed_at',
+        'is_exported',
     ];
 
     protected $casts = [

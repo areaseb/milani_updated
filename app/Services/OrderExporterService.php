@@ -12,6 +12,7 @@ class OrderExporterService
     protected const FILENAME_TEMPLATE = '04110830249_[DATE].csv';
 
     protected const DISK = 'tmp';
+    protected const DISK_EXPORT = 'export';
 
     protected $filename;
 
@@ -25,6 +26,9 @@ class OrderExporterService
         $this->generateFilename();
         $this->exportHeader();
         $orders->each(fn ($order) => $this->exportOrder($order));
+
+        // Let's copy the file to the export disk
+        Storage::disk(self::DISK_EXPORT)->put($this->filename, Storage::disk(self::DISK)->get($this->filename));
     }
 
     protected function retrieveOrdersToExport()
@@ -47,7 +51,7 @@ class OrderExporterService
     protected function exportOrder($order)
     {
         $order->products->each(fn ($product) => $this->exportProduct($order, $product));
-        // $order->update(['is_exported' => true]);
+        $order->update(['is_exported' => true]);
     }
 
     protected function exportProduct($order, $orderProduct)

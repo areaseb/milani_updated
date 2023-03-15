@@ -62,6 +62,17 @@ return [
             'throw' => false,
         ],
 
+        'export' => [
+            'driver' => 'ftp',
+            'host' => env('EXPORT_FTP_HOST'),
+            'username' => env('EXPORT_FTP_USERNAME'),
+            'password' => env('EXPORT_FTP_PASSWORD'),
+            'port' => env('EXPORT_FTP_PORT', 21),
+            'root' => env('EXPORT_FTP_ROOT', '/'),
+            'ssl' => env('EXPORT_FTP_SSL', false),
+            'timeout' => env('EXPORT_FTP_TIMEOUT', 30)
+        ]
+
     ],
 
     /*
