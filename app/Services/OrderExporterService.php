@@ -52,15 +52,28 @@ class OrderExporterService
 
     protected function exportProduct($order, $orderProduct)
     {
-        $row = $this->generateProductRow($order, $orderProduct->product, $orderProduct->qty);
-        $this->exportRow($row);
+        $rows = [];
+        $skuSet = $orderProduct->product->sku_set;
+        if (!empty($skuSet) && $skuSet !== 'tempesta') {
+            $skuSetExploded = explode(',', $skuSet);
+            collect($skuSetExploded)->each(function ($set) use (&$rows, $order, $orderProduct) {
+                $setExploded = explode(':', $set);
+                $quantity = ((int) $setExploded[1]) * $orderProduct->qty;
+                $rows[] = $this->generateProductRow($order, $setExploded[0], $quantity);
+            });
+
+        } else {
+            $rows = [$this->generateProductRow($order, $orderProduct->product->codice_cosma, $orderProduct->qty)];
+        }
+
+        collect($rows)->each(fn ($row) => $this->exportRow($row));
     }
 
-    protected function generateProductRow($order, $product, $quantity)
+    protected function generateProductRow($order, $sku, $quantity)
     {
         return [
             $order->code,
-            $product->codice_cosma,
+            $sku,
             $quantity,
             $order->code,
             $order->shippingAddress->address,
