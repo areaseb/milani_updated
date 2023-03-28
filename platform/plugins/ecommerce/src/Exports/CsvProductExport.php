@@ -80,38 +80,21 @@ class CsvProductExport implements FromCollection, WithHeadings
                 $productAttributes = $product->productAttributeSets->pluck('title')->all();
             }
 
-            $result = [
-                'bullet_1'                         => $product->bullet_1,
-                'name'                             => $product->name,
-                'description'                      => $product->description,
-                'slug'                             => $product->slug,
-                'sku'                              => $product->sku,
-                'categories'                       => $product->categories->pluck('name')->implode(','),
-                'status'                           => $product->status->getValue(),
-                'is_featured'                      => $product->is_featured,
-                'brand'                            => $product->brand->name,
-                'product_collections'              => $product->productCollections->pluck('name')->implode(','),
-                'labels'                           => $product->productLabels->pluck('name')->implode(','),
-                'tax'                              => $product->tax->title,
-                'images'                           => implode(',', $product->images),
-                'price'                            => $product->price,
-                'product_attributes'               => implode(',', $productAttributes),
-                'import_type'                      => 'product',
-                'is_variation_default'             => $product->is_variation_default,
-                'stock_status'                     => $product->stock_status->getValue(),
-                'with_storehouse_management'       => $product->with_storehouse_management,
-                'quantity'                         => $product->quantity,
-                'allow_checkout_when_out_of_stock' => $product->allow_checkout_when_out_of_stock,
-                'sale_price'                       => $product->sale_price,
-                'start_date_sale_price'            => $product->start_date,
-                'end_date_sale_price'              => $product->end_date,
-                'weight'                           => $product->weight,
-                'length'                           => $product->length,
-                'wide'                             => $product->wide,
-                'height'                           => $product->height,
-                'content'                          => $product->content,
-                'tags'                             => $product->tags->pluck('name')->implode(','),
-            ];
+            foreach ($this->headings() as $key => $title) {
+                $result[$key] = $product->{$key};
+            }
+
+            $result['product_name'] = $product->name;
+            $result['categories'] = $product->categories->pluck('name')->implode(',');
+            $result['status'] = $product->status->getValue();
+            $result['product_collections'] = $product->productCollections->pluck('name')->implode(',');
+            $result['labels'] = $product->productLabels->pluck('name')->implode(',');
+            $result['tax'] = $product->tax->title;
+            $result['images'] = implode(',', $product->images);
+            $result['product_attributes'] = implode(',', $productAttributes);
+            $result['import_type'] = 'product';
+            $result['stock_status'] = $product->stock_status->getValue();
+            $result['tags'] = $product->tags->pluck('name')->implode(',');
 
             if ($this->enabledDigital) {
                 $result['product_type'] = $product->product_type;
@@ -127,42 +110,27 @@ class CsvProductExport implements FromCollection, WithHeadings
                 foreach ($product->variations as $variation) {
                     $productAttributes = $this->getProductAttributes($variation);
 
-                    $results[] = array_merge(
-                        [
-                            'bullet_1'                         => '',
-                            'name'                             => $variation->product->name,
-                            'description'                      => '',
-                            'slug'                             => '',
-                            'sku'                              => $variation->product->sku,
-                            'categories'                       => '',
-                            'status'                           => $variation->product->status->getValue(),
-                            'is_featured'                      => '',
-                            'brand'                            => '',
-                            'product_collections'              => '',
-                            'labels'                           => '',
-                            'tax'                              => '',
-                            'images'                           => implode(',', $variation->product->images),
-                            'price'                            => $variation->product->price,
-                            'product_attributes'               => implode(',', $productAttributes),
-                            'import_type'                      => 'variation',
-                            'is_variation_default'             => $variation->is_default,
-                            'stock_status'                     => $variation->product->stock_status->getValue(),
-                            'with_storehouse_management'       => $variation->product->with_storehouse_management,
-                            'quantity'                         => $variation->product->quantity,
-                            'allow_checkout_when_out_of_stock' => $variation->product->allow_checkout_when_out_of_stock,
-                            'sale_price'                       => $variation->product->sale_price,
-                            'start_date_sale_price'            => $variation->product->start_date,
-                            'end_date_sale_price'              => $variation->product->end_date,
-                            'weight'                           => $variation->product->weight,
-                            'length'                           => $variation->product->length,
-                            'wide'                             => $variation->product->wide,
-                            'height'                           => $variation->product->height,
-                            'content'                          => '',
-                            'tags'                             => '',
-                        ],
-                        $this->enabledDigital ? ['product_type' => ''] : [],
-                        $this->isMarketplaceActive ? ['vendor' => ''] : []
-                    );
+                    $result = [];
+                    foreach ($this->headings() as $key => $title) {
+                        $result[$key] = $variation->product->{$key};
+                    }
+
+                    $result['product_name'] = $variation->product->name;
+                    $result['status'] = $variation->product->status->getValue();
+                    $result['images'] = implode(',', $variation->product->images);
+                    $result['product_attributes'] = implode(',', $productAttributes);
+                    $result['import_type'] = 'variation';
+                    $result['stock_status'] = $variation->product->stock_status->getValue();
+
+                    if ($this->enabledDigital) {
+                        $result['product_type'] = '';
+                    }
+
+                    if ($this->isMarketplaceActive) {
+                        $result['vendor'] = '';
+                    }
+
+                    $results[] = $result;
                 }
             }
         }
@@ -200,36 +168,72 @@ class CsvProductExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         $headings = [
-            'bullet_1'                         => 'Bullet 1',
-            'name'                             => 'Product name',
-            'description'                      => 'Description',
-            'slug'                             => 'Slug',
-            'sku'                              => 'SKU',
-            'categories'                       => 'Categories',
-            'status'                           => 'Status',
-            'is_featured'                      => 'Is featured?',
-            'brand'                            => 'Brand',
-            'product_collections'              => 'Product collections',
-            'labels'                           => 'Labels',
-            'tax'                              => 'Tax',
-            'images'                           => 'Images',
-            'price'                            => 'Price',
-            'product_attributes'               => 'Product attributes',
-            'import_type'                      => 'Import type',
-            'is_variation_default'             => 'Is variation default?',
-            'stock_status'                     => 'Stock status',
-            'with_storehouse_management'       => 'With storehouse management',
-            'quantity'                         => 'Quantity',
+            'sku' => 'SKU',
+            'codice_cosma' => 'Codice Cosma',
+            'product_name' => 'Product name',
+            'description' => 'Description',
+            'slug' => 'Slug',
+            'auto_generate_sku' => 'Auto Generate SKU',
+            'categories' => 'Categories',
+            'ord' => 'Ord',
+            'status' => 'Status',
+            'is_featured' => 'Is featured?',
+            'brand' => 'Brand',
+            'product_collections' => 'Product collections',
+            'labels' => 'Labels',
+            'tax' => 'Tax',
+            'images' => 'Images',
+            'price' => 'Price',
+            'product_attributes' => 'Product attributes',
+            'import_type' => 'Import type',
+            'is_variation_default' => 'Is variation default?',
+            'stock_status' => 'Stock status',
+            'with_storehouse_management' => 'With storehouse management',
+            'quantity' => 'Quantity',
             'allow_checkout_when_out_of_stock' => 'Allow checkout when out of stock',
-            'sale_price'                       => 'Sale price',
-            'start_date_sale_price'            => 'Start date sale price',
-            'end_date_sale_price'              => 'End date sale price',
-            'weight'                           => 'Weight',
-            'length'                           => 'Length',
-            'wide'                             => 'Wide',
-            'height'                           => 'Height',
-            'content'                          => 'Content',
-            'tags'                             => 'Tags',
+            'sale_price' => 'Sale price',
+            'start_date_sale_price' => 'Start date sale price',
+            'end_date_sale_price' => 'End date sale price',
+            'weight' => 'Weight',
+            'length' => 'Length',
+            'wide' => 'Wide',
+            'height' => 'Height',
+            'content' => 'Content',
+            'tags' => 'Tags',
+            'ean' => 'EAN',
+            'nome_amazon' => 'Nome Amazon',
+            'seo_amazon' => 'Seo Amazon',
+            'bullet_1' => 'Bullet 1',
+            'bullet_2' => 'Bullet 2',
+            'bullet_3' => 'Bullet 3',
+            'bullet_4' => 'Bullet 4',
+            'bullet_5' => 'Bullet 5',
+            'prodotti_correlati' => 'PRODOTTI CORRELATI',
+            'made_in' => 'Made in',
+            'larghezza_scatola_collo_1' => 'Larghezza Scatola collo 1',
+            'larghezza_scatola_collo_2' => 'Larghezza Scatola collo 2',
+            'larghezza_scatola_collo_3' => 'Larghezza Scatola collo 3',
+            'larghezza_scatola_collo_4' => 'Larghezza Scatola collo 4',
+            'larghezza_scatola_collo_5' => 'Larghezza Scatola collo 5',
+            'profondita_scatola_collo_1' => 'Profondità Scatola collo 1',
+            'profondita_scatola_collo_2' => 'Profondità Scatola collo 2',
+            'profondita_scatola_collo_3' => 'Profondità Scatola collo 3',
+            'profondita_scatola_collo_4' => 'Profondità Scatola collo 4',
+            'profondita_scatola_collo_5' => 'Profondità Scatola collo 5',
+            'altezza_scatola_collo_1' => 'Altezza Scatola collo 1',
+            'altezza_scatola_collo_2' => 'Altezza Scatola collo 2',
+            'altezza_scatola_collo_3' => 'Altezza Scatola collo 3',
+            'altezza_scatola_collo_4' => 'Altezza Scatola collo 4',
+            'altezza_scatola_collo_5' => 'Altezza Scatola collo 5',
+            'cubatura' => 'Cubatura',
+            'peso_con_imballo_collo_1' => 'Peso Con Imballo collo 1',
+            'peso_con_imballo_collo_2' => 'Peso Con Imballo collo 2',
+            'peso_con_imballo_collo_3' => 'Peso Con Imballo collo 3',
+            'peso_con_imballo_collo_4' => 'Peso Con Imballo collo 4',
+            'peso_con_imballo_collo_5' => 'Peso Con Imballo collo 5',
+            'assemblato' => 'Assemblato',
+            'kit_e_istruzioni_incluse_si_intendono_anche_pile' => 'Kit E Istruzioni Incluse (Si Intendono Anche Pile)',
+            'sku_set' => 'sku_set',
         ];
 
         if ($this->enabledDigital) {
