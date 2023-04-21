@@ -10,3 +10,8 @@
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+use App\Http\Controllers\Api\BeezupController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('beezup/catalog', [BeezupController::class, 'catalog'])->name('api.beezup.catalog');
