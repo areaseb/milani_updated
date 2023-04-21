@@ -85,7 +85,17 @@ class CsvProductExport implements FromCollection, WithHeadings
             }
 
             $result['product_name'] = $product->name;
-            $result['categories'] = $product->categories->pluck('name')->implode(',');
+
+            for ($i = 0; $i < count($product->categories) && $i < 9; $i++) {
+                $result['category_' . $i] = $product->categories[$i]->name;
+            }
+
+            if (count($product->categories) < 9) {
+                for ($i = count($product->categories); $i < 9; $i++) {
+                    $result['category_' . $i] = '';
+                }
+            }
+
             $result['status'] = $product->status->getValue();
             $result['product_collections'] = $product->productCollections->pluck('name')->implode(',');
             $result['labels'] = $product->productLabels->pluck('name')->implode(',');
@@ -194,7 +204,15 @@ class CsvProductExport implements FromCollection, WithHeadings
             'description' => 'Description',
             'slug' => 'Slug',
             'auto_generate_sku' => 'Auto Generate SKU',
-            'categories' => 'Categories',
+            'category_0' => 'Category 0',
+            'category_1' => 'Category 1',
+            'category_2' => 'Category 2',
+            'category_3' => 'Category 3',
+            'category_4' => 'Category 4',
+            'category_5' => 'Category 5',
+            'category_6' => 'Category 6',
+            'category_7' => 'Category 7',
+            'category_8' => 'Category 8',
             'ord' => 'Ord',
             'status' => 'Status',
             'is_featured' => 'Is featured?',
