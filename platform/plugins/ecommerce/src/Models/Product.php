@@ -91,7 +91,8 @@ class Product extends BaseModel
         'assemblato',
         'kit_e_istruzioni_incluse',
         'sku_set',
-        'sku_parent'
+        'sku_parent',
+        'carrier',
     ];
 
     /**
