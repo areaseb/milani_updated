@@ -90,7 +90,17 @@ class CsvProductExport implements FromCollection, WithHeadings
             $result['product_collections'] = $product->productCollections->pluck('name')->implode(',');
             $result['labels'] = $product->productLabels->pluck('name')->implode(',');
             $result['tax'] = $product->tax->title;
-            $result['images'] = implode(',', $product->images);
+
+            for ($i = 0; $i < count($product->images) && $i < 10; $i++) {
+                $result['image_' . $i] = url('storage/' . $product->images[$i]);
+            }
+
+            if (count($product->images) < 10) {
+                for ($i = count($product->images); $i < 10; $i++) {
+                    $result['image_' . $i] = '';
+                }
+            }
+
             $result['product_attributes'] = implode(',', $productAttributes);
             $result['import_type'] = 'product';
             $result['stock_status'] = $product->stock_status->getValue();
@@ -117,7 +127,17 @@ class CsvProductExport implements FromCollection, WithHeadings
 
                     $result['product_name'] = $variation->product->name;
                     $result['status'] = $variation->product->status->getValue();
-                    $result['images'] = implode(',', $variation->product->images);
+
+                    for ($i = 0; $i < count($variation->product->images) && $i < 10; $i++) {
+                        $result['image_' . $i] = url('storage/' . $variation->product->images[$i]);
+                    }
+
+                    if (count($variation->product->images) < 10) {
+                        for ($i = count($variation->product->images); $i < 10; $i++) {
+                            $result['image_' . $i] = '';
+                        }
+                    }
+
                     $result['product_attributes'] = implode(',', $productAttributes);
                     $result['import_type'] = 'variation';
                     $result['stock_status'] = $variation->product->stock_status->getValue();
@@ -182,7 +202,16 @@ class CsvProductExport implements FromCollection, WithHeadings
             'product_collections' => 'Product collections',
             'labels' => 'Labels',
             'tax' => 'Tax',
-            'images' => 'Images',
+            'image_0' => 'Image 0',
+            'image_1' => 'Image 1',
+            'image_2' => 'Image 2',
+            'image_3' => 'Image 3',
+            'image_4' => 'Image 4',
+            'image_5' => 'Image 5',
+            'image_6' => 'Image 6',
+            'image_7' => 'Image 7',
+            'image_8' => 'Image 8',
+            'image_9' => 'Image 9',
             'price' => 'Price',
             'product_attributes' => 'Product attributes',
             'import_type' => 'Import type',
