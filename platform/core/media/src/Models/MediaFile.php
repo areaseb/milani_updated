@@ -27,6 +27,7 @@ class MediaFile extends BaseModel
         'options',
         'folder_id',
         'user_id',
+        'note',
     ];
 
     protected $casts = [

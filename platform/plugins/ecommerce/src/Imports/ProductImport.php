@@ -2,6 +2,7 @@
 
 namespace Botble\Ecommerce\Imports;
 
+use App\Services\ProductImageRetrievalService;
 use BaseHelper;
 use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Base\Events\CreatedContentEvent;
@@ -22,6 +23,7 @@ use Botble\Ecommerce\Repositories\Interfaces\TaxInterface;
 use Botble\Ecommerce\Services\Products\StoreProductService;
 use Botble\Ecommerce\Services\Products\UpdateDefaultProductService;
 use Botble\Ecommerce\Services\StoreProductTagService;
+use Botble\Media\Facades\RvMediaFacade;
 use Botble\Media\Models\MediaFile;
 use Carbon\Carbon;
 use Exception;
@@ -46,7 +48,6 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Validators\Failure;
 use Mimey\MimeTypes;
-use RvMedia;
 use SlugHelper;
 
 class ProductImport implements
@@ -184,6 +185,11 @@ class ProductImport implements
     protected ProductAttributeSetInterface $productAttributeSetRepository;
 
     /**
+     * @var ProductImageRetrievalService
+     */
+    protected ProductImageRetrievalService $productImageRetrievalService;
+
+    /**
      * @param ProductInterface $productRepository
      * @param ProductCategoryInterface $productCategoryRepository
      * @param ProductTagInterface $productTagRepository
@@ -235,6 +241,8 @@ class ProductImport implements
         if (is_plugin_active('marketplace')) {
             $this->stores = collect();
         }
+
+        $this->productImageRetrievalService = app(ProductImageRetrievalService::class);
     }
 
     /**
@@ -322,18 +330,6 @@ class ProductImport implements
     public function storeProduct(): ?Product
     {
         $product = $this->productRepository->getModel();
-        $el_img = MediaFile::where('name', 'like', $this->request->input('sku') . '%')->pluck('name')->toArray();
-        $images = [];
-        if(in_array($this->request->input('sku'), $el_img)){
-            $images[] = 'products/' . $this->request->input('sku') . '.jpg';
-        }
-        for($i = 0; $i <= 10; $i++){
-            if(in_array($this->request->input('sku') . '_' . $i, $el_img)) {
-                $images[] = 'products/' . $this->request->input('sku') . '_' . $i.'.jpg';
-            }
-        }
-
-        $this->request->merge(['images' => $this->getImageURLs($images)]);
 
         if ($description = $this->request->input('description')) {
             $this->request->merge(['description' => BaseHelper::clean($description)]);
@@ -374,45 +370,50 @@ class ProductImport implements
         return $product;
     }
 
-    /**
-     * @param array $images
-     * @return array
-     */
-    protected function getImageURLs(array $images): array
+    protected function prepareProductImages($images, $sku)
     {
-        $images = array_values(array_filter($images));
+        // Retrive old product images
+        $oldProductImages = MediaFile::whereIn('note', $images)->get();
+        $oldProdictImagesUrl = $oldProductImages->map(fn ($image) => $image->note);
 
-        foreach ($images as $key => $image) {
-            $images[$key] = str_replace(RvMedia::getUploadURL() . '/', '', trim($image));
+        // Let's download new images
+        $downloadedImagesUrls = $images
+            ->filter(fn ($url) => !$oldProdictImagesUrl->contains($url))
+            ->map(fn ($url) => $this->downloadImageFromURL($url, $sku))
+            ->filter();
 
-            if (Str::contains($images[$key], 'http://') || Str::contains($images[$key], 'https://')) {
-                $images[$key] = $this->uploadImageFromURL($images[$key]);
-            }
-        }
+        // Let's filter out images that need to be deleted
+        $oldImagesToKeepUrls = $oldProductImages->filter(function ($image) use ($images) {
+                $keep = $images->contains($image->note);
+                if (!$keep) {
+                    $image->delete();
+                }
 
-        return $images;
+                return $keep;
+            })
+            ->map(fn ($image) => $image->url);
+
+        return collect($oldImagesToKeepUrls->toArray())->merge($downloadedImagesUrls)->toArray();
     }
 
     /**
      * @param string|null $url
      * @return string|null
      */
-    protected function uploadImageFromURL(?string $url): ?string
+    protected function downloadImageFromURL(?string $url, string $name): ?string
     {
         if (empty($url)) {
-            return $url;
+            return null;
         }
-
-        $info = pathinfo($url);
 
         try {
             $contents = file_get_contents($url);
         } catch (Exception $exception) {
-            return $url;
+            return null;
         }
 
         if (empty($contents)) {
-            return $url;
+            return null;
         }
 
         $path = '/tmp';
@@ -421,15 +422,15 @@ class ProductImport implements
             File::makeDirectory($path, 0755);
         }
 
-        $path = $path . '/' . $info['basename'];
+        $path = $path . '/' . basename($url);
 
         file_put_contents($path, $contents);
 
-        $mimeType = (new MimeTypes())->getMimeType(File::extension($url));
+        $mimeType = (new MimeTypes())->getMimeType(File::extension($path));
 
-        $fileUpload = new UploadedFile($path, $info['basename'], $mimeType, null, true);
+        $fileUpload = new UploadedFile($path, $name . '.' . File::extension($path), $mimeType, null, true);
 
-        $result = RvMedia::handleUpload($fileUpload, 0, 'products');
+        $result = RvMediaFacade::handleUpload($fileUpload, 0, 'products', false, $url);
 
         File::delete($path);
 
@@ -557,7 +558,7 @@ class ProductImport implements
             $productRelatedToVariation->end_date = Carbon::parse(Arr::get($version, 'end_date', $product->end_date))->toDateTimeString();
         }
 
-        $productRelatedToVariation->images = json_encode($this->getImageURLs((array)Arr::get($version, 'images', []) ?: []));
+        $productRelatedToVariation->images = json_encode(Arr::get($version, 'images', []) ?: []);
 
         $productRelatedToVariation->status = Arr::get($version, 'status', $product->status);
 
@@ -594,12 +595,29 @@ class ProductImport implements
         $row = $this->setTaxToRow($row);
         $row = $this->setProductCollectionsToRow($row);
         $row = $this->setProductLabelsToRow($row);
+        $row = $this->setProductImagesToRow($row);
 
         if (is_plugin_active('marketplace')) {
             $row = $this->setStoreToRow($row);
         }
 
         $this->request->merge($row);
+
+        return $row;
+    }
+
+    /**
+     * @param array $row
+     * @return array
+     */
+    protected function setProductImagesToRow(array $row): array
+    {
+        $codiceCosma = $row['codice_cosma'];
+
+        $row['images'] = $this->prepareProductImages(
+            $this->productImageRetrievalService->getImages($codiceCosma),
+            $row['sku']
+        );
 
         return $row;
     }

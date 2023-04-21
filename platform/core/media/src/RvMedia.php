@@ -347,7 +347,7 @@ class RvMedia
             ->header('Content-Type', 'text/html');
     }
 
-    public function handleUpload(?UploadedFile $fileUpload, ?int $folderId = 0, ?string $folderSlug = null, bool $skipValidation = false): array
+    public function handleUpload(?UploadedFile $fileUpload, ?int $folderId = 0, ?string $folderSlug = null, bool $skipValidation = false, string $note): array
     {
         $request = request();
 
@@ -466,6 +466,7 @@ class RvMedia
             $file->folder_id = $folderId;
             $file->user_id = Auth::check() ? Auth::id() : 0;
             $file->options = $request->input('options', []);
+            $file->note = $note;
             $file = $this->fileRepository->createOrUpdate($file);
 
             $this->generateThumbnails($file);
