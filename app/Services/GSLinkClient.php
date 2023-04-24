@@ -37,6 +37,20 @@ class GSLinkClient
         }
     }
 
+    public function forceUpdate(Collection $line)
+    {
+        try {
+            $response = $this->client()->post('/api/sugo/DropShipping/aggiornaOrdine', [
+                'json' => $line->toArray()
+            ]);
+
+            $body = json_decode($response->getBody()->getContents());
+            return (bool) $body->success;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
     protected function client()
     {
         return new Client([

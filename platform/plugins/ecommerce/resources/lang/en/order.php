@@ -80,6 +80,7 @@ return [
     'refund_success' => 'Refund successfully!',
     'order_is_not_existed' => 'Order is not existed!',
     'reorder' => 'Reorder',
+    'force_update' => 'Forza aggiornamento dati',
     'sent_email_incomplete_order_success' => 'Sent email to remind about incomplete order successfully!',
     'applied_coupon_success' => 'Applied coupon ":code" successfully!',
     'new_order_notice' => 'You have <span class="bold">:count</span> New Order(s)',
@@ -269,4 +270,6 @@ return [
         'view' => 'View',
         'description' => ':customer ordered :quantity :product',
     ],
+    'update_success_msg' => 'Aggiornamento completato!',
+    'update_error_msg' => 'Si è verificato un errore durante l\'aggiornamento!',
 ];

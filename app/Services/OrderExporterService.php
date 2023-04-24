@@ -36,6 +36,12 @@ class OrderExporterService
         $this->lines = collect([]);
     }
 
+    public function forceUpdate($order)
+    {
+        $line = $this->exportOrderMin($order);
+        return $this->client->forceUpdate($line);
+    }
+
     protected function getOrdersToExportQuery()
     {
         return Order::whereHas('payment', fn ($query) => $query->where('status', 'completed'))
@@ -46,6 +52,23 @@ class OrderExporterService
     {
         $order->products->each(fn ($product) => $this->exportProduct($order, $product));
         $this->orderIds->push($order->id);
+    }
+
+    protected function exportOrderMin($order)
+    {
+        return collect([
+            'numeroOrdine' => $order->code,
+            'spedizioniere' => 0,
+            'nomeCliente' => $order->shippingAddress->name,
+            'indirizzo' => $order->shippingAddress->address,
+            'cap' => (string) ($order->shippingAddress->zip_code ?? ""),
+            'citta' => $order->shippingAddress->city,
+            'prov' => $order->shippingAddress->state,
+            'nazione' => $order->shippingAddress->country,
+            'telefono' => $order->shippingAddress->phone,
+            'email' => $order->shippingAddress->email,
+            'note' => '',
+        ]);
     }
 
     protected function exportProduct($order, $orderProduct)

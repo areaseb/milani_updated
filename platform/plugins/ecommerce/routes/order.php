@@ -17,6 +17,12 @@ Route::group(['namespace' => 'Botble\Ecommerce\Http\Controllers', 'middleware' =
                 'permission' => 'orders.create',
             ]);
 
+            Route::post('{order}/force-update', [
+                'as' => 'force_update',
+                'uses' => 'OrderController@forceUpdate',
+                'permission' => 'orders.edit',
+            ]);
+
             Route::get('generate-invoice/{id}', [
                 'as' => 'generate-invoice',
                 'uses' => 'OrderController@getGenerateInvoice',

@@ -1,5 +1,17 @@
 @extends(BaseHelper::getAdminMasterLayoutTemplate())
 @section('content')
+    @if (session()->has('update_success_msg'))
+        <script>
+            setTimeout(() => toastr.success('{{ session('update_success_msg')}}'), 500)
+        </script>
+    @endif
+
+    @if (session()->has('update_error_msg'))
+        <script>
+            setTimeout(() => toastr.error('{{ session('update_error_msg')}}'), 500);
+        </script>
+    @endif
+
     <div class="max-width-1200" id="main-order-content">
         <div class="ui-layout">
             <div class="flexbox-layout-sections">
@@ -708,6 +720,13 @@
 
                         <div class="wrapper-content bg-gray-white mb20">
                             <div class="pd-all-20">
+                                @if ($order->isExported())
+                                    <form class="d-inline-block" method="post" action="{{ route('orders.force_update', $order) }}">
+                                        @csrf
+
+                                        <button type="submit" class="btn btn-danger">{{ trans('plugins/ecommerce::order.force_update') }}</button>
+                                    </form>&nbsp;
+                                @endif
                                 <a href="{{ route('orders.reorder', ['order_id' => $order->id]) }}"
                                    class="btn btn-info">{{ trans('plugins/ecommerce::order.reorder') }}</a>&nbsp;
                                 @if ($order->canBeCanceledByAdmin())

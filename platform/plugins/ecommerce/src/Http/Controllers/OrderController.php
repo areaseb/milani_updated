@@ -2,6 +2,7 @@
 
 namespace Botble\Ecommerce\Http\Controllers;
 
+use App\Services\OrderExporterService;
 use Assets;
 use Botble\Base\Events\AdminNotificationEvent;
 use Botble\Base\Events\DeletedContentEvent;
@@ -22,6 +23,7 @@ use Botble\Ecommerce\Http\Requests\CreateShipmentRequest;
 use Botble\Ecommerce\Http\Requests\RefundRequest;
 use Botble\Ecommerce\Http\Requests\UpdateOrderRequest;
 use Botble\Ecommerce\Http\Resources\OrderAddressResource;
+use Botble\Ecommerce\Models\Order;
 use Botble\Ecommerce\Repositories\Interfaces\AddressInterface;
 use Botble\Ecommerce\Repositories\Interfaces\CustomerInterface;
 use Botble\Ecommerce\Repositories\Interfaces\OrderAddressInterface;
@@ -964,5 +966,14 @@ class OrderController extends BaseController
                 ->setError()
                 ->setMessage($exception->getMessage());
         }
+    }
+
+    public function forceUpdate(Order $order, OrderExporterService $exporter)
+    {
+        $success = $exporter->forceUpdate($order);
+
+        return $success
+            ? redirect()->back()->with('update_success_msg', trans('plugins/ecommerce::order.update_success_msg'))
+            : redirect()->back()->with('update_error_msg', trans('plugins/ecommerce::order.update_error_msg'));
     }
 }

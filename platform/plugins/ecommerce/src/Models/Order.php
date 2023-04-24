@@ -145,6 +145,11 @@ class Order extends BaseModel
         return $this->hasOne(Invoice::class, 'reference_id')->withDefault();
     }
 
+    public function isExported(): bool
+    {
+        return $this->is_exported;
+    }
+
     public function canBeCanceled(): bool
     {
         if ($this->shipment && in_array(
