@@ -8,7 +8,7 @@ use Botble\Ecommerce\Models\Product;
 class OrderExporterService
 {
     protected const NUMBER_OF_ORDERS_PER_REQUEST = 50;
-    protected const ORDER_SOURCE = 'WEB';
+    protected const ORDER_SOURCE = 'Milanihome';
 
     protected $client;
 
