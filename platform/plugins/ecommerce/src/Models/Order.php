@@ -23,6 +23,7 @@ class Order extends BaseModel
     protected $table = 'ec_orders';
 
     protected $fillable = [
+        'external_id',
         'status',
         'user_id',
         'amount',

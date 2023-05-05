@@ -40,6 +40,7 @@ class User extends BaseModel implements
     protected $table = 'users';
 
     protected $fillable = [
+        'external_id',
         'username',
         'email',
         'first_name',
