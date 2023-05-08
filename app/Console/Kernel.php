@@ -4,6 +4,7 @@ namespace App\Console;
 
 use App\Console\Commands\BeezupStartAutoImportCommand;
 use App\Console\Commands\ExportOrderCommand;
+use App\Jobs\BeezupImportOrdersJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -18,6 +19,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command(BeezupStartAutoImportCommand::class)->dailyAt('01:00');
+        $schedule->job(app(BeezupImportOrdersJob::class))->everyTenMinutes();
         $schedule->command(ExportOrderCommand::class)->everyTenMinutes();
     }
 

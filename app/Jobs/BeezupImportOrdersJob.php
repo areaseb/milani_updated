@@ -47,10 +47,7 @@ class BeezupImportOrdersJob implements ShouldQueue
     {
         $page = 1;
         do {
-            $from = now()->subDays(4)->startOfDay();
-            $to = now()->subDays(3)->endOfDay();
-
-            $result = $this->client->getOrders($page++, $from, $to);
+            $result = $this->client->getOrders($page++);
             $this->importOrders($result->orders);
         } while ($result->hasMoreResults);
     }
