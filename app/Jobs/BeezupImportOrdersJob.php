@@ -25,6 +25,8 @@ class BeezupImportOrdersJob implements ShouldQueue
 
     protected $client;
 
+    protected $carriers;
+
     /**
      * Create a new job instance.
      *
@@ -33,6 +35,7 @@ class BeezupImportOrdersJob implements ShouldQueue
     public function __construct(BeezupClient $client)
     {
         $this->client = $client;
+        $this->carriers = config('beezup.carriers');
     }
 
     /**
@@ -104,6 +107,7 @@ class BeezupImportOrdersJob implements ShouldQueue
         $order->completed_at = Carbon::parse($data->order_PurchaseUtcDate)->format('Y-m-d H:i:s');
         $order->is_exported = false;
         $order->status = 'processing';
+        $order->shipping = $this->carriers[$data->marketplaceBusinessCode] ?? null;
 
         $order->save();
 
