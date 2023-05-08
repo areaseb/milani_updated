@@ -13,9 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('users', function (Blueprint $table) {
+        Schema::table('ec_customers', function (Blueprint $table) {
             $table->string("external_id")->nullable()->unique()->after("id");
             $table->string("email")->nullable()->change();
+            $table->string("password")->nullable()->change();
         });
     }
 
@@ -29,6 +30,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn("external_id");
             $table->string("email")->nullable(false)->change();
+            $table->string("password")->nullable(false)->change();
         });
     }
 };

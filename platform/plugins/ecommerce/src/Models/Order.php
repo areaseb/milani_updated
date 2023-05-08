@@ -41,6 +41,7 @@ class Order extends BaseModel
         'token',
         'completed_at',
         'is_exported',
+        'carrier',
     ];
 
     protected $casts = [
