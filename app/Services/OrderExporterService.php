@@ -97,9 +97,14 @@ class OrderExporterService
 
     protected function generateProductRow($order, $product, $quantity, $index)
     {
+        $carrier = (int) $order->carrier;
+        if (!$carrier) {
+            $carrier = (int) $product->carrier;
+        }
+
         return [
             'sku' => $product->codice_cosma,
-            'spedizioniere' => (int) ($product->carrier ?? 0),
+            'spedizioniere' => $carrier,
             'barcode' => '',
             'descrizione' => '',
             'quantita' => $quantity,
