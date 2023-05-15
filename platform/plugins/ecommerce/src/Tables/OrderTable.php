@@ -68,6 +68,14 @@ class OrderTable extends TableAbstract
             })
             ->editColumn('created_at', function ($item) {
                 return BaseHelper::formatDate($item->created_at);
+            })
+            ->editColumn('carrier', function ($item) {
+                return match($item->carrier) {
+                    '1' => 'Non definito',
+                    '2' => 'SDA',
+                    '3' => 'BRT',
+                    default => 'Non definito',
+                };
             });
 
         if (EcommerceHelper::isTaxEnabled()) {
@@ -112,6 +120,7 @@ class OrderTable extends TableAbstract
                 'tax_amount',
                 'shipping_amount',
                 'payment_id',
+                'carrier',
             ])
             ->where('is_finished', 1);
 
@@ -146,6 +155,10 @@ class OrderTable extends TableAbstract
         $columns += [
             'shipping_amount' => [
                 'title' => trans('plugins/ecommerce::order.shipping_amount'),
+                'class' => 'text-center',
+            ],
+            'carrier' => [
+                'title' => trans('core/base::tables.carrier'),
                 'class' => 'text-center',
             ],
             'payment_method' => [
@@ -194,6 +207,16 @@ class OrderTable extends TableAbstract
             'created_at' => [
                 'title' => trans('core/base::tables.created_at'),
                 'type' => 'datePicker',
+            ],
+            'carrier' => [
+                'title' => trans('core/base::tables.carrier'),
+                'type' => 'select',
+                'choices' => [
+                    1 => 'Non definito (usa i corrieri dei prodotti)',
+                    2 => 'SDA',
+                    3 => 'BRT',
+                ],
+                'validate' => 'required|in:' . implode(',', [1, 2, 3]),
             ],
         ];
     }
