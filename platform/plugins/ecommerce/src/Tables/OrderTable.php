@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use OrderHelper;
 use Symfony\Component\HttpFoundation\Response;
 use Yajra\DataTables\DataTables;
+use Request;
 
 class OrderTable extends TableAbstract
 {
@@ -187,7 +188,8 @@ class OrderTable extends TableAbstract
 
     public function buttons(): array
     {
-        return $this->addCreateButton(route('orders.create'), 'orders.create');
+        $buttons = $this->addCreateButton(route('orders.create'), 'orders.create');
+        return $this->addImportButton(route('orders.import'), 'orders.create', $buttons);
     }
 
     public function bulkActions(): array
@@ -261,5 +263,27 @@ class OrderTable extends TableAbstract
         }
 
         return parent::saveBulkChangeItem($item, $inputKey, $inputValue);
+    }
+
+    protected function addImportButton(string $url, ?string $permission = null, array $buttons = []): array
+    {
+        $result = [];
+        if (! $permission || Auth::user()->hasPermission($permission)) {
+            $queryString = http_build_query(Request::query());
+
+            if ($queryString) {
+                $url .= '?' . $queryString;
+            }
+
+            $result['import'] = [
+                'link' => $url,
+                'text' => view('core/table::partials.import')->render(),
+            ];
+        }
+
+        return [
+            ...$result,
+            ...$buttons,
+        ];
     }
 }

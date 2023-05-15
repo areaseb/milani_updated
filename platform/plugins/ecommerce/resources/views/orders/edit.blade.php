@@ -1,17 +1,5 @@
 @extends(BaseHelper::getAdminMasterLayoutTemplate())
 @section('content')
-    @if (session()->has('update_success_msg'))
-        <script>
-            setTimeout(() => toastr.success('{{ session('update_success_msg')}}'), 500)
-        </script>
-    @endif
-
-    @if (session()->has('update_error_msg'))
-        <script>
-            setTimeout(() => toastr.error('{{ session('update_error_msg')}}'), 500);
-        </script>
-    @endif
-
     <div class="max-width-1200" id="main-order-content">
         <div class="ui-layout">
             <div class="flexbox-layout-sections">

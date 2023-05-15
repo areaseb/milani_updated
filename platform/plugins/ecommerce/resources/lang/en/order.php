@@ -272,4 +272,6 @@ return [
     ],
     'update_success_msg' => 'Aggiornamento completato!',
     'update_error_msg' => 'Si è verificato un errore durante l\'aggiornamento!',
+    'import_success_msg' => 'Importazione completata!',
+    'import_error_msg' => 'Si è verificato un errore durante l\'importazione!',
 ];

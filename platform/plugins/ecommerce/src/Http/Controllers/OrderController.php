@@ -2,6 +2,7 @@
 
 namespace Botble\Ecommerce\Http\Controllers;
 
+use App\Jobs\BeezupImportOrdersJob;
 use App\Services\OrderExporterService;
 use Assets;
 use Botble\Base\Events\AdminNotificationEvent;
@@ -973,7 +974,22 @@ class OrderController extends BaseController
         $success = $exporter->forceUpdate($order);
 
         return $success
-            ? redirect()->back()->with('update_success_msg', trans('plugins/ecommerce::order.update_success_msg'))
-            : redirect()->back()->with('update_error_msg', trans('plugins/ecommerce::order.update_error_msg'));
+            ? redirect()->back()->with('success_msg', trans('plugins/ecommerce::order.update_success_msg'))
+            : redirect()->back()->with('error_msg', trans('plugins/ecommerce::order.update_error_msg'));
+    }
+
+    public function import()
+    {
+        $success = false;
+        try {
+            dispatch_sync(app(BeezupImportOrdersJob::class));
+            $success = true;
+        } catch (Exception $exception) {
+            //
+        }
+
+        return $success
+            ? redirect()->back()->with('success_msg', trans('plugins/ecommerce::order.import_success_msg'))
+            : redirect()->back()->with('error_msg', trans('plugins/ecommerce::order.import_error_msg'));
     }
 }

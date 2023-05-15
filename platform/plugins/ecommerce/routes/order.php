@@ -100,6 +100,12 @@ Route::group(['namespace' => 'Botble\Ecommerce\Http\Controllers', 'middleware' =
                 'uses' => 'OrderController@postApplyCoupon',
                 'permission' => 'orders.create',
             ]);
+
+            Route::get('import', [
+                'as' => 'import',
+                'uses' => 'OrderController@import',
+                'permission' => 'orders.create',
+            ]);
         });
 
         Route::group(['prefix' => 'incomplete-orders', 'as' => 'orders.'], function () {
