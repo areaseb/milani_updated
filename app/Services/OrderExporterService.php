@@ -98,7 +98,7 @@ class OrderExporterService
     protected function generateProductRow($order, $product, $quantity, $index)
     {
         $carrier = (int) $order->carrier;
-        if (!$carrier) {
+        if (!$carrier || $carrier == 1) {
             $carrier = (int) $product->carrier;
         }
 
