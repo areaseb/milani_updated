@@ -38,8 +38,19 @@ class OrderExporterService
 
     public function forceUpdate($order)
     {
-        $line = $this->exportOrderMin($order);
-        return $this->client->forceUpdate($line);
+        try {
+            $customer = $this->exportCustomer($order);
+            $this->client->updateCustomer($customer);
+
+            $this->lines = collect([]);
+            $this->exportOrder($order);
+            $this->client->export($this->lines, true);
+
+        } catch (\Exception $e) {
+            return false;
+        }
+
+        return true;
     }
 
     protected function getOrdersToExportQuery()
@@ -54,11 +65,10 @@ class OrderExporterService
         $this->orderIds->push($order->id);
     }
 
-    protected function exportOrderMin($order)
+    protected function exportCustomer($order)
     {
         return collect([
             'numeroOrdine' => $order->code,
-            'spedizioniere' => 0,
             'nomeCliente' => $order->shippingAddress->name,
             'indirizzo' => $order->shippingAddress->address,
             'cap' => (string) ($order->shippingAddress->zip_code ?? ""),

@@ -21,13 +21,18 @@ class GSLinkClient
         $this->iv = config('gslink.iv');
     }
 
-    public function export(Collection $lines)
+    public function export(Collection $lines, $forceUpdate = false)
     {
+        $payload = [
+            'righe' => $lines->toArray(),
+        ];
+        if ($forceUpdate) {
+            $payload['ricaricaSeEsiste'] = true;
+        }
+
         try {
             $response = $this->client()->post('/api/sugo/DropShipping/caricaOrdini', [
-                'json' => [
-                    'righe' => $lines->toArray()
-                ]
+                'json' => $payload,
             ]);
 
             $body = json_decode($response->getBody()->getContents());
@@ -37,10 +42,10 @@ class GSLinkClient
         }
     }
 
-    public function forceUpdate(Collection $line)
+    public function updateCustomer(Collection $line)
     {
         try {
-            $response = $this->client()->post('/api/sugo/DropShipping/aggiornaOrdine', [
+            $response = $this->client()->post('/api/sugo/DropShipping/aggiornaCliente', [
                 'json' => $line->toArray()
             ]);
 
