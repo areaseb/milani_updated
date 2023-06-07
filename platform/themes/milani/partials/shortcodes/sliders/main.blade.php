@@ -62,6 +62,23 @@
             </div>
             <div class="slider-arrow hero-slider-1-arrow"></div>
         </section>
+    @elseif ($style == 'style-1')    
+        <div class="hero-slider-1 dot-style-1 dot-style-1-position-1 {{ $class ?? ''}}" data-autoplay="{{ $shortcode->is_autoplay ?: 'yes' }}" data-autoplay-speed="{{ in_array($shortcode->autoplay_speed, theme_get_autoplay_speed_options()) ? $shortcode->autoplay_speed : 3000 }}">
+		    @foreach($sliders as $slider)
+		        <div class="single-hero-slider single-animation-wrap" style="background: url('{{ RvMedia::getImageUrl($slider->image, null, false, RvMedia::getDefaultImage()) }}') no-repeat center center; background-size: cover; height: 620px;">
+		            <div class="container">
+		                <div class="row align-items-center slider-animated-1">
+		                    <div class="col-lg-12 col-md-12">
+		                        <div style="background-color: rgba(255, 255, 255, .5); width: fit-content; margin-top: 10%; margin-left: 10%;" class="p-4">
+		                        	{!! Theme::partial('shortcodes.sliders.content', compact('slider')) !!}
+		                        </div>		                        
+		                    </div>
+		                </div>
+		            </div>
+		        </div>
+		    @endforeach
+		</div>
+		<div class="slider-arrow hero-slider-1-arrow"></div>
     @else
         <section class="home-slider bg-grey-9 position-relative">
             {!! Theme::partial('shortcodes.sliders.grid', compact('sliders', 'shortcode')) !!}
