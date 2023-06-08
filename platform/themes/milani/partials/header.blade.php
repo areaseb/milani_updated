@@ -154,13 +154,13 @@
                             <div class="search-style-2">
                                 <form action="{{ route('public.products') }}" method="get">
                                     <div class="form-group--icon">
-                                        <div class="product-cat-label">{{ __('All Categories') }}</div>
+                                        {{-- <div class="product-cat-label">{{ __('All Categories') }}</div>
                                         <select class="product-category-select" name="categories[]">
                                             <option value="">{{ __('All Categories') }}</option>
                                             @foreach (ProductCategoryHelper::getProductCategoriesWithIndent() as $category)
                                                 <option value="{{ $category->id }}" @if (in_array($category->id, request()->input('categories', []))) selected @endif>{!! $category->indent_text !!} {{ $category->name }}</option>
                                             @endforeach
-                                        </select>
+                                        </select> --}}
                                     </div>
                                     <input type="text" name="q" placeholder="{{ __('Search for items…') }}" autocomplete="off">
                                     <button type="submit"> <i class="far fa-search"></i> </button>
