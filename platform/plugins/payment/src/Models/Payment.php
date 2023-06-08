@@ -28,6 +28,7 @@ class Payment extends BaseModel
         'customer_type',
         'refunded_amount',
         'refund_note',
+        'external_payment_channel',
     ];
 
     protected $casts = [
