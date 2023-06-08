@@ -24,6 +24,7 @@ class Order extends BaseModel
 
     protected $fillable = [
         'external_id',
+        'source',
         'status',
         'user_id',
         'amount',

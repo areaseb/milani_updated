@@ -4,11 +4,11 @@ namespace App\Services;
 
 use Botble\Ecommerce\Models\Order;
 use Botble\Ecommerce\Models\Product;
+use Botble\Payment\Enums\PaymentMethodEnum;
 
 class OrderExporterService
 {
     protected const NUMBER_OF_ORDERS_PER_REQUEST = 50;
-    protected const ORDER_SOURCE = 'Milanihome';
 
     protected $client;
 
@@ -119,7 +119,7 @@ class OrderExporterService
             'descrizione' => '',
             'quantita' => $quantity,
             'prezzo' => $product->price,
-            'pagamento' => '',
+            'pagamento' => $this->getPayment($order),
             'nomeCliente' => $order->shippingAddress->name,
             'indirizzo' => $order->shippingAddress->address,
             'cap' => (string) ($order->shippingAddress->zip_code ?? ""),
@@ -131,8 +131,22 @@ class OrderExporterService
             'numeroOrdine' => $order->code,
             'numeroItem' => (string) $index,
             'note' => '',
-            'provenienza' => self::ORDER_SOURCE,
+            'provenienza' => $this->getSource($order),
         ];
+    }
+
+    protected function getSource($order)
+    {
+        return config("gslink.source.{$order->source}", config('gslink.source_default'));
+    }
+
+    protected function getPayment($order)
+    {
+        $method = $order->payment->payment_channel == PaymentMethodEnum::EXTERNAL
+            ? $order->payment->external_payment_channel
+            : $order->payment->payment_channel;
+
+        return config("gslink.payment.{$method}", config('gslink.payment_default'));
     }
 
     protected function getProductByCodiceCosma($codiceCosma)

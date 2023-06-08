@@ -10,6 +10,8 @@ use Botble\Ecommerce\Models\OrderAddress;
 use Botble\Ecommerce\Models\OrderHistory;
 use Botble\Ecommerce\Models\OrderProduct;
 use Botble\Ecommerce\Models\Product;
+use Botble\Payment\Enums\PaymentMethodEnum;
+use Botble\Payment\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -82,7 +84,7 @@ class BeezupImportOrdersJob implements ShouldQueue
 
         $customer = new Customer();
         $customer->external_id = $data->order_Buyer_Identifier;
-        $customer->name = $data->order_Buyer_LastName;
+        $customer->name = $data->order_Buyer_LastName ?? 'NA';
         $customer->status = 'activated';
         $customer->save();
 
@@ -92,6 +94,7 @@ class BeezupImportOrdersJob implements ShouldQueue
     protected function createOrder($data, $customer)
     {
         $order = new Order();
+        $order->source = $data->marketplaceBusinessCode ?? '_';
         $order->external_id = $data->beezUPOrderId;
         $order->user_id = $customer->id;
         $order->amount = (float) $data->order_TotalPrice;
@@ -104,20 +107,21 @@ class BeezupImportOrdersJob implements ShouldQueue
         $order->completed_at = Carbon::parse($data->order_PurchaseUtcDate)->format('Y-m-d H:i:s');
         $order->is_exported = false;
         $order->status = 'processing';
-        $order->shipping = $this->carriers[$data->marketplaceBusinessCode] ?? null;
+        $order->source = $this->carriers[$data->marketplaceBusinessCode] ?? '_';
 
         $order->save();
 
         $this->createOrderAddress($order, $data);
         $this->createOrderProducts($order, $data);
         $this->createOrderHistory($order);
+        $this->createOrderPayment($order, $data);
     }
 
     protected function createOrderAddress($order, $data)
     {
         $address = new OrderAddress();
-        $address->name = $data->order_Shipping_FirstName . ' ' . $data->order_Shipping_LastName;
-        $address->phone = $data->order_Shipping_Phone;
+        $address->name = ($data->order_Shipping_FirstName ?? '') . ' ' . $data->order_Shipping_LastName ?? '';
+        $address->phone = $data->order_Shipping_Phone ?? '';
         $address->country = $data->order_Shipping_AddressCountryIsoCodeAlpha2;
         $address->city = $data->order_Shipping_AddressCity;
         $address->address = $data->order_Shipping_AddressLine1;
@@ -171,5 +175,18 @@ class BeezupImportOrdersJob implements ShouldQueue
             $history->order_id = $order->id;
             $history->save();
         });
+    }
+
+    protected function createOrderPayment($order, $data)
+    {
+        $payment = new Payment();
+
+        $payment->order_id = $order->id;
+        $payment->payment_channel = PaymentMethodEnum::EXTERNAL; $order->order_PaymentMethod;
+        $payment->external_payment_channel = $data->order_PaymentMethod ?? 'NA';
+        $payment->amount = $data->order_TotalPrice;
+        $payment->status = 'completed';
+
+        $payment->save();
     }
 }
