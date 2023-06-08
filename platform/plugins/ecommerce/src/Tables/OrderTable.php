@@ -2,8 +2,10 @@
 
 namespace Botble\Ecommerce\Tables;
 
+use App\Services\OrderExporterService;
 use BaseHelper;
 use Botble\Ecommerce\Enums\OrderStatusEnum;
+use Botble\Ecommerce\Models\Order;
 use Botble\Ecommerce\Repositories\Interfaces\OrderHistoryInterface;
 use Botble\Ecommerce\Repositories\Interfaces\OrderInterface;
 use Botble\Table\Abstracts\TableAbstract;
@@ -285,5 +287,22 @@ class OrderTable extends TableAbstract
             ...$result,
             ...$buttons,
         ];
+    }
+
+    public function saveBulkChanges(array $ids, string $inputKey, ?string $inputValue): bool
+    {
+        $result = parent::saveBulkChanges($ids, $inputKey, $inputValue);
+
+        if ($inputKey == 'carrier') {
+            $exporter = app(OrderExporterService::class);
+
+            $orders = collect($ids)->map(function ($id) {
+                return Order::find($id);
+            });
+
+            $exporter->forceUpdateBatch($orders, false);
+        }
+
+        return true;
     }
 }

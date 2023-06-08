@@ -5,6 +5,7 @@ namespace App\Services;
 use Botble\Ecommerce\Models\Order;
 use Botble\Ecommerce\Models\Product;
 use Botble\Payment\Enums\PaymentMethodEnum;
+use Illuminate\Support\Collection;
 
 class OrderExporterService
 {
@@ -36,15 +37,34 @@ class OrderExporterService
         $this->lines = collect([]);
     }
 
-    public function forceUpdate($order)
+    public function forceUpdateBatch(Collection $orders, $updateCustomer = true)
+    {
+        // Force update only already exported orders.
+        // The others will be exported normally
+        $this->lines = collect([]);
+
+        $orders
+            ->filter(fn ($order) => $order->is_exported)
+            ->each(fn ($order) => $this->exportOrder($order));
+
+        // Export only if there are lines to export
+        if ($this->lines->count()) {
+            $this->client->export($this->lines, true);
+        }
+    }
+
+    public function forceUpdate($order, $updateCustomer = true)
     {
         try {
-            $customer = $this->exportCustomer($order);
-            $this->client->updateCustomer($customer);
+            if ($updateCustomer) {
+                $customer = $this->exportCustomer($order);
+                $this->client->updateCustomer($customer);
+            }
 
             $this->lines = collect([]);
             $this->exportOrder($order);
             $this->client->export($this->lines, true);
+            $this->orderIds = collect([]);
 
         } catch (\Exception $e) {
             return false;
