@@ -1,7 +1,19 @@
 <ul {!! $options !!}>
     @php $menu_nodes->loadMissing('metadata'); @endphp
     @foreach ($menu_nodes as $key => $row)
-        <li class="{{ $row->css_class }}">
+        <li class="{{ $row->css_class }} text-center">
+        
+            @php	
+	
+					$model = $row->reference_type;
+					$cat = $model::where('id', $row->reference_id)->first();
+					if($cat->parent_id != 0 && $cat->image){
+						print "<img src='/storage/$cat->image' width='80%' class='mb-10'>";
+					}
+								
+				
+			@endphp
+			
             <a href="{{ url($row->url) }}" @if ($row->active) class="active" @endif target="{{ $row->target }}">
                 @if ($iconImage = $row->getMetadata('icon_image', true))
                     <img src="{{ RvMedia::getImageUrl($iconImage) }}" alt="icon image" width="14" height="14" style="vertical-align: middle; margin-top: -2px"/>
