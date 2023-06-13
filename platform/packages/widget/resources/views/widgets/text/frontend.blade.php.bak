@@ -1,4 +1,4 @@
-<div class="col-md-3 col-xs-12 panel panel-default">
+<div class="col-3 panel panel-default">
     <div class="panel-title">
         <h3>{{ $config['name'] }}</h3>
     </div>
