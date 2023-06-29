@@ -596,6 +596,7 @@ class ProductImport implements
         $row = $this->setProductCollectionsToRow($row);
         $row = $this->setProductLabelsToRow($row);
         $row = $this->setProductImagesToRow($row);
+        $row = $this->setProductDescriptions($row);
 
         if (is_plugin_active('marketplace')) {
             $row = $this->setStoreToRow($row);
@@ -833,6 +834,14 @@ class ProductImport implements
 
             $row['product_labels'] = array_filter($productLabelIds);
         }
+
+        return $row;
+    }
+
+    public function setProductDescriptions($row)
+    {
+        $row['content'] = $row['description'];
+        $row['description'] = $row['short_description'];
 
         return $row;
     }
