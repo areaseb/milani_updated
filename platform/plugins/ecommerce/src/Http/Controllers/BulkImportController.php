@@ -2,6 +2,7 @@
 
 namespace Botble\Ecommerce\Http\Controllers;
 
+use App\Jobs\BulkProductImportJob;
 use Assets;
 use BaseHelper;
 use Botble\Base\Http\Controllers\BaseController;
@@ -45,47 +46,60 @@ class BulkImportController extends BaseController
         BaseHelper::maximumExecutionTimeAndMemoryLimit();
 
         $file = $request->file('file');
+        $filePath = $file->store('bulk-import');
 
-        $this->validateProductImport
-            ->setValidatorClass(new ProductRequest())
-            ->import($file);
+        dispatch(new BulkProductImportJob((string) $filePath, (string) $request->input('type')));
 
-        if ($this->validateProductImport->failures()->count()) {
-            $data = [
-                'total_failed' => $this->validateProductImport->failures()->count(),
-                'total_error' => $this->validateProductImport->errors()->count(),
-                'failures' => $this->validateProductImport->failures(),
-            ];
+        // $this->validateProductImport
+        //     ->setValidatorClass(new ProductRequest())
+        //     ->import($file);
 
-            $message = trans('plugins/ecommerce::bulk-import.import_failed_description');
+        // if ($this->validateProductImport->failures()->count()) {
+        //     $data = [
+        //         'total_failed' => $this->validateProductImport->failures()->count(),
+        //         'total_error' => $this->validateProductImport->errors()->count(),
+        //         'failures' => $this->validateProductImport->failures(),
+        //     ];
 
-            return $response
-                ->setError()
-                ->setData($data)
-                ->setMessage($message);
-        }
+        //     $message = trans('plugins/ecommerce::bulk-import.import_failed_description');
 
-        $this->productImport
-            ->setValidatorClass(new ProductRequest())
-            ->setImportType($request->input('type'))
-            ->import($file);
+        //     return $response
+        //         ->setError()
+        //         ->setData($data)
+        //         ->setMessage($message);
+        // }
+
+        // $this->productImport
+        //     ->setValidatorClass(new ProductRequest())
+        //     ->setImportType($request->input('type'))
+        //     ->import($file);
+
+        // $data = [
+        //     'total_success' => $this->productImport->successes()->count(),
+        //     'total_failed' => $this->productImport->failures()->count(),
+        //     'total_error' => $this->productImport->errors()->count(),
+        //     'failures' => $this->productImport->failures(),
+        //     'successes' => $this->productImport->successes(),
+        // ];
+
+        // $message = trans('plugins/ecommerce::bulk-import.imported_successfully');
+
+        // $result = trans('plugins/ecommerce::bulk-import.results', [
+        //     'success' => $data['total_success'],
+        //     'failed' => $data['total_failed'],
+        // ]);
+
+        // return $response->setData($data)->setMessage($message . ' ' . $result);
 
         $data = [
-            'total_success' => $this->productImport->successes()->count(),
-            'total_failed' => $this->productImport->failures()->count(),
-            'total_error' => $this->productImport->errors()->count(),
-            'failures' => $this->productImport->failures(),
-            'successes' => $this->productImport->successes(),
+            'total_success' => 0,
+            'total_failed' => 0,
+            'total_error' => 0,
+            'failures' => 0,
+            'successes' => 0,
         ];
 
-        $message = trans('plugins/ecommerce::bulk-import.imported_successfully');
-
-        $result = trans('plugins/ecommerce::bulk-import.results', [
-            'success' => $data['total_success'],
-            'failed' => $data['total_failed'],
-        ]);
-
-        return $response->setData($data)->setMessage($message . ' ' . $result);
+        return $response->setData($data)->setMessage('Product import started successfully. You will receive an email when the import is completed.');
     }
 
     public function downloadTemplate(Request $request)
