@@ -16,8 +16,12 @@ class ProductImageRetrievalService
     protected $reader = null;
     protected $tmpfile = null;
 
-    public function getImages(string $sku): Collection
+    public function getImages($sku): Collection
     {
+        if (!$sku) {
+            return collect();
+        }
+
         $row = $this->getProductRow($sku);
         $images = $row[self::IMAGES_KEY] ?? '';
 
@@ -25,8 +29,12 @@ class ProductImageRetrievalService
             ->map(fn ($image) => trim($image));
     }
 
-    protected function getProductRow(string $sku): array
+    protected function getProductRow($sku): array
     {
+        if (!$sku) {
+            return [];
+        }
+
         $reader = $this->getReader();
         $records = (new Statement())
             ->where(fn ($row) => $row[self::SKU_KEY] === $sku)
