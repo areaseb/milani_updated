@@ -45,23 +45,23 @@ class BulkProductImportJob implements ShouldQueue
     public function handle()
     {
         $productImport = app(ProductImport::class);
-        $validateProductImport = app(ValidateProductImport::class);
+        // $validateProductImport = app(ValidateProductImport::class);
 
-        $validateProductImport
-            ->setValidatorClass(new ProductRequest())
-            ->import($this->filePath);
+        // $validateProductImport
+        //     ->setValidatorClass(new ProductRequest())
+        //     ->import($this->filePath);
 
-        if ($validateProductImport->failures()->count()) {
-            $data = [
-                'total_failed' => $validateProductImport->failures()->count(),
-                'total_error' => $validateProductImport->errors()->count(),
-                'failures' => $validateProductImport->failures(),
-            ];
+        // if ($validateProductImport->failures()->count()) {
+        //     $data = [
+        //         'total_failed' => $validateProductImport->failures()->count(),
+        //         'total_error' => $validateProductImport->errors()->count(),
+        //         'failures' => $validateProductImport->failures(),
+        //     ];
 
-            $message = trans('plugins/ecommerce::bulk-import.import_failed_description');
+        //     $message = trans('plugins/ecommerce::bulk-import.import_failed_description');
 
-            return $this->sendEmail($data, $message, self::ERROR);
-        }
+        //     return $this->sendEmail($data, $message, self::ERROR);
+        // }
 
         $productImport
             ->setValidatorClass(new ProductRequest())
