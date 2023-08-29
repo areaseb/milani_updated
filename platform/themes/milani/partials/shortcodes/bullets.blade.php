@@ -1,5 +1,15 @@
 @php
-	$bullets = \Botble\Ecommerce\Models\ProductAttributeSet::where('title', 'Bullet')->pluck('id')->toArray();
+	// $bullets = \Botble\Ecommerce\Models\ProductAttributeSet::where('title', 'Bullet')->pluck('id')->toArray();
+	$bullets = array();
+	$url = explode('/',Illuminate\Support\Facades\URL::current());
+	if(isset($url[4])){
+    	$currenturl = $url[4];
+    	$product = \Botble\Slug\Models\Slug::where('key', $currenturl)->first()->reference_id;
+   	}
+	
+	for($i = 1; $i <= 5; $i++){
+		$bullets[] = \Botble\Ecommerce\Models\Product::where('id', $product)->pluck('bullet_'.$i);
+	}
 @endphp
 
 <div class="mt-20">
@@ -8,12 +18,10 @@
         <div class="bt-1 border-color-1"></div>
     </div>
     <div class="custome-checkbox _mCS_1">
-    	<ul class="ps-list--categories">
-            @if(!is_null($attributes))
-                @foreach($attributes as $attribute)
-                    @if(in_array($attribute->attribute_set_id, $bullets))
-                        <li>{{ $attribute->title }}</li>
-                    @endif
+    	<ul style="list-style-type: disc; padding-left: calc(var(--bs-gutter-x)/ 2);" class="ps-list--categories_">
+            @if(!is_null($bullets))
+                @foreach($bullets as $bullet)
+                    <li>{{ $bullet[0] }}</li>
                 @endforeach
             @endif
     	</ul>
