@@ -73,7 +73,7 @@
                         @if($product->front_sale_price_with_taxes > 100)
                         	<div class="mt-20" style="display: flex; align-items:center;">
                         		<img src="/storage/general/klarna.png" align="middle" height="30">
-                        		<small class="ml-10">Paga in <b>3 rate da &euro; {!! format_price($product->front_sale_price_with_taxes / 3) !!}</b> senza interessi.
+                        		<small class="ml-10">Paga in <b>3 rate da {!! format_price($product->front_sale_price_with_taxes / 3) !!}</b> senza interessi.
                         		<a href="https://www.klarna.com/" target="_blank">Maggiori informazioni</a></small>
                         	</div>
                         @endif
