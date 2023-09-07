@@ -1,5 +1,8 @@
-<div class="text-swatches-wrapper attribute-swatches-wrapper attribute-swatches-wrapper form-group product__attribute product__color" data-type="text">
-    <label class="attribute-name">{{ $set->title }}</label>
+@php
+	$tot = $attributes->where('attribute_set_id', $set->id)->count();
+@endphp
+<div class="text-swatches-wrapper attribute-swatches-wrapper attribute-swatches-wrapper form-group product__attribute product__color" data-type="text" style="margin-bottom: 0px; padding-bottom: 0px; @if($tot == 1) display: none_; @endif">
+    <label class="attribute-name"><b>{{ $set->title }}</b></label>
     <div class="attribute-values">
         <ul class="text-swatch attribute-swatch color-swatch">
             @foreach($attributes->where('attribute_set_id', $set->id) as $attribute)
@@ -12,7 +15,12 @@
                                 type="radio"
                                 name="attribute_{{ $set->slug }}_{{ $key }}"
                                 value="{{ $attribute->id }}"
-                                {{ $selected->where('id', $attribute->id)->count() ? 'checked' : '' }}>
+                                @if($tot == 1) 
+                                	checked
+                                @else
+                                	{{ $selected->where('id', $attribute->id)->count() ? 'checked' : '' }}
+                               	@endif
+                            >
                             <span>{{ $attribute->title }}</span>
                         </label>
                     </div>
