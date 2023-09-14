@@ -219,6 +219,10 @@ abstract class RepositoriesAbstract implements RepositoryInterface
      */
     public function createOrUpdate($data, array $condition = [])
     {
+        if ($data instanceof Model) {
+            $data = $data->getAttributes();
+        }
+
         /**
          * @var Model $item
          */
@@ -234,8 +238,6 @@ abstract class RepositoriesAbstract implements RepositoryInterface
             }
 
             $item = $item->fill($data);
-        } elseif ($data instanceof Model) {
-            $item = $data;
         } else {
             return false;
         }
