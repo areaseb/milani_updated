@@ -749,7 +749,13 @@ class ProductImport implements
                         $category = $this->productCategoryRepository->getFirstBy(['name' => $value]);
                     }
 
+                    if (!$category) {
+                        $category = $this->productCategoryRepository->create([
+                            'name' => $value,
+                        ]);
+                    }
                     $categoryId = $category ? $category->id : 0;
+
                     $this->categories->push([
                         'keyword'     => $value,
                         'category_id' => $categoryId,
