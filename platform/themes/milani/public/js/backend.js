@@ -76,7 +76,6 @@ var __webpack_exports__ = {};
       }
     };
     window.onChangeSwatchesSuccess = function (res) {
-      console.log(res);
       $('.add-to-cart-form .error-message').hide();
       $('.add-to-cart-form .success-message').hide();
       if (res) {
@@ -179,6 +178,7 @@ var __webpack_exports__ = {};
             actualSize: false
           });
           $('#product-sku').parent().find('span:last-child').text(res.data.sku);
+          window.location.hash = res.data.sku;
         }
       }
     };
