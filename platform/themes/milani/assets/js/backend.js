@@ -223,6 +223,12 @@
                         if (nOptions == 1) {
                             $(this).find('li input').prop('checked', true)
                         }
+
+                        if (nOptions > 1) {
+                            $(this).show()
+                        } else {
+                            $(this).hide()
+                        }
                     })
                 }
             }
