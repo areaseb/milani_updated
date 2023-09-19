@@ -168,6 +168,24 @@ class PublicProductController
             return redirect()->to($product->url);
         }
 
+        $sku = $_GET['s'] ?? null;
+        $requestedProductVariation = $this->productRepository->getFirstBy([
+            'sku' => $sku,
+        ]);
+
+        // If the user requested a specific variation
+        if ($requestedProductVariation) {
+            $originalProduct = $product;
+            if ($product->is_variation) {
+                $originalProduct = $product->original_product;
+            }
+
+            // Let's check that the product variation is a product variation of the original product
+            if (!$requestedProductVariation->is_variation || $requestedProductVariation->original_product->id != $originalProduct->id) {
+                abort(404);
+            }
+        }
+
         SeoHelper::setTitle($product->name)->setDescription($product->description);
 
         $meta = new SeoOpenGraph();
@@ -215,6 +233,12 @@ class PublicProductController
         do_action(BASE_ACTION_PUBLIC_RENDER_SINGLE, PRODUCT_MODULE_SCREEN_NAME, $product);
 
         [$productImages, $productVariation, $selectedAttrs] = EcommerceHelper::getProductVariationInfo($product);
+
+        if ($requestedProductVariation) {
+            $productVariation = $requestedProductVariation;
+            $selectedAttrs = $requestedProductVariation->variationProductAttributes;
+            $productImages = $requestedProductVariation->images;
+        }
 
         return Theme::scope(
             'ecommerce.product',

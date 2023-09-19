@@ -178,7 +178,14 @@ var __webpack_exports__ = {};
             actualSize: false
           });
           $('#product-sku').parent().find('span:last-child').text(res.data.sku);
-          window.location.hash = res.data.sku;
+
+          // Replace search
+          var params = new URLSearchParams(window.location.search);
+          params.set('s', res.data.sku);
+          var newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + params.toString();
+          window.history.pushState({
+            path: newUrl
+          }, '', newUrl);
         }
       }
     };
