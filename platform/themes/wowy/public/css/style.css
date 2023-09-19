@@ -5654,7 +5654,6 @@ header.header-area .sticky-bar:not(.stick) .main-categories-wrap > a.cant-close 
   transform: translateY(-35px) !important;
 }
 .follow-us a i {
-  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   transform: translateY(0);
   transition: 0.2s cubic-bezier(0.65, 0.23, 0.31, 0.88);
@@ -9230,7 +9229,7 @@ input.qty-input[type=number] {
   cursor: pointer;
   position: absolute;
   right: 0;
-  color: hsla(0deg, 0%, 100%, 0.7);
+  color: hsla(0, 0%, 100%, 0.7);
   padding: 5px 10px;
   border-radius: 50%;
 }

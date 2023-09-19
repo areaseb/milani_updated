@@ -21,7 +21,7 @@
     "dependencies": {
         "@popperjs/core": "^2.11.6",
         "axios": "^1.2.3",
-        "bootstrap": "^5.2.3",
+        "bootstrap": "5.2.3",
         "bootstrap-vue": "^2.23.1",
         "cropperjs": "^1.5.13",
         "epic-spinners": "^1.1.0",

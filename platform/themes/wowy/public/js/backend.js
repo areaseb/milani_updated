@@ -1,8 +1,8 @@
 /******/ (() => { // webpackBootstrap
 var __webpack_exports__ = {};
-/*!*****************************************************!*\
-  !*** ./platform/themes/milani/assets/js/backend.js ***!
-  \*****************************************************/
+/*!***************************************************!*\
+  !*** ./platform/themes/wowy/assets/js/backend.js ***!
+  \***************************************************/
 (function ($) {
   'use strict';
 
@@ -11,7 +11,6 @@ var __webpack_exports__ = {};
       'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
     }
   });
-  console.log('ciao web');
   var showError = function showError(message) {
     window.showAlert('alert-danger', message);
   };

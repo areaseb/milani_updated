@@ -89,6 +89,7 @@
         }
 
         window.onChangeSwatchesSuccess = function (res) {
+            console.log(res);
             $('.add-to-cart-form .error-message').hide();
             $('.add-to-cart-form .success-message').hide();
 
@@ -207,6 +208,8 @@
                         autoplayControls: false,
                         actualSize: false,
                     });
+
+                    $('#product-sku').parent().find('span:last-child').text(res.data.sku);
                 }
             }
         };

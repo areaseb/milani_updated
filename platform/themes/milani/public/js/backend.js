@@ -11,7 +11,6 @@ var __webpack_exports__ = {};
       'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
     }
   });
-  console.log('ciao web');
   var showError = function showError(message) {
     window.showAlert('alert-danger', message);
   };
@@ -77,6 +76,7 @@ var __webpack_exports__ = {};
       }
     };
     window.onChangeSwatchesSuccess = function (res) {
+      console.log(res);
       $('.add-to-cart-form .error-message').hide();
       $('.add-to-cart-form .success-message').hide();
       if (res) {
@@ -178,6 +178,7 @@ var __webpack_exports__ = {};
             autoplayControls: false,
             actualSize: false
           });
+          $('#product-sku').parent().find('span:last-child').text(res.data.sku);
         }
       }
     };
