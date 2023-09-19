@@ -132,11 +132,6 @@ class ProductImport implements
     /**
      * @var Collection
      */
-    protected Collection $categories;
-
-    /**
-     * @var Collection
-     */
     protected Collection $tags;
 
     /**
@@ -228,7 +223,6 @@ class ProductImport implements
         $this->productAttributeSetRepository = $productAttributeSetRepository;
 
         $this->request = $request;
-        $this->categories = collect();
         $this->brands = collect();
         $this->taxes = collect();
         $this->labels = collect();
@@ -734,34 +728,25 @@ class ProductImport implements
     protected function setCategoriesToRow(array $row): array
     {
         if ($row['categories']) {
+            $parent = null;
             $categories = $row['categories'];
             $categoryIds = [];
             foreach ($categories as $value) {
                 $value = trim($value);
 
-                $category = $this->categories->firstWhere('keyword', $value);
-                if ($category) {
-                    $categoryId = $category['category_id'];
-                } else {
-                    if (is_numeric($value)) {
-                        $category = $this->productCategoryRepository->findById($value);
-                    } else {
-                        $category = $this->productCategoryRepository->getFirstBy(['name' => $value]);
-                    }
+                $category = $this->productCategoryRepository->getFirstBy(array_merge([
+                    'name' => $value,
+                ], $parent ? ['parent_id' => $parent->id] : []));
 
-                    if (!$category) {
-                        $category = $this->productCategoryRepository->create([
-                            'name' => $value,
-                        ]);
-                    }
-                    $categoryId = $category ? $category->id : 0;
-
-                    $this->categories->push([
-                        'keyword'     => $value,
-                        'category_id' => $categoryId,
+                if (!$category) {
+                    $category = $this->productCategoryRepository->create([
+                        'name' => $value,
+                        'parent_id' => $parent ? $parent->id : 0,
                     ]);
                 }
-                $categoryIds[] = $categoryId;
+
+                $categoryIds[] = $category->id;
+                $parent = $category;
             }
 
             $row['categories'] = array_filter($categoryIds);
