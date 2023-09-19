@@ -184,6 +184,8 @@ class PublicProductController
             if (!$requestedProductVariation->is_variation || $requestedProductVariation->original_product->id != $originalProduct->id) {
                 abort(404);
             }
+        } else if ($sku) {
+            abort(404);
         }
 
         SeoHelper::setTitle($product->name)->setDescription($product->description);
