@@ -216,6 +216,14 @@
 
                     let newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + params.toString();
                     window.history.pushState({ path: newUrl }, '', newUrl);
+
+                    $('.product__attribute').each(function () {
+                        // Let's count the options
+                        const nOptions = $(this).find('li').length
+                        if (nOptions == 1) {
+                            $(this).find('li input').prop('checked', true)
+                        }
+                    })
                 }
             }
         };

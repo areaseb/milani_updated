@@ -182,10 +182,8 @@ class PublicProductController
 
             // Let's check that the product variation is a product variation of the original product
             if (!$requestedProductVariation->is_variation || $requestedProductVariation->original_product->id != $originalProduct->id) {
-                abort(404);
+                $requestedProductVariation = null;
             }
-        } else if ($sku) {
-            abort(404);
         }
 
         SeoHelper::setTitle($product->name)->setDescription($product->description);

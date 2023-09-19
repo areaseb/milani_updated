@@ -186,6 +186,13 @@ var __webpack_exports__ = {};
           window.history.pushState({
             path: newUrl
           }, '', newUrl);
+          $('.product__attribute').each(function () {
+            // Let's count the options
+            var nOptions = $(this).find('li').length;
+            if (nOptions == 1) {
+              $(this).find('li input').prop('checked', true);
+            }
+          });
         }
       }
     };
