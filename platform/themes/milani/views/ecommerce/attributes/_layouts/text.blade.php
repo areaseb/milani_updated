@@ -1,7 +1,7 @@
 @php
 	$tot = $attributes->where('attribute_set_id', $set->id)->count();
 @endphp
-<div class="text-swatches-wrapper attribute-swatches-wrapper attribute-swatches-wrapper form-group product__attribute product__color" data-type="text" style="margin-bottom: 0px; padding-bottom: 0px; @if($tot == 1) display: none_; @endif">
+<div class="text-swatches-wrapper attribute-swatches-wrapper attribute-swatches-wrapper form-group product__attribute product__color" data-type="text" style="margin-bottom: 0px; padding-bottom: 0px; @if($tot <= 1) display: none; @endif">
     <label class="attribute-name"><b>{{ $set->title }}</b></label>
     <div class="attribute-values">
         <ul class="text-swatch attribute-swatch color-swatch">
@@ -15,7 +15,7 @@
                                 type="radio"
                                 name="attribute_{{ $set->slug }}_{{ $key }}"
                                 value="{{ $attribute->id }}"
-                                @if($tot == 1) 
+                                @if($tot == 1)
                                 	checked
                                 @else
                                 	{{ $selected->where('id', $attribute->id)->count() ? 'checked' : '' }}

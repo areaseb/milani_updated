@@ -1,18 +1,18 @@
 @php
 	$tot = $attributes->where('attribute_set_id', $set->id)->count();
 @endphp
-<div class="dropdown-swatches-wrapper attribute-swatches-wrapper" data-type="dropdown" @if($tot == 1) style="display: none;" @endif>
+<div class="dropdown-swatches-wrapper attribute-swatches-wrapper" data-type="dropdown" @if($tot <= 1) style="display: none;" @endif>
     <div class="attribute-name"><b>{{ $set->title }}</b></div>
     <div class="attribute-values">
         <div class="dropdown-swatch">
             <label>
                 <select class="form-control product-filter-item" id="{{$set->id}}">
-                    <option value="">{{ __('Select') . ' ' . strtolower($set->title) }}</option>                    
+                    <option value="">{{ __('Select') . ' ' . strtolower($set->title) }}</option>
                     @foreach($attributes->where('attribute_set_id', $set->id) as $attribute)
                         <option
                                 value="{{ $attribute->id }}"
                                 data-id="{{ $attribute->id }}"
-                                @if($tot == 1) 
+                                @if($tot == 1)
                                 	selected
                                 @else
 	                                {{ $selected->where('id', $attribute->id)->count() ? 'selected' : '' }}
