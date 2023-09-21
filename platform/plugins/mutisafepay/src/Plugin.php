@@ -11,12 +11,11 @@ class Plugin extends PluginOperationAbstract
     {
         Setting::query()
             ->whereIn('key', [
-                // 'payment_paypal_name',
-                // 'payment_paypal_description',
-                // 'payment_paypal_client_id',
-                // 'payment_paypal_client_secret',
-                // 'payment_paypal_mode',
-                // 'payment_paypal_status',
+                'payment_multisafepay_name',
+                'payment_multisafepay_description',
+                'payment_multisafepay_api_key',
+                'payment_multisafepay_mode',
+                'payment_multisafepay_status',
             ])
             ->delete();
     }

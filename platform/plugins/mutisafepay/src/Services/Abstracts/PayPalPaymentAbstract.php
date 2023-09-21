@@ -112,9 +112,9 @@ abstract class PayPalPaymentAbstract
      */
     public function environment()
     {
-        $clientId = setting('payment_paypal_client_id', '<<PAYPAL-CLIENT-ID>>');
-        $clientSecret = setting('payment_paypal_client_secret', '<<PAYPAL-CLIENT-SECRET>>');
-        $payPalMode = setting('payment_paypal_mode');
+        $clientId = setting('payment_multisafepay_client_id', '<<PAYPAL-CLIENT-ID>>');
+        $clientSecret = setting('payment_multisafepay_client_secret', '<<PAYPAL-CLIENT-SECRET>>');
+        $payPalMode = setting('payment_multisafepay_mode');
 
         if ($payPalMode) {
             return new ProductionEnvironment($clientId, $clientSecret);

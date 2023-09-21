@@ -1,11 +1,11 @@
-@if (setting('payment_paypal_status') == 1)
+@if (setting('payment_multisafepay_status') == 1)
     <li class="list-group-item">
         <input class="magic-radio js_payment_method" type="radio" name="payment_method" id="payment_paypal"
                @if ($selecting == MULTISAFEPAY_PAYMENT_METHOD_NAME) checked @endif
-               value="paypal" data-bs-toggle="collapse" data-bs-target=".payment_paypal_wrap" data-toggle="collapse" data-target=".payment_paypal_wrap" data-parent=".list_payment_method">
-        <label for="payment_paypal" class="text-start">{{ setting('payment_paypal_name', trans('plugins/payment::payment.payment_via_paypal')) }}</label>
-        <div class="payment_paypal_wrap payment_collapse_wrap collapse @if ($selecting == MULTISAFEPAY_PAYMENT_METHOD_NAME) show @endif" style="padding: 15px 0;">
-            <p>{!! BaseHelper::clean(setting('payment_paypal_description')) !!}</p>
+               value="paypal" data-bs-toggle="collapse" data-bs-target=".payment_multisafepay_wrap" data-toggle="collapse" data-target=".payment_multisafepay_wrap" data-parent=".list_payment_method">
+        <label for="payment_paypal" class="text-start">{{ setting('payment_multisafepay_name', trans('plugins/payment::payment.payment_via_paypal')) }}</label>
+        <div class="payment_multisafepay_wrap payment_collapse_wrap collapse @if ($selecting == MULTISAFEPAY_PAYMENT_METHOD_NAME) show @endif" style="padding: 15px 0;">
+            <p>{!! BaseHelper::clean(setting('payment_multisafepay_description')) !!}</p>
 
             @php $supportedCurrencies = (new \Botble\MultiSafepay\Services\Gateways\PayPalPaymentService)->supportedCurrencyCodes(); @endphp
             @if (function_exists('get_application_currency') && !in_array(get_application_currency()->title, $supportedCurrencies) && !get_application_currency()->replicate()->where('title', 'USD')->exists())

@@ -12,7 +12,7 @@ class MultiSafepayServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if (is_plugin_active('payment')) {
-            $this->setNamespace('plugins/paypal')
+            $this->setNamespace('plugins/multisafepay')
                 ->loadHelpers()
                 ->loadRoutes()
                 ->loadAndPublishViews()

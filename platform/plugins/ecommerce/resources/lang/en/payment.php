@@ -14,6 +14,7 @@ return [
     'enabled' => 'Enabled',
     'disabled' => 'Disabled',
     'client_id' => 'Client ID',
+    'api_key' => 'API Key',
     'client_secret' => 'Client Secret',
     'mode' => 'Mode',
     'sandbox' => 'Sandbox',

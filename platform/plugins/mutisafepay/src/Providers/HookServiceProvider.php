@@ -14,17 +14,17 @@ class HookServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        add_filter(PAYMENT_FILTER_ADDITIONAL_PAYMENT_METHODS, [$this, 'registerPaypalMethod'], 2, 2);
+        add_filter(PAYMENT_FILTER_ADDITIONAL_PAYMENT_METHODS, [$this, 'registerMultisafepayMethod'], 2, 2);
 
         $this->app->booted(function () {
-            add_filter(PAYMENT_FILTER_AFTER_POST_CHECKOUT, [$this, 'checkoutWithPaypal'], 2, 2);
+            add_filter(PAYMENT_FILTER_AFTER_POST_CHECKOUT, [$this, 'checkoutWithMultisafepay'], 2, 2);
         });
 
         add_filter(PAYMENT_METHODS_SETTINGS_PAGE, [$this, 'addPaymentSettings'], 2);
 
         add_filter(BASE_FILTER_ENUM_ARRAY, function ($values, $class) {
             if ($class == PaymentMethodEnum::class) {
-                $values['PAYPAL'] = MULTISAFEPAY_PAYMENT_METHOD_NAME;
+                $values['MULTISAFEPAY'] = MULTISAFEPAY_PAYMENT_METHOD_NAME;
             }
 
             return $values;
@@ -32,7 +32,7 @@ class HookServiceProvider extends ServiceProvider
 
         add_filter(BASE_FILTER_ENUM_LABEL, function ($value, $class) {
             if ($class == PaymentMethodEnum::class && $value == MULTISAFEPAY_PAYMENT_METHOD_NAME) {
-                $value = 'Paypal';
+                $value = 'Multisafepay';
             }
 
             return $value;
@@ -53,7 +53,7 @@ class HookServiceProvider extends ServiceProvider
 
         add_filter(PAYMENT_FILTER_GET_SERVICE_CLASS, function ($data, $value) {
             if ($value == MULTISAFEPAY_PAYMENT_METHOD_NAME) {
-                $data = PaypalPaymentService::class;
+                $data = MultisafepayPaymentService::class;
             }
 
             return $data;
@@ -62,7 +62,7 @@ class HookServiceProvider extends ServiceProvider
         add_filter(PAYMENT_FILTER_PAYMENT_INFO_DETAIL, function ($data, $payment) {
             if ($payment->payment_channel == MULTISAFEPAY_PAYMENT_METHOD_NAME) {
                 $paymentDetail = (new PayPalPaymentService())->getPaymentDetails($payment->charge_id);
-                $data = view('plugins/paypal::detail', ['payment' => $paymentDetail])->render();
+                $data = view('plugins/multisafepay::detail', ['payment' => $paymentDetail])->render();
             }
 
             return $data;
@@ -76,7 +76,7 @@ class HookServiceProvider extends ServiceProvider
      */
     public function addPaymentSettings(?string $settings): string
     {
-        return $settings . view('plugins/paypal::settings')->render();
+        return $settings . view('plugins/multisafepay::settings')->render();
     }
 
     /**
@@ -84,9 +84,9 @@ class HookServiceProvider extends ServiceProvider
      * @param array $data
      * @return string
      */
-    public function registerPaypalMethod(?string $html, array $data): string
+    public function registerMultisafepayMethod(?string $html, array $data): string
     {
-        return $html . view('plugins/paypal::methods', $data)->render();
+        return $html . view('plugins/multisafepay::methods', $data)->render();
     }
 
     /**
@@ -95,7 +95,7 @@ class HookServiceProvider extends ServiceProvider
      * @return array
      * @throws BindingResolutionException
      */
-    public function checkoutWithPaypal(array $data, Request $request): array
+    public function checkoutWithMultisafepay(array $data, Request $request): array
     {
         if ($request->input('payment_method') == MULTISAFEPAY_PAYMENT_METHOD_NAME) {
             $currentCurrency = get_application_currency();
