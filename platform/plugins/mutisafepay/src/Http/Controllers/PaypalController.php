@@ -1,10 +1,10 @@
 <?php
 
-namespace Areaseb\MultiSafepay\Http\Controllers;
+namespace Botble\MultiSafepay\Http\Controllers;
 
 use Botble\Base\Http\Responses\BaseHttpResponse;
-use Areaseb\MultiSafepay\Http\Requests\PayPalPaymentCallbackRequest;
-use Areaseb\MultiSafepay\Services\Gateways\PayPalPaymentService;
+use Botble\MultiSafepay\Http\Requests\PayPalPaymentCallbackRequest;
+use Botble\MultiSafepay\Services\Gateways\PayPalPaymentService;
 use Botble\Payment\Supports\PaymentHelper;
 use Illuminate\Routing\Controller;
 

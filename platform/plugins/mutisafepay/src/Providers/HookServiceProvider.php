@@ -1,9 +1,9 @@
 <?php
 
-namespace Areaseb\MultiSafepay\Providers;
+namespace Botble\MultiSafepay\Providers;
 
 use Botble\Payment\Enums\PaymentMethodEnum;
-use Areaseb\MultiSafepay\Services\Gateways\PayPalPaymentService;
+use Botble\MultiSafepay\Services\Gateways\PayPalPaymentService;
 use Html;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\Request;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Areaseb\MultiSafepay\Http\Requests;
+namespace Botble\MultiSafepay\Http\Requests;
 
 use Botble\Support\Http\Requests\Request;
 

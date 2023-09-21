@@ -1,8 +1,8 @@
 {
     "id": "areaseb/mutisafepay",
     "name": "MultiSafepay Payment Gateway",
-    "namespace": "AreaSeb\\MultiSafepay\\",
-    "provider": "AreaSeb\\MultiSafepay\\Providers\\MultiSafepayServiceProvider",
+    "namespace": "Botble\\MultiSafepay\\",
+    "provider": "Botble\\MultiSafepay\\Providers\\MultiSafepayServiceProvider",
     "author": "Areaseb",
     "url": "https://areaseb.it",
     "version": "1.0",

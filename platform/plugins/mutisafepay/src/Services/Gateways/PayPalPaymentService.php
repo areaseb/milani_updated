@@ -1,10 +1,10 @@
 <?php
 
-namespace Areaseb\MultiSafepay\Services\Gateways;
+namespace Botble\MultiSafepay\Services\Gateways;
 
 use Botble\Payment\Enums\PaymentStatusEnum;
 use Botble\Payment\Supports\PaymentHelper;
-use Areaseb\MultiSafepay\Services\Abstracts\PayPalPaymentAbstract;
+use Botble\MultiSafepay\Services\Abstracts\PayPalPaymentAbstract;
 use Exception;
 use Illuminate\Support\Arr;
 

@@ -7,7 +7,7 @@
         <div class="payment_paypal_wrap payment_collapse_wrap collapse @if ($selecting == MULTISAFEPAY_PAYMENT_METHOD_NAME) show @endif" style="padding: 15px 0;">
             <p>{!! BaseHelper::clean(setting('payment_paypal_description')) !!}</p>
 
-            @php $supportedCurrencies = (new \Areaseb\MultiSafepay\Services\Gateways\PayPalPaymentService)->supportedCurrencyCodes(); @endphp
+            @php $supportedCurrencies = (new \Botble\MultiSafepay\Services\Gateways\PayPalPaymentService)->supportedCurrencyCodes(); @endphp
             @if (function_exists('get_application_currency') && !in_array(get_application_currency()->title, $supportedCurrencies) && !get_application_currency()->replicate()->where('title', 'USD')->exists())
                 <div class="alert alert-warning" style="margin-top: 15px;">
                     {{ __(":name doesn't support :currency. List of currencies supported by :name: :currencies.", ['name' => 'PayPal', 'currency' => get_application_currency()->title, 'currencies' => implode(', ', $supportedCurrencies)]) }}

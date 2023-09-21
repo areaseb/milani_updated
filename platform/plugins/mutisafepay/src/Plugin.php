@@ -1,6 +1,6 @@
 <?php
 
-namespace Areaseb\MultiSafepay;
+namespace Botble\MultiSafepay;
 
 use Botble\PluginManagement\Abstracts\PluginOperationAbstract;
 use Botble\Setting\Models\Setting;

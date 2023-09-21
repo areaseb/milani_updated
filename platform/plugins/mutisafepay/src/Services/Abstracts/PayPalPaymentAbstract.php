@@ -1,6 +1,6 @@
 <?php
 
-namespace Areaseb\MultiSafepay\Services\Abstracts;
+namespace Botble\MultiSafepay\Services\Abstracts;
 
 use Botble\Payment\Services\Traits\PaymentErrorTrait;
 use Exception;

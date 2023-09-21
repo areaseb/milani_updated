@@ -1,6 +1,6 @@
 <?php
 
-namespace Areaseb\MultiSafepay\Providers;
+namespace Botble\MultiSafepay\Providers;
 
 use Botble\Base\Traits\LoadAndPublishDataTrait;
 use Illuminate\Support\ServiceProvider;
