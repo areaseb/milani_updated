@@ -1,0 +1,11 @@
+{
+    "id": "areaseb/mutisafepay",
+    "name": "MultiSafepay Payment Gateway",
+    "namespace": "AreaSeb\\MultiSafepay\\",
+    "provider": "AreaSeb\\MultiSafepay\\Providers\\MultiSafepayServiceProvider",
+    "author": "Areaseb",
+    "url": "https://areaseb.it",
+    "version": "1.0",
+    "description": "MultiSafepay payment gateway integration",
+    "require": ["payment"]
+}

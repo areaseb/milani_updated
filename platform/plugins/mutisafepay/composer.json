@@ -1,0 +1,8 @@
+{
+    "name": "areaseb/multisafepay",
+    "description": "MultiSafepay Payment Gateway",
+    "type": "package",
+    "require": {
+
+    }
+}
