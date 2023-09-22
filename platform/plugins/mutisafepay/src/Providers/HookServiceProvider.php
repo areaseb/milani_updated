@@ -3,7 +3,7 @@
 namespace Botble\MultiSafepay\Providers;
 
 use Botble\Payment\Enums\PaymentMethodEnum;
-use Botble\MultiSafepay\Services\Gateways\PayPalPaymentService;
+use Botble\MultiSafepay\Services\Gateways\MultiSafepayPaymentService;
 use Html;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\Request;
@@ -61,7 +61,7 @@ class HookServiceProvider extends ServiceProvider
 
         add_filter(PAYMENT_FILTER_PAYMENT_INFO_DETAIL, function ($data, $payment) {
             if ($payment->payment_channel == MULTISAFEPAY_PAYMENT_METHOD_NAME) {
-                $paymentDetail = (new PayPalPaymentService())->getPaymentDetails($payment->charge_id);
+                $paymentDetail = (new MultiSafepayPaymentService())->getPaymentDetails($payment->charge_id);
                 $data = view('plugins/multisafepay::detail', ['payment' => $paymentDetail])->render();
             }
 
@@ -102,9 +102,9 @@ class HookServiceProvider extends ServiceProvider
 
             $currencyModel = $currentCurrency->replicate();
 
-            $payPalService = $this->app->make(PayPalPaymentService::class);
+            $multiSafepayService = $this->app->make(MultiSafepayPaymentService::class);
 
-            $supportedCurrencies = $payPalService->supportedCurrencyCodes();
+            $supportedCurrencies = $multiSafepayService->supportedCurrencyCodes();
 
             $currency = strtoupper($currentCurrency->title);
 
@@ -116,7 +116,7 @@ class HookServiceProvider extends ServiceProvider
                 if (! $currencyModel->where('title', 'USD')->exists()) {
                     $data['error'] = true;
                     $data['message'] = __(":name doesn't support :currency. List of currencies supported by :name: :currencies.", [
-                        'name' => 'PayPal',
+                        'name' => 'MultiSafepay',
                         'currency' => $currency,
                         'currencies' => implode(', ', $supportedCurrencies),
                     ]);
@@ -139,16 +139,16 @@ class HookServiceProvider extends ServiceProvider
             }
 
             if (! $request->input('callback_url')) {
-                $paymentData['callback_url'] = route('payments.paypal.status');
+                $paymentData['callback_url'] = route('payments.multisafepay.status');
             }
 
-            $checkoutUrl = $payPalService->execute($paymentData);
+            $checkoutUrl = $multiSafepayService->execute($paymentData);
 
             if ($checkoutUrl) {
                 $data['checkoutUrl'] = $checkoutUrl;
             } else {
                 $data['error'] = true;
-                $data['message'] = $payPalService->getErrorMessage();
+                $data['message'] = $multiSafepayService->getErrorMessage();
             }
 
             return $data;

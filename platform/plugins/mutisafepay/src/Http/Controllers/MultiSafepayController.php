@@ -3,19 +3,19 @@
 namespace Botble\MultiSafepay\Http\Controllers;
 
 use Botble\Base\Http\Responses\BaseHttpResponse;
-use Botble\MultiSafepay\Http\Requests\PayPalPaymentCallbackRequest;
-use Botble\MultiSafepay\Services\Gateways\PayPalPaymentService;
+use Botble\MultiSafepay\Http\Requests\MultiSafepayPaymentCallbackRequest;
+use Botble\MultiSafepay\Services\Gateways\MultiSafepayPaymentService;
 use Botble\Payment\Supports\PaymentHelper;
 use Illuminate\Routing\Controller;
 
-class PaypalController extends Controller
+class MultiSafepayController extends Controller
 {
     public function getCallback(
-        PayPalPaymentCallbackRequest $request,
-        PayPalPaymentService $payPalPaymentService,
+        MultiSafepayPaymentCallbackRequest $request,
+        MultiSafepayPaymentService $multiSafepayPaymentService,
         BaseHttpResponse $response
     ) {
-        $status = $payPalPaymentService->getPaymentStatus($request);
+        $status = $multiSafepayPaymentService->getPaymentStatus($request);
 
         if (! $status) {
             return $response
@@ -25,7 +25,7 @@ class PaypalController extends Controller
                 ->setMessage(__('Payment failed!'));
         }
 
-        $payPalPaymentService->afterMakePayment($request->input());
+        $multiSafepayPaymentService->afterMakePayment($request->input());
 
         return $response
             ->setNextUrl(PaymentHelper::getRedirectURL())

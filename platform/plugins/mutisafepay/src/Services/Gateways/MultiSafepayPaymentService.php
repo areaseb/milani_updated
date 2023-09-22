@@ -4,11 +4,11 @@ namespace Botble\MultiSafepay\Services\Gateways;
 
 use Botble\Payment\Enums\PaymentStatusEnum;
 use Botble\Payment\Supports\PaymentHelper;
-use Botble\MultiSafepay\Services\Abstracts\PayPalPaymentAbstract;
+use Botble\MultiSafepay\Services\Abstracts\MultiSafepayPaymentAbstract;
 use Exception;
 use Illuminate\Support\Arr;
 
-class PayPalPaymentService extends PayPalPaymentAbstract
+class MultiSafepayPaymentService extends MultiSafepayPaymentAbstract
 {
     /**
      * Make a payment

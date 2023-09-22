@@ -14,7 +14,7 @@ use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
 use PayPalCheckoutSdk\Orders\OrdersGetRequest;
 use PayPalCheckoutSdk\Payments\CapturesRefundRequest;
 
-abstract class PayPalPaymentAbstract
+abstract class MultiSafepayPaymentAbstract
 {
     use PaymentErrorTrait;
 
