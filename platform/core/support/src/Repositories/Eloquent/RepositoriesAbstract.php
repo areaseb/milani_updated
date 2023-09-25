@@ -221,6 +221,9 @@ abstract class RepositoriesAbstract implements RepositoryInterface
     {
         if ($data instanceof Model) {
             $data = $data->getAttributes();
+            if ($data['id'] ?? false) {
+                $condition['id'] = $data['id'];
+            }
         }
 
         /**
