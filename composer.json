@@ -33,6 +33,7 @@
         "league/csv": "^9.0",
         "league/flysystem-aws-s3-v3": "^3.0",
         "league/flysystem-ftp": "^3.0",
+        "multisafepay/php-sdk": "^5.11",
         "predis/predis": "^2.0",
         "wikimedia/composer-merge-plugin": "^2.0"
     },
@@ -105,7 +106,8 @@
         "allow-plugins": {
             "composer/package-versions-deprecated": true,
             "pestphp/pest-plugin": true,
-            "wikimedia/composer-merge-plugin": true
+            "wikimedia/composer-merge-plugin": true,
+            "php-http/discovery": true
         }
     },
     "minimum-stability": "dev",

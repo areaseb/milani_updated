@@ -2,17 +2,21 @@
 
 namespace Botble\MultiSafepay\Services\Abstracts;
 
+use Botble\Language\Facades\LanguageFacade;
 use Botble\Payment\Services\Traits\PaymentErrorTrait;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use PayPalCheckoutSdk\Core\PayPalHttpClient;
-use PayPalCheckoutSdk\Core\ProductionEnvironment;
-use PayPalCheckoutSdk\Core\SandboxEnvironment;
-use PayPalCheckoutSdk\Orders\OrdersCaptureRequest;
-use PayPalCheckoutSdk\Orders\OrdersCreateRequest;
-use PayPalCheckoutSdk\Orders\OrdersGetRequest;
-use PayPalCheckoutSdk\Payments\CapturesRefundRequest;
+use MultiSafepay\Api\Transactions\OrderRequest;
+use MultiSafepay\Api\Transactions\OrderRequest\Arguments\CustomerDetails;
+use MultiSafepay\Api\Transactions\OrderRequest\Arguments\PaymentOptions;
+use MultiSafepay\Api\Transactions\OrderRequest\Arguments\PluginDetails;
+use MultiSafepay\Sdk;
+use MultiSafepay\ValueObject\Customer\Address;
+use MultiSafepay\ValueObject\Customer\Country;
+use MultiSafepay\ValueObject\Customer\EmailAddress;
+use MultiSafepay\ValueObject\Customer\PhoneNumber;
+use MultiSafepay\ValueObject\Money;
 
 abstract class MultiSafepayPaymentAbstract
 {
@@ -64,6 +68,11 @@ abstract class MultiSafepayPaymentAbstract
     protected $supportRefundOnline;
 
     /**
+     * Order
+     */
+    protected $order;
+
+    /**
      * PayPalPaymentAbstract constructor.
      */
     public function __construct()
@@ -74,7 +83,7 @@ abstract class MultiSafepayPaymentAbstract
 
         $this->setClient();
 
-        $this->supportRefundOnline = true;
+        $this->supportRefundOnline = false;
     }
 
     /**
@@ -92,7 +101,10 @@ abstract class MultiSafepayPaymentAbstract
      */
     public function setClient(): self
     {
-        $this->client = new PayPalHttpClient($this->environment());
+        $apiKey = setting('payment_multisafepay_api_key', '<<API-KEY>>');
+        $paymentMode = setting('payment_multisafepay_mode');
+
+        $this->client = new Sdk($apiKey, $paymentMode == '1');
 
         return $this;
     }
@@ -103,24 +115,6 @@ abstract class MultiSafepayPaymentAbstract
     public function getClient()
     {
         return $this->client;
-    }
-
-    /**
-     * Setting up and Returns PayPal SDK environment with PayPal Access credentials.
-     * For demo purpose, we are using SandboxEnvironment. In production this will be
-     * ProductionEnvironment.
-     */
-    public function environment()
-    {
-        $clientId = setting('payment_multisafepay_client_id', '<<PAYPAL-CLIENT-ID>>');
-        $clientSecret = setting('payment_multisafepay_client_secret', '<<PAYPAL-CLIENT-SECRET>>');
-        $payPalMode = setting('payment_multisafepay_mode');
-
-        if ($payPalMode) {
-            return new ProductionEnvironment($clientId, $clientSecret);
-        }
-
-        return new SandboxEnvironment($clientId, $clientSecret);
     }
 
     /**
@@ -283,29 +277,21 @@ abstract class MultiSafepayPaymentAbstract
     }
 
     /**
-     * Setting up the JSON request body for creating the Order. The Intent in the
-     * request body should be set as "CAPTURE" for capture intent flow.
+     * Set order
      */
-    protected function buildRequestBody()
+    public function setOrder($order)
     {
-        return [
-            'intent' => 'CAPTURE',
-            'application_context' => [
-                'return_url' => $this->returnUrl,
-                'cancel_url' => $this->cancelUrl ?: $this->returnUrl,
-                'brand_name' => theme_option('site_name'),
-            ],
-            'purchase_units' => [
-                0 => [
-                    'description' => $this->transactionDescription,
-                    'custom_id' => $this->customer,
-                    'amount' => [
-                        'currency_code' => $this->paymentCurrency,
-                        'value' => (string)$this->totalAmount,
-                    ],
-                ],
-            ],
-        ];
+        $this->order = $order;
+
+        return $this;
+    }
+
+    /**
+     * Get order
+     */
+    public function getOrder()
+    {
+        return $this->order;
     }
 
     /**
@@ -319,24 +305,51 @@ abstract class MultiSafepayPaymentAbstract
     {
         $this->transactionDescription = $transactionDescription;
 
-        $orderRequest = new OrdersCreateRequest();
-        $orderRequest->prefer('return=representation');
-        $orderRequest->body = $this->buildRequestBody();
         $checkoutUrl = '';
-        $paymentId = null;
-
+        $paymentId = $this->getOrder()->id . '-' . time();
         try {
-            // Call API with your client and get a response for your call
-            $response = $this->client->execute($orderRequest);
-            if ($response && $response->statusCode == 201) {
-                $paymentId = $response->result->id;
+            $orderAddress = $this->getOrder()->address;
 
-                foreach ($response->result->links as $link) {
-                    if ($link->rel == 'approve') {
-                        $checkoutUrl = $link->href;
-                    }
-                }
-            }
+            $amount = new Money((int) $this->totalAmount * 100, $this->paymentCurrency); // Amount must be in cents!!
+
+            $address = (new Address())
+                ->addStreetName($orderAddress->address)
+                ->addZipCode($orderAddress->zip_code)
+                ->addCity($orderAddress->city)
+                ->addState($orderAddress->state)
+                ->addCountry(new Country($orderAddress->country));
+
+            $customer = (new CustomerDetails())
+                ->addFirstName($orderAddress->name)
+                ->addAddress($address)
+                ->addEmailAddress(new EmailAddress($orderAddress->email))
+                ->addPhoneNumber(new PhoneNumber($orderAddress->phone))
+                ->addLocale(LanguageFacade::getCurrentLocaleCode());
+
+            $pluginDetails = (new PluginDetails())
+                ->addApplicationName('Milani')
+                ->addApplicationVersion('1.0.0')
+                ->addPluginVersion('1.0.0');
+
+            $paymentOptions = (new PaymentOptions())
+                ->addNotificationUrl($this->getReturnUrl())
+                ->addRedirectUrl($this->getReturnUrl())
+                ->addCancelUrl($this->getCancelUrl())
+                ->addCloseWindow(true);
+
+            $orderRequest = (new OrderRequest())
+                ->addType('redirect')
+                ->addOrderId($paymentId)
+                ->addDescriptionText($this->transactionDescription)
+                ->addMoney($amount)
+                ->addCustomer($customer)
+                ->addDelivery($customer)
+                ->addPluginDetails($pluginDetails)
+                ->addPaymentOptions( $paymentOptions);
+
+            $transactionManager = $this->getClient()->getTransactionManager()->create($orderRequest);
+            $checkoutUrl = $transactionManager->getPaymentUrl();
+
         } catch (Exception $exception) {
             $this->setErrorMessageAndLogging($exception, 1);
 
@@ -344,12 +357,12 @@ abstract class MultiSafepayPaymentAbstract
         }
 
         if ($checkoutUrl && $paymentId) {
-            session(['paypal_payment_id' => $paymentId]);
+            session(['multisafepay_payment_id' => $paymentId]);
 
             return $checkoutUrl;
         }
 
-        session()->forget('paypal_payment_id');
+        session()->forget('multisafepay_payment_id');
 
         return null;
     }
@@ -362,19 +375,11 @@ abstract class MultiSafepayPaymentAbstract
      */
     public function getPaymentStatus(Request $request)
     {
-        if (empty($request->input('PayerID')) || empty($request->input('token'))) {
-            return false;
-        }
-        $paymentId = session('paypal_payment_id');
-
         try {
-            $orderRequest = new OrdersCaptureRequest($paymentId);
-            $orderRequest->prefer('return=representation');
+            $transactionManager = $this->getClient()->getTransactionManager();
+            $transaction = $transactionManager->get($request->input('transactionid'));
 
-            $response = $this->client->execute($orderRequest);
-            if ($response && $response->statusCode == 201 && $response->result->status == 'COMPLETED') {
-                return $response->result->status;
-            }
+            return $transaction->getStatus() == 'completed';
         } catch (Exception $exception) {
             $this->setErrorMessageAndLogging($exception, 1);
         }
@@ -390,78 +395,16 @@ abstract class MultiSafepayPaymentAbstract
      */
     public function getPaymentDetails($paymentId)
     {
-        try {
-            $response = $this->client->execute(new OrdersGetRequest($paymentId));
-        } catch (Exception $exception) {
-            $this->setErrorMessageAndLogging($exception, 1);
+        dd('payment details');
+        // try {
+        //     $response = $this->client->execute(new OrdersGetRequest($paymentId));
+        // } catch (Exception $exception) {
+        //     $this->setErrorMessageAndLogging($exception, 1);
 
-            return false;
-        }
+        //     return false;
+        // }
 
-        return $response;
-    }
-
-    /**
-     * Function to create a refund capture request. Payload can be updated to issue partial refund.
-     */
-    public function buildRefundRequestBody($totalAmount)
-    {
-        $totalAmount = round((float) $totalAmount, 2);
-
-        return [
-            'amount' => [
-                'value' => (string) $totalAmount,
-                'currency_code' => $this->paymentCurrency,
-            ],
-        ];
-    }
-
-    /**
-     * This function can be used to preform refund on the capture.
-     */
-    public function refundOrder($paymentId, $totalAmount)
-    {
-        try {
-            $detail = $this->getPaymentDetails($paymentId);
-            $captureId = null;
-            if ($detail) {
-                $purchase = Arr::get($detail->result->purchase_units, 0);
-                $capture = Arr::get($purchase->payments->captures, 0);
-                $captureId = $capture->id;
-            }
-            if ($captureId) {
-                $refundRequest = new CapturesRefundRequest($captureId);
-                $refundRequest->body = $this->buildRefundRequestBody($totalAmount);
-                $refundRequest->prefer('return=representation');
-                $response = $this->client->execute($refundRequest);
-
-                if ($response && $response->statusCode == 201 && $response->result->status == 'COMPLETED') {
-                    return [
-                        'error' => false,
-                        'status' => $response->result->status,
-                        'data' => (array) $response->result,
-                    ];
-                }
-
-                return [
-                    'error' => true,
-                    'status' => $response->statusCode,
-                    'message' => trans('plugins/payment::payment.status_is_not_completed'),
-                ];
-            }
-
-            return [
-                'error' => true,
-                'message' => trans('plugins/payment::payment.cannot_found_capture_id'),
-            ];
-        } catch (Exception $exception) {
-            $this->setErrorMessageAndLogging($exception, 1);
-
-            return [
-                'error' => true,
-                'message' => $exception->getMessage(),
-            ];
-        }
+        // return $response;
     }
 
     /**
@@ -486,23 +429,7 @@ abstract class MultiSafepayPaymentAbstract
      */
     public function isSupportedDecimals()
     {
-        return ! in_array($this->getCurrency(), [
-            'BIF',
-            'CLP',
-            'DJF',
-            'GNF',
-            'JPY',
-            'KMF',
-            'KRW',
-            'MGA',
-            'PYG',
-            'RWF',
-            'VND',
-            'VUV',
-            'XAF',
-            'XOF',
-            'XPF',
-        ]);
+        return true;
     }
 
     /**
@@ -513,30 +440,16 @@ abstract class MultiSafepayPaymentAbstract
     {
         return [
             'AUD',
-            'BRL',
-            'CAD',
-            'CNY',
-            'CZK',
-            'DKK',
             'EUR',
-            'HKD',
-            'HUF',
-            'ILS',
-            'JPY',
-            'MYR',
-            'MXN',
-            'TWD',
-            'NZD',
-            'NOK',
-            'PHP',
             'PLN',
+            'CAD',
             'GBP',
-            'RUB',
-            'SGD',
             'SEK',
             'CHF',
-            'THB',
+            'HKD',
             'USD',
+            'DKK',
+            'NOK',
         ];
     }
 

@@ -10,7 +10,7 @@
             @php $supportedCurrencies = (new \Botble\MultiSafepay\Services\Gateways\MultiSafepayPaymentService)->supportedCurrencyCodes(); @endphp
             @if (function_exists('get_application_currency') && !in_array(get_application_currency()->title, $supportedCurrencies) && !get_application_currency()->replicate()->where('title', 'USD')->exists())
                 <div class="alert alert-warning" style="margin-top: 15px;">
-                    {{ __(":name doesn't support :currency. List of currencies supported by :name: :currencies.", ['name' => 'PayPal', 'currency' => get_application_currency()->title, 'currencies' => implode(', ', $supportedCurrencies)]) }}
+                    {{ __(":name doesn't support :currency. List of currencies supported by :name: :currencies.", ['name' => 'MultiSafepay', 'currency' => get_application_currency()->title, 'currencies' => implode(', ', $supportedCurrencies)]) }}
 
                     @php
                         $currencies = get_all_currencies();

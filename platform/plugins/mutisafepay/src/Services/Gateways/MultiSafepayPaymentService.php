@@ -41,6 +41,7 @@ class MultiSafepayPaymentService extends MultiSafepayPaymentAbstract
             ->setReturnUrl($data['callback_url'] . '?' . http_build_query($queryParams))
             ->setCurrency($currency)
             ->setCustomer(Arr::get($data, 'address.email'))
+            ->setOrder($data['orders']->first())
             ->setItem([
                 'name' => $data['description'],
                 'quantity' => 1,
@@ -61,7 +62,7 @@ class MultiSafepayPaymentService extends MultiSafepayPaymentAbstract
     {
         $status = PaymentStatusEnum::COMPLETED;
 
-        $chargeId = session('paypal_payment_id');
+        $chargeId = session('multisafepay_payment_id');
 
         $orderIds = (array)Arr::get($data, 'order_id', []);
 
@@ -76,7 +77,7 @@ class MultiSafepayPaymentService extends MultiSafepayPaymentAbstract
             'status' => $status,
         ]);
 
-        session()->forget('paypal_payment_id');
+        session()->forget('multisafepay_payment_id');
 
         return $chargeId;
     }

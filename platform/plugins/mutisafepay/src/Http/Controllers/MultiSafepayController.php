@@ -6,18 +6,20 @@ use Botble\Base\Http\Responses\BaseHttpResponse;
 use Botble\MultiSafepay\Http\Requests\MultiSafepayPaymentCallbackRequest;
 use Botble\MultiSafepay\Services\Gateways\MultiSafepayPaymentService;
 use Botble\Payment\Supports\PaymentHelper;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
 class MultiSafepayController extends Controller
 {
     public function getCallback(
-        MultiSafepayPaymentCallbackRequest $request,
+        Request $request,
         MultiSafepayPaymentService $multiSafepayPaymentService,
         BaseHttpResponse $response
     ) {
         $status = $multiSafepayPaymentService->getPaymentStatus($request);
 
         if (! $status) {
+            dd('wrong');
             return $response
                 ->setError()
                 ->setNextUrl(PaymentHelper::getCancelURL())
