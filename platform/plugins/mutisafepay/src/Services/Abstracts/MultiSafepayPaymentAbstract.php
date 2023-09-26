@@ -73,7 +73,7 @@ abstract class MultiSafepayPaymentAbstract
     protected $order;
 
     /**
-     * PayPalPaymentAbstract constructor.
+     * MultiSafepayPaymentAbstract constructor.
      */
     public function __construct()
     {
@@ -95,9 +95,7 @@ abstract class MultiSafepayPaymentAbstract
     }
 
     /**
-     * Returns PayPal HTTP client instance with environment which has access
-     * credentials context. This can be used invoke PayPal API's provided the
-     * credentials have the access to do so.
+     * Returns MultiSafepay SDK
      */
     public function setClient(): self
     {
@@ -109,9 +107,6 @@ abstract class MultiSafepayPaymentAbstract
         return $this;
     }
 
-    /**
-     * @return object|PayPalHttpClient
-     */
     public function getClient()
     {
         return $this->client;
@@ -298,7 +293,7 @@ abstract class MultiSafepayPaymentAbstract
      * Create payment
      *
      * @param string $transactionDescription Description for transaction
-     * @return mixed PayPal checkout URL or false
+     * @return mixed MultiSafepay checkout URL or false
      * @throws Exception
      */
     public function createPayment($transactionDescription)
@@ -390,21 +385,21 @@ abstract class MultiSafepayPaymentAbstract
     /**
      * Get payment details
      *
-     * @param string $paymentId PayPal payment Id
+     * @param string $paymentId MultiSafepay payment Id
      * @return mixed Object payment details
      */
     public function getPaymentDetails($paymentId)
     {
-        dd('payment details');
-        // try {
-        //     $response = $this->client->execute(new OrdersGetRequest($paymentId));
-        // } catch (Exception $exception) {
-        //     $this->setErrorMessageAndLogging($exception, 1);
+        try {
+            $transactionManager = $this->getClient()->getTransactionManager();
+            return $transactionManager->get($paymentId);
+        } catch (Exception $exception) {
+            $this->setErrorMessageAndLogging($exception, 1);
 
-        //     return false;
-        // }
+            return false;
+        }
 
-        // return $response;
+        return false;
     }
 
     /**
@@ -433,7 +428,6 @@ abstract class MultiSafepayPaymentAbstract
     }
 
     /**
-     * List currencies supported https://developer.paypal.com/docs/api/reference/currency-codes/
      * @return string[]
      */
     public function supportedCurrencyCodes(): array
