@@ -1,0 +1,8 @@
+{
+    "name": "areaseb/klarna",
+    "description": "Klarna Payment Gateway",
+    "type": "package",
+    "require": {
+
+    }
+}

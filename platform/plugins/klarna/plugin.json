@@ -1,0 +1,11 @@
+{
+    "id": "areaseb/mutisafepay",
+    "name": "Klarna Payment Gateway",
+    "namespace": "Botble\\Klarna\\",
+    "provider": "Botble\\Klarna\\Providers\\KlarnaServiceProvider",
+    "author": "Areaseb",
+    "url": "https://areaseb.it",
+    "version": "1.0",
+    "description": "Klarna payment gateway integration",
+    "require": ["payment"]
+}
