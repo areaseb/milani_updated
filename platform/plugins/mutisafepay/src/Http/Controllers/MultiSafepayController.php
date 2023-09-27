@@ -19,7 +19,6 @@ class MultiSafepayController extends Controller
         $status = $multiSafepayPaymentService->getPaymentStatus($request);
 
         if (! $status) {
-            dd('wrong');
             return $response
                 ->setError()
                 ->setNextUrl(PaymentHelper::getCancelURL())
