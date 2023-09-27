@@ -5,6 +5,7 @@ namespace Botble\Klarna\Services\Abstracts;
 use Botble\Language\Facades\LanguageFacade;
 use Botble\Payment\Services\Traits\PaymentErrorTrait;
 use Exception;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 
@@ -274,6 +275,17 @@ abstract class KlarnaPaymentAbstract
         return $this->order;
     }
 
+    public function getClient()
+    {
+        return new Client([
+            'base_uri' => $this->getAPIUrl(),
+            'auth' => [
+                $this->getUsername(),
+                $this->getPassword(),
+            ]
+        ]);
+    }
+
     /**
      * Create payment
      *
@@ -287,48 +299,58 @@ abstract class KlarnaPaymentAbstract
 
         $checkoutUrl = '';
         $paymentId = $this->getOrder()->id . '-' . time();
+        $sessionId = '';
         try {
             $orderAddress = $this->getOrder()->address;
+            $price = (int) $this->totalAmount * 100;
 
-            // $amount = new Money((int) $this->totalAmount * 100, $this->paymentCurrency); // Amount must be in cents!!
+            // First let's create a KP session
+            $data = [
+                'purchase_country' => $orderAddress->country,
+                'purchase_currency' => $this->paymentCurrency,
+                'locale' => str_replace('_', '-', LanguageFacade::getCurrentLocaleCode()),
+                'order_amount' => $price,
+                'order_lines' => [
+                    [
+                        'reference' => $paymentId,
+                        'name' => $this->transactionDescription,
+                        'quantity' => 1,
+                        'unit_price' => $price,
+                        'total_amount' => $price,
+                    ]
+                ],
+            ];
 
-            // $address = (new Address())
-            //     ->addStreetName($orderAddress->address)
-            //     ->addZipCode($orderAddress->zip_code)
-            //     ->addCity($orderAddress->city)
-            //     ->addState($orderAddress->state)
-            //     ->addCountry(new Country($orderAddress->country));
+            $response = $this->getClient()->post('payments/v1/sessions', [
+                'json' => $data,
+            ]);
 
-            // $customer = (new CustomerDetails())
-            //     ->addFirstName($orderAddress->name)
-            //     ->addAddress($address)
-            //     ->addEmailAddress(new EmailAddress($orderAddress->email))
-            //     ->addPhoneNumber(new PhoneNumber($orderAddress->phone))
-            //     ->addLocale(LanguageFacade::getCurrentLocaleCode());
+            $body = json_decode($response->getBody() . '', true);
+            $sessionId = $body['session_id'];
 
-            // $pluginDetails = (new PluginDetails())
-            //     ->addApplicationName('Milani')
-            //     ->addApplicationVersion('1.0.0')
-            //     ->addPluginVersion('1.0.0');
+            // Then let's get a redirect URL to the HPP
+            // First let's create a KP session
+            $data = [
+                'payment_session_url' => $this->getAPIUrl() . '/payments/v1/sessions/' . $sessionId,
+                'merchant_urls' => [
+                    'success' => $this->getReturnUrl() . '&sid={{session_id}}&authorization_token={{authorization_token}}',
+                    'cancel' => $this->getCancelUrl() . '&sid={{session_id}}',
+                    'back' => $this->getCancelUrl() . '&sid={{session_id}}',
+                    'failure' => $this->getCancelUrl() . '&sid={{session_id}}',
+                    'error' => $this->getCancelUrl() . '&sid={{session_id}}',
+                ]
+            ];
 
-            // $paymentOptions = (new PaymentOptions())
-            //     ->addNotificationUrl($this->getReturnUrl())
-            //     ->addRedirectUrl($this->getReturnUrl())
-            //     ->addCancelUrl($this->getCancelUrl())
-            //     ->addCloseWindow(true);
+            $response = $this->getClient()->post('/hpp/v1/sessions', [
+                'json' => $data,
+            ]);
 
-            // $orderRequest = (new OrderRequest())
-            //     ->addType('redirect')
-            //     ->addOrderId($paymentId)
-            //     ->addDescriptionText($this->transactionDescription)
-            //     ->addMoney($amount)
-            //     ->addCustomer($customer)
-            //     ->addDelivery($customer)
-            //     ->addPluginDetails($pluginDetails)
-            //     ->addPaymentOptions( $paymentOptions);
+            $body = json_decode($response->getBody() . '', true);
 
-            // $transactionManager = $this->getClient()->getTransactionManager()->create($orderRequest);
-            // $checkoutUrl = $transactionManager->getPaymentUrl();
+            // HPP session ID
+            $sessionId = $body['session_id'];
+
+            $checkoutUrl = $body['redirect_url'];
 
         } catch (Exception $exception) {
             $this->setErrorMessageAndLogging($exception, 1);
@@ -336,8 +358,8 @@ abstract class KlarnaPaymentAbstract
             return false;
         }
 
-        if ($checkoutUrl && $paymentId) {
-            session(['klarna_payment_id' => $paymentId]);
+        if ($checkoutUrl && $sessionId) {
+            session(['klarna_payment_id' => $sessionId]);
 
             return $checkoutUrl;
         }
@@ -355,16 +377,16 @@ abstract class KlarnaPaymentAbstract
      */
     public function getPaymentStatus(Request $request)
     {
-        // try {
-        //     $transactionManager = $this->getClient()->getTransactionManager();
-        //     $transaction = $transactionManager->get($request->input('transactionid'));
+        try {
+            $response = $this->getClient()->get('hpp/v1/sessions/' . $request->input('sid'));
+            $body = json_decode($response->getBody() . '', true);
 
-        //     return $transaction->getStatus() == 'completed';
-        // } catch (Exception $exception) {
-        //     $this->setErrorMessageAndLogging($exception, 1);
-        // }
+            return $body['status'] == 'COMPLETED';
+        } catch (Exception $exception) {
+            $this->setErrorMessageAndLogging($exception, 1);
+        }
 
-        // return false;
+        return false;
     }
 
     /**
@@ -375,16 +397,17 @@ abstract class KlarnaPaymentAbstract
      */
     public function getPaymentDetails($paymentId)
     {
-        // try {
-        //     $transactionManager = $this->getClient()->getTransactionManager();
-        //     return $transactionManager->get($paymentId);
-        // } catch (Exception $exception) {
-        //     $this->setErrorMessageAndLogging($exception, 1);
+        try {
+            $response = $this->getClient()->get('hpp/v1/sessions/' . $paymentId);
+            $body = json_decode($response->getBody() . '', true);
+            return $body;
+        } catch (Exception $exception) {
+            $this->setErrorMessageAndLogging($exception, 1);
 
-        //     return false;
-        // }
+            return false;
+        }
 
-        // return false;
+        return false;
     }
 
     /**

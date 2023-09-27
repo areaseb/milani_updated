@@ -19,7 +19,6 @@ class KlarnaController extends Controller
         $status = $klarnaPaymentService->getPaymentStatus($request);
 
         if (! $status) {
-            dd('wrong');
             return $response
                 ->setError()
                 ->setNextUrl(PaymentHelper::getCancelURL())
