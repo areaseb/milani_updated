@@ -13,7 +13,8 @@ class Plugin extends PluginOperationAbstract
             ->whereIn('key', [
                 'payment_klarna_name',
                 'payment_klarna_description',
-                'payment_klarna_api_key',
+                'payment_klarna_username',
+                'payment_klarna_password',
                 'payment_klarna_mode',
                 'payment_klarna_status',
             ])

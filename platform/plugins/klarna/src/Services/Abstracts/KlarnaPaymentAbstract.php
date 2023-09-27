@@ -7,20 +7,13 @@ use Botble\Payment\Services\Traits\PaymentErrorTrait;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Klarna\Api\Transactions\OrderRequest;
-use Klarna\Api\Transactions\OrderRequest\Arguments\CustomerDetails;
-use Klarna\Api\Transactions\OrderRequest\Arguments\PaymentOptions;
-use Klarna\Api\Transactions\OrderRequest\Arguments\PluginDetails;
-use Klarna\Sdk;
-use Klarna\ValueObject\Customer\Address;
-use Klarna\ValueObject\Customer\Country;
-use Klarna\ValueObject\Customer\EmailAddress;
-use Klarna\ValueObject\Customer\PhoneNumber;
-use Klarna\ValueObject\Money;
 
 abstract class KlarnaPaymentAbstract
 {
     use PaymentErrorTrait;
+
+    public const PRODUCTION_API_URL = 'https://api.klarna.com/';
+    public const PLAYGROUND_API_URL = 'https://api.playground.klarna.com/';
 
     /**
      * @var array
@@ -46,11 +39,6 @@ abstract class KlarnaPaymentAbstract
      * @var string
      */
     protected $cancelUrl;
-
-    /**
-     * @var object
-     */
-    protected $client;
 
     /**
      * @var string
@@ -81,8 +69,6 @@ abstract class KlarnaPaymentAbstract
 
         $this->totalAmount = 0;
 
-        $this->setClient();
-
         $this->supportRefundOnline = false;
     }
 
@@ -94,22 +80,21 @@ abstract class KlarnaPaymentAbstract
         return $this->supportRefundOnline;
     }
 
-    /**
-     * Returns Klarna SDK
-     */
-    public function setClient(): self
+    public function getUsername()
     {
-        $apiKey = setting('payment_klarna_api_key', '<<API-KEY>>');
-        $paymentMode = setting('payment_klarna_mode');
-
-        $this->client = new Sdk($apiKey, $paymentMode == '1');
-
-        return $this;
+        return setting('payment_klarna_username', '<<USERNAME>>');
     }
 
-    public function getClient()
+    public function getPassword()
     {
-        return $this->client;
+        return setting('payment_klarna_password', '<<PASSWORD>>');
+    }
+
+    public function getAPIUrl()
+    {
+        return setting('payment_klarna_mode') == 1
+            ? self::PRODUCTION_API_URL
+            : self::PLAYGROUND_API_URL;
     }
 
     /**
@@ -305,45 +290,45 @@ abstract class KlarnaPaymentAbstract
         try {
             $orderAddress = $this->getOrder()->address;
 
-            $amount = new Money((int) $this->totalAmount * 100, $this->paymentCurrency); // Amount must be in cents!!
+            // $amount = new Money((int) $this->totalAmount * 100, $this->paymentCurrency); // Amount must be in cents!!
 
-            $address = (new Address())
-                ->addStreetName($orderAddress->address)
-                ->addZipCode($orderAddress->zip_code)
-                ->addCity($orderAddress->city)
-                ->addState($orderAddress->state)
-                ->addCountry(new Country($orderAddress->country));
+            // $address = (new Address())
+            //     ->addStreetName($orderAddress->address)
+            //     ->addZipCode($orderAddress->zip_code)
+            //     ->addCity($orderAddress->city)
+            //     ->addState($orderAddress->state)
+            //     ->addCountry(new Country($orderAddress->country));
 
-            $customer = (new CustomerDetails())
-                ->addFirstName($orderAddress->name)
-                ->addAddress($address)
-                ->addEmailAddress(new EmailAddress($orderAddress->email))
-                ->addPhoneNumber(new PhoneNumber($orderAddress->phone))
-                ->addLocale(LanguageFacade::getCurrentLocaleCode());
+            // $customer = (new CustomerDetails())
+            //     ->addFirstName($orderAddress->name)
+            //     ->addAddress($address)
+            //     ->addEmailAddress(new EmailAddress($orderAddress->email))
+            //     ->addPhoneNumber(new PhoneNumber($orderAddress->phone))
+            //     ->addLocale(LanguageFacade::getCurrentLocaleCode());
 
-            $pluginDetails = (new PluginDetails())
-                ->addApplicationName('Milani')
-                ->addApplicationVersion('1.0.0')
-                ->addPluginVersion('1.0.0');
+            // $pluginDetails = (new PluginDetails())
+            //     ->addApplicationName('Milani')
+            //     ->addApplicationVersion('1.0.0')
+            //     ->addPluginVersion('1.0.0');
 
-            $paymentOptions = (new PaymentOptions())
-                ->addNotificationUrl($this->getReturnUrl())
-                ->addRedirectUrl($this->getReturnUrl())
-                ->addCancelUrl($this->getCancelUrl())
-                ->addCloseWindow(true);
+            // $paymentOptions = (new PaymentOptions())
+            //     ->addNotificationUrl($this->getReturnUrl())
+            //     ->addRedirectUrl($this->getReturnUrl())
+            //     ->addCancelUrl($this->getCancelUrl())
+            //     ->addCloseWindow(true);
 
-            $orderRequest = (new OrderRequest())
-                ->addType('redirect')
-                ->addOrderId($paymentId)
-                ->addDescriptionText($this->transactionDescription)
-                ->addMoney($amount)
-                ->addCustomer($customer)
-                ->addDelivery($customer)
-                ->addPluginDetails($pluginDetails)
-                ->addPaymentOptions( $paymentOptions);
+            // $orderRequest = (new OrderRequest())
+            //     ->addType('redirect')
+            //     ->addOrderId($paymentId)
+            //     ->addDescriptionText($this->transactionDescription)
+            //     ->addMoney($amount)
+            //     ->addCustomer($customer)
+            //     ->addDelivery($customer)
+            //     ->addPluginDetails($pluginDetails)
+            //     ->addPaymentOptions( $paymentOptions);
 
-            $transactionManager = $this->getClient()->getTransactionManager()->create($orderRequest);
-            $checkoutUrl = $transactionManager->getPaymentUrl();
+            // $transactionManager = $this->getClient()->getTransactionManager()->create($orderRequest);
+            // $checkoutUrl = $transactionManager->getPaymentUrl();
 
         } catch (Exception $exception) {
             $this->setErrorMessageAndLogging($exception, 1);
@@ -370,16 +355,16 @@ abstract class KlarnaPaymentAbstract
      */
     public function getPaymentStatus(Request $request)
     {
-        try {
-            $transactionManager = $this->getClient()->getTransactionManager();
-            $transaction = $transactionManager->get($request->input('transactionid'));
+        // try {
+        //     $transactionManager = $this->getClient()->getTransactionManager();
+        //     $transaction = $transactionManager->get($request->input('transactionid'));
 
-            return $transaction->getStatus() == 'completed';
-        } catch (Exception $exception) {
-            $this->setErrorMessageAndLogging($exception, 1);
-        }
+        //     return $transaction->getStatus() == 'completed';
+        // } catch (Exception $exception) {
+        //     $this->setErrorMessageAndLogging($exception, 1);
+        // }
 
-        return false;
+        // return false;
     }
 
     /**
@@ -390,16 +375,16 @@ abstract class KlarnaPaymentAbstract
      */
     public function getPaymentDetails($paymentId)
     {
-        try {
-            $transactionManager = $this->getClient()->getTransactionManager();
-            return $transactionManager->get($paymentId);
-        } catch (Exception $exception) {
-            $this->setErrorMessageAndLogging($exception, 1);
+        // try {
+        //     $transactionManager = $this->getClient()->getTransactionManager();
+        //     return $transactionManager->get($paymentId);
+        // } catch (Exception $exception) {
+        //     $this->setErrorMessageAndLogging($exception, 1);
 
-            return false;
-        }
+        //     return false;
+        // }
 
-        return false;
+        // return false;
     }
 
     /**
@@ -434,16 +419,14 @@ abstract class KlarnaPaymentAbstract
     {
         return [
             'AUD',
-            'EUR',
-            'PLN',
             'CAD',
-            'GBP',
-            'SEK',
             'CHF',
-            'HKD',
-            'USD',
             'DKK',
+            'EUR',
+            'GBP',
             'NOK',
+            'SEK',
+            'USD',
         ];
     }
 

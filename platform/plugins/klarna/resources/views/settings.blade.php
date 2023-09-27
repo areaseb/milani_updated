@@ -54,8 +54,12 @@
                             {{ trans('plugins/payment::payment.please_provide_information') }} <a target="_blank" href="//www.klarna.com">Klarna</a>:
                         </p>
                         <div class="form-group mb-3">
-                            <label class="text-title-field" for="klarna_api_key">{{ trans('plugins/payment::payment.api_key') }}</label>
-                            <input type="text" class="next-input" name="payment_klarna_api_key" id="klarna_api_key" value="{{ app()->environment('demo') ? '*******************************' :setting('payment_klarna_api_key') }}">
+                            <label class="text-title-field" for="klarna_username">{{ trans('plugins/payment::payment.username') }}</label>
+                            <input type="text" class="next-input" name="payment_klarna_username" id="klarna_username" value="{{ app()->environment('demo') ? '*******************************' :setting('payment_klarna_username') }}">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="text-title-field" for="klarna_password">{{ trans('plugins/payment::payment.password') }}</label>
+                            <input type="text" class="next-input" name="payment_klarna_password" id="klarna_password" value="{{ app()->environment('demo') ? '*******************************' :setting('payment_klarna_password') }}">
                         </div>
                         {!! Form::hidden('payment_klarna_mode', 1) !!}
                         <div class="form-group mb-3">
