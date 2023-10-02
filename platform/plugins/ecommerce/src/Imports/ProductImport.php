@@ -596,7 +596,78 @@ class ProductImport implements
             $row = $this->setStoreToRow($row);
         }
 
+        $row = $this->fixProductRow($row);
+
         $this->request->merge($row);
+
+        return $row;
+    }
+
+    /**
+     * Fix product row
+     */
+    protected function fixProductRow(array $row): array
+    {
+        $row['sku'] = (string) $row['sku'];
+        $row['codice_cosma'] = (string) $row['codice_cosma'];
+        $row['product_name'] = (string) $row['product_name'];
+        $row['description'] = (string) $row['description'];
+        $row['short_description'] = (string) $row['short_description'];
+        $row['slug'] = (string) $row['slug'];
+        $row['auto_generate_sku'] = (boolean) $row['auto_generate_sku'];
+        $row['ord'] = (int) $row['ord'];
+        $row['status'] = (string) $row['status'];
+        $row['is_featured'] = (boolean) $row['is_featured'];
+        $row['price'] = (float) $row['price'];
+        $row['is_variation_default'] = (boolean) $row['is_variation_default'];
+        $row['stock_status'] = (string) $row['stock_status'];
+        $row['with_storehouse_management'] = (boolean) $row['with_storehouse_management'];
+        $row['quantity'] = (int) $row['quantity'];
+        $row['allow_checkout_when_out_of_stock'] = (boolean) $row['allow_checkout_when_out_of_stock'];
+        $row['sale_price'] = (float) $row['sale_price'];
+        $row['weight'] = (float) $row['weight'];
+        $row['length'] = (float) $row['length'];
+        $row['wide'] = (float) $row['wide'];
+        $row['height'] = (float) $row['height'];
+        $row['content'] = (string) $row['content'];
+        $row['ean'] = (string) $row['ean'];
+        $row['nome_amazon'] = (string) $row['nome_amazon'];
+        $row['seo_amazon'] = (string) $row['seo_amazon'];
+        $row['bullet_1'] = (string) $row['bullet_1'];
+        $row['bullet_2'] = (string) $row['bullet_2'];
+        $row['bullet_3'] = (string) $row['bullet_3'];
+        $row['bullet_4'] = (string) $row['bullet_4'];
+        $row['bullet_5'] = (string) $row['bullet_5'];
+        $row['made_in'] = (string) $row['made_in'];
+        $row['larghezza_scatola_collo_1'] = (float) $row['larghezza_scatola_collo_1'];
+        $row['larghezza_scatola_collo_2'] = (float) $row['larghezza_scatola_collo_2'];
+        $row['larghezza_scatola_collo_3'] = (float) $row['larghezza_scatola_collo_3'];
+        $row['larghezza_scatola_collo_4'] = (float) $row['larghezza_scatola_collo_4'];
+        $row['larghezza_scatola_collo_5'] = (float) $row['larghezza_scatola_collo_5'];
+        $row['profondita_scatola_collo_1'] = (float) $row['profondita_scatola_collo_1'];
+        $row['profondita_scatola_collo_2'] = (float) $row['profondita_scatola_collo_2'];
+        $row['profondita_scatola_collo_3'] = (float) $row['profondita_scatola_collo_3'];
+        $row['profondita_scatola_collo_4'] = (float) $row['profondita_scatola_collo_4'];
+        $row['profondita_scatola_collo_5'] = (float) $row['profondita_scatola_collo_5'];
+        $row['altezza_scatola_collo_1'] = (float) $row['altezza_scatola_collo_1'];
+        $row['altezza_scatola_collo_2'] = (float) $row['altezza_scatola_collo_2'];
+        $row['altezza_scatola_collo_3'] = (float) $row['altezza_scatola_collo_3'];
+        $row['altezza_scatola_collo_4'] = (float) $row['altezza_scatola_collo_4'];
+        $row['altezza_scatola_collo_5'] = (float) $row['altezza_scatola_collo_5'];
+        $row['cubatura'] = (float) $row['cubatura'];
+        $row['peso_con_imballo_collo_1'] = (float) $row['peso_con_imballo_collo_1'];
+        $row['peso_con_imballo_collo_2'] = (float) $row['peso_con_imballo_collo_2'];
+        $row['peso_con_imballo_collo_3'] = (float) $row['peso_con_imballo_collo_3'];
+        $row['peso_con_imballo_collo_4'] = (float) $row['peso_con_imballo_collo_4'];
+        $row['peso_con_imballo_collo_5'] = (float) $row['peso_con_imballo_collo_5'];
+        $row['assemblato'] = (string) $row['assemblato'];
+        $row['kit_e_istruzioni_incluse_si_intendono_anche_pile'] = (string) $row['kit_e_istruzioni_incluse_si_intendono_anche_pile'];
+        $row['carrier_id'] = (int) $row['carrier_id'];
+        $row['product_type'] = (string) $row['product_type'];
+        $row['name'] = (string) $row['name'];
+        $row['is_slug_editable'] = (boolean) $row['is_slug_editable'];
+        $row['brand_id'] = (int) $row['brand_id'];
+        $row['tax_id'] = (int) $row['tax_id'];
 
         return $row;
     }
