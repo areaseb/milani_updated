@@ -220,6 +220,11 @@ Route::group(['namespace' => 'Botble\Ecommerce\Http\Controllers', 'middleware' =
                 'uses' => 'BulkImportController@index',
             ]);
 
+            Route::get('/delete', [
+                'as' => 'delete',
+                'uses' => 'BulkImportController@delete',
+            ]);
+
             Route::post('/', [
                 'as' => 'index.post',
                 'uses' => 'BulkImportController@postImport',

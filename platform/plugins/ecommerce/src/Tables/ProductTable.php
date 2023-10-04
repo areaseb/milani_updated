@@ -222,6 +222,10 @@ class ProductTable extends TableAbstract
                 'link' => route('ecommerce.bulk-import.index'),
                 'text' => '<i class="fas fa-file-import"></i> ' . trans('plugins/ecommerce::bulk-import.tables.import'),
             ];
+            $buttons['delete-all'] = [
+                'link' => route('ecommerce.bulk-import.delete'),
+                'text' => '<i class="fas fa-file-import"></i> ' . trans('plugins/ecommerce::bulk-import.tables.delete-all'),
+            ];
         }
 
         if (Auth::user()->hasPermission('ecommerce.export.products.index')) {

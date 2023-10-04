@@ -13,6 +13,7 @@ return [
     'failures' => 'Failures',
     'tables' => [
         'import' => 'Import',
+        'delete-all' => 'Delete all',
     ],
     'template' => 'Template',
     'rules' => 'Rules',

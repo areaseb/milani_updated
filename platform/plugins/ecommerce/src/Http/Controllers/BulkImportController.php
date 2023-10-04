@@ -12,6 +12,8 @@ use Botble\Ecommerce\Http\Requests\BulkImportRequest;
 use Botble\Ecommerce\Http\Requests\ProductRequest;
 use Botble\Ecommerce\Imports\ProductImport;
 use Botble\Ecommerce\Imports\ValidateProductImport;
+use Botble\Ecommerce\Models\Product;
+use Botble\Ecommerce\Repositories\Interfaces\ProductInterface;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Excel;
 
@@ -25,6 +27,18 @@ class BulkImportController extends BaseController
     {
         $this->productImport = $productImport;
         $this->validateProductImport = $validateProductImport;
+    }
+
+    public function delete()
+    {
+        $productRepository = app(ProductInterface::class);
+        Product::chunk(200, function ($products) use ($productRepository) {
+            foreach ($products as $product) {
+                $productRepository->delete($product);
+            }
+        });
+
+        return redirect()->back();
     }
 
     public function index()
