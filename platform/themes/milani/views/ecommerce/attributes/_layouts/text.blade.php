@@ -1,14 +1,19 @@
 @php
 	$tot = $attributes->where('attribute_set_id', $set->id)->count();
+
+    $show = false;
+    foreach($attributes->where('attribute_set_id', $set->id) as $attribute) {
+        $show = $show || $variationInfo->where('id', $attribute->id)->count();
+    }
 @endphp
-<div class="text-swatches-wrapper attribute-swatches-wrapper attribute-swatches-wrapper form-group product__attribute product__color" data-type="text" style="margin-bottom: 0px; padding-bottom: 0px; @if($tot <= 1) display: none; @endif">
+<div class="text-swatches-wrapper attribute-swatches-wrapper attribute-swatches-wrapper form-group product__attribute product__color" data-type="text" style="margin-bottom: 0px; padding-bottom: 0px; @if (!$show || $tot == 1) display: none; @endif">
     <label class="attribute-name"><b>{{ $set->title }}</b></label>
     <div class="attribute-values">
         <ul class="text-swatch attribute-swatch color-swatch">
             @foreach($attributes->where('attribute_set_id', $set->id) as $attribute)
                 <li data-slug="{{ $attribute->slug }}"
                     data-id="{{ $attribute->id }}"
-                    class="attribute-swatch-item @if (!$variationInfo->where('id', $attribute->id)->count()) pe-none @endif">
+                    class="attribute-swatch-item @if (!$variationInfo->where('id', $attribute->id)->count() || $tot == 1) pe-none @endif">
                     <div>
                         <label>
                             <input class="product-filter-item"

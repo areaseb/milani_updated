@@ -997,6 +997,31 @@ class ProductImport implements
         $row['product_attributes'] = [];
 
         if ($row['import_type'] == 'variation') {
+
+            $name = $row['name'];
+            $slug = $row['slug'];
+
+            $parent = $this->getProduct($name, $slug);
+
+            $parentAttributeSets = $this->productAttributeSetRepository->getByProductId($parent->id);
+            foreach ($parentAttributeSets as $attributeSet) {
+                if (!in_array($attributeSet->title, array_keys($attributeSets))) {
+                    $attributeSets[$attributeSet->title] = 'NO';
+                }
+            }
+
+            // Filter out attribute sets that are not in the parent product
+            $filteredAttributesSets = [];
+            foreach ($attributeSets as $title => $value) {
+                foreach ($parentAttributeSets as $attributeSet) {
+                    if ($attributeSet->title == $title) {
+                        $filteredAttributesSets[$title] = $value;
+                    }
+                }
+            }
+
+            $attributeSets = $filteredAttributesSets;
+
             foreach ($attributeSets as $title => $value) {
                 if (!$title || !$value) {
                     continue;

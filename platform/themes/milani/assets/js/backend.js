@@ -218,13 +218,14 @@
                     window.history.pushState({ path: newUrl }, '', newUrl);
 
                     $('.product__attribute').each(function () {
-                        // Let's count the options
-                        const nOptions = $(this).find('li').length
-                        if (nOptions == 1) {
-                            $(this).find('li input').prop('checked', true)
+                        // Let's count the valid options
+                        const nValidOptions = $(this).find('li').not('.pe-none').length
+
+                        if (nValidOptions == 1) {
+                            $(this).find('li').not('.pe-none').find('input').click()
                         }
 
-                        if (nOptions > 1) {
+                        if (nValidOptions > 1) {
                             $(this).show()
                         } else {
                             $(this).hide()

@@ -1,7 +1,12 @@
 @php
 	$tot = $attributes->where('attribute_set_id', $set->id)->count();
+
+    $show = false;
+    foreach($attributes->where('attribute_set_id', $set->id) as $attribute) {
+        $show = $show || $variationInfo->where('id', $attribute->id)->count();
+    }
 @endphp
-<div class="dropdown-swatches-wrapper attribute-swatches-wrapper" data-type="dropdown" @if($tot <= 1) style="display: none;" @endif>
+<div class="dropdown-swatches-wrapper attribute-swatches-wrapper" data-type="dropdown" @if(!$show || $tot <= 1) style="display: none;" @endif>
     <div class="attribute-name"><b>{{ $set->title }}</b></div>
     <div class="attribute-values">
         <div class="dropdown-swatch">

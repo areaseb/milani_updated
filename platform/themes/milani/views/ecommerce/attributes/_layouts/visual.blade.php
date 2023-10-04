@@ -1,7 +1,12 @@
 @php
 	$tot = $attributes->where('attribute_set_id', $set->id)->count();
+
+    $show = false;
+    foreach($attributes->where('attribute_set_id', $set->id) as $attribute) {
+        $show = $show || $variationInfo->where('id', $attribute->id)->count();
+    }
 @endphp
-<div class="visual-swatches-wrapper attribute-swatches-wrapper form-group product__attribute product__color" data-type="visual" style="margin-bottom: 0px; padding-bottom: 0px; @if($tot <= 1) display: none; @endif">
+<div class="visual-swatches-wrapper attribute-swatches-wrapper form-group product__attribute product__color" data-type="visual" style="margin-bottom: 0px; padding-bottom: 0px; @if (!$show || $tot == 1) display: none; @endif">
     <label class="attribute-name"><b>{{ $set->title }}</b></label>
     <div class="attribute-values">
         <ul class="visual-swatch color-swatch attribute-swatch">
