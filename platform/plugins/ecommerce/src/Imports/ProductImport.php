@@ -679,6 +679,10 @@ class ProductImport implements
     protected function setProductImagesToRow(array $row): array
     {
         $codiceCosma = $row['codice_cosma'];
+        if (!$codiceCosma || !$row['sku']) {
+            $row['images'] = [];
+            return $row;
+        }
 
         $row['images'] = $this->prepareProductImages(
             $this->productImageRetrievalService->getImages($codiceCosma),
