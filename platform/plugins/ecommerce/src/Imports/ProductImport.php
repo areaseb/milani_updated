@@ -1003,24 +1003,26 @@ class ProductImport implements
 
             $parent = $this->getProduct($name, $slug);
 
-            $parentAttributeSets = $this->productAttributeSetRepository->getByProductId($parent->id);
-            foreach ($parentAttributeSets as $attributeSet) {
-                if (!in_array($attributeSet->title, array_keys($attributeSets))) {
-                    $attributeSets[$attributeSet->title] = 'NO';
-                }
-            }
-
-            // Filter out attribute sets that are not in the parent product
-            $filteredAttributesSets = [];
-            foreach ($attributeSets as $title => $value) {
+            if ($parent) {
+                $parentAttributeSets = $this->productAttributeSetRepository->getByProductId($parent->id);
                 foreach ($parentAttributeSets as $attributeSet) {
-                    if ($attributeSet->title == $title) {
-                        $filteredAttributesSets[$title] = $value;
+                    if (!in_array($attributeSet->title, array_keys($attributeSets))) {
+                        $attributeSets[$attributeSet->title] = 'NO';
                     }
                 }
-            }
 
-            $attributeSets = $filteredAttributesSets;
+                // Filter out attribute sets that are not in the parent product
+                $filteredAttributesSets = [];
+                foreach ($attributeSets as $title => $value) {
+                    foreach ($parentAttributeSets as $attributeSet) {
+                        if ($attributeSet->title == $title) {
+                            $filteredAttributesSets[$title] = $value;
+                        }
+                    }
+                }
+
+                $attributeSets = $filteredAttributesSets;
+            }
 
             foreach ($attributeSets as $title => $value) {
                 if (!$title || !$value) {
