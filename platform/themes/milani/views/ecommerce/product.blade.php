@@ -44,7 +44,7 @@
         </div>
         <div class="col-md-7 col-sm-12 col-xs-12">
             <div class="detail-info">
-                <h2 class="title-detail">{{ $product->name }}</h2>
+                <h1 class="title-detail">{{ $product->name }}</h1>
                 
                 <div class="short-desc mt-15">
                     {!! apply_filters('ecommerce_before_product_description', null, $product) !!}
