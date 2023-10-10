@@ -2,6 +2,8 @@
 
 namespace App\Jobs;
 
+use App\Exceptions\BeezupCustomerNotValidException;
+use App\Mail\BeezupCustomerNotValidEmail;
 use App\Services\BeezupClient;
 use Botble\ACL\Models\User;
 use Botble\Ecommerce\Models\Customer;
@@ -20,6 +22,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Mail;
 
 class BeezupImportOrdersJob implements ShouldQueue
 {
@@ -56,7 +59,13 @@ class BeezupImportOrdersJob implements ShouldQueue
 
     protected function importOrders(Collection $orders)
     {
-        $orders->each(fn ($order) => $this->importOrder($order));
+        $orders->each(function ($order) {
+            try {
+                $this->importOrder($order);
+            } catch (BeezupCustomerNotValidException $e) {
+                $this->sendBeezupCustomerNotValidNotification($order);
+            }
+        });
     }
 
     protected function importOrder($data)
@@ -77,13 +86,21 @@ class BeezupImportOrdersJob implements ShouldQueue
 
     protected function getOrCreateCustomer($data)
     {
-        $customer = Customer::where('external_id', $data->order_Buyer_Identifier)->first();
+        if (empty($data->order_Buyer_Identifier) && empty($data->order_Buyer_Email)) {
+            throw new BeezupCustomerNotValidException();
+        }
+
+        $customer = Customer::where('external_id', $data->order_Buyer_Identifier ?? null)
+            ->orWhere('email', $data->order_Buyer_Email ?? null)
+            ->first();
+
         if ($customer) {
             return $customer;
         }
 
         $customer = new Customer();
-        $customer->external_id = $data->order_Buyer_Identifier;
+        $customer->external_id = $data->order_Buyer_Identifier ?? null;
+        $customer->email = $data->order_Buyer_Email ?? null;
         $customer->name = $data->order_Buyer_LastName ?? 'NA';
         $customer->status = 'activated';
         $customer->save();
@@ -120,7 +137,7 @@ class BeezupImportOrdersJob implements ShouldQueue
     protected function createOrderAddress($order, $data)
     {
         $address = new OrderAddress();
-        $address->name = ($data->order_Shipping_FirstName ?? '') . ' ' . $data->order_Shipping_LastName ?? '';
+        $address->name = ($data->order_Shipping_FirstName ?? '') . ' ' . ($data->order_Shipping_LastName ?? '');
         $address->phone = $data->order_Shipping_Phone ?? '';
         $address->country = $data->order_Shipping_AddressCountryIsoCodeAlpha2;
         $address->city = $data->order_Shipping_AddressCity;
@@ -188,5 +205,10 @@ class BeezupImportOrdersJob implements ShouldQueue
         $payment->status = 'completed';
 
         $payment->save();
+    }
+
+    protected function sendBeezupCustomerNotValidNotification($data)
+    {
+        Mail::to(config('beezup.notification_email'))->send(new BeezupCustomerNotValidEmail($data->beezUPOrderId, $data->beezUPOrderUrl));
     }
 }
