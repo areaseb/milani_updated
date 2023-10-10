@@ -90,8 +90,14 @@ class BeezupImportOrdersJob implements ShouldQueue
             throw new BeezupCustomerNotValidException();
         }
 
-        $customer = Customer::where('external_id', $data->order_Buyer_Identifier ?? null)
-            ->orWhere('email', $data->order_Buyer_Email ?? null)
+        $customer = Customer::where(function ($query) {
+                return $query->whereNotNull('external_id')
+                    ->where($data->order_Buyer_Identifier ?? '');
+            })
+            ->orWhere(function ($query) {
+                return $query->whereNotNull('email')
+                    ->where('email', $data->order_Buyer_Email ?? '');
+            })
             ->first();
 
         if ($customer) {
