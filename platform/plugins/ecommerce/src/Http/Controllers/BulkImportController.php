@@ -13,7 +13,10 @@ use Botble\Ecommerce\Http\Requests\ProductRequest;
 use Botble\Ecommerce\Imports\ProductImport;
 use Botble\Ecommerce\Imports\ValidateProductImport;
 use Botble\Ecommerce\Models\Product;
+use Botble\Ecommerce\Models\ProductCategory;
+use Botble\Ecommerce\Repositories\Interfaces\ProductCategoryInterface;
 use Botble\Ecommerce\Repositories\Interfaces\ProductInterface;
+use Botble\Slug\Models\Slug;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Excel;
 
@@ -37,6 +40,16 @@ class BulkImportController extends BaseController
                 $productRepository->delete($product);
             }
         });
+
+        $categoryRepository = app(ProductCategoryInterface::class);
+        ProductCategory::chunk(200, function ($category) use ($categoryRepository) {
+            foreach ($category as $category) {
+                $categoryRepository->delete($category);
+            }
+        });
+
+        Slug::where('reference_type', Product::class)->delete();
+        Slug::where('reference_type', ProductCategory::class)->delete();
 
         return redirect()->back();
     }

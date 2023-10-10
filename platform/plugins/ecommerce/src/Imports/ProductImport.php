@@ -25,6 +25,8 @@ use Botble\Ecommerce\Services\Products\UpdateDefaultProductService;
 use Botble\Ecommerce\Services\StoreProductTagService;
 use Botble\Media\Facades\RvMediaFacade;
 use Botble\Media\Models\MediaFile;
+use Botble\Slug\Repositories\Interfaces\SlugInterface;
+use Botble\Slug\Services\SlugService;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -817,6 +819,17 @@ class ProductImport implements
                     $category = $this->productCategoryRepository->create([
                         'name' => $value,
                         'parent_id' => $parent ? $parent->id : 0,
+                    ]);
+
+                    $slugRepository = app(SlugInterface::class);
+
+                    $slugService = new SlugService($slugRepository);
+
+                    $slugRepository->createOrUpdate([
+                        'key' => $slugService->create($value, 0, get_class($category)),
+                        'reference_type' => get_class($category),
+                        'reference_id' => $category->id,
+                        'prefix' => SlugHelper::getPrefix(get_class($category)),
                     ]);
                 }
 
