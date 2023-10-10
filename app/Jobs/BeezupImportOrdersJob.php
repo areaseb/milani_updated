@@ -107,7 +107,7 @@ class BeezupImportOrdersJob implements ShouldQueue
         $customer = new Customer();
         $customer->external_id = $data->order_Buyer_Identifier ?? null;
         $customer->email = $data->order_Buyer_Email ?? null;
-        $customer->name = $data->order_Buyer_LastName ?? 'NA';
+        $customer->name = $data->order_Buyer_Name ?? ($data->order_Buyer_LastName ?? 'NA');
         $customer->status = 'activated';
         $customer->save();
 
@@ -143,7 +143,7 @@ class BeezupImportOrdersJob implements ShouldQueue
     protected function createOrderAddress($order, $data)
     {
         $address = new OrderAddress();
-        $address->name = ($data->order_Shipping_FirstName ?? '') . ' ' . ($data->order_Shipping_LastName ?? '');
+        $address->name = $data->order_Shipping_AddressName ?? (($data->order_Shipping_FirstName ?? '') . ' ' . ($data->order_Shipping_LastName ?? ''));
         $address->phone = $data->order_Shipping_Phone ?? '';
         $address->country = $data->order_Shipping_AddressCountryIsoCodeAlpha2;
         $address->city = $data->order_Shipping_AddressCity;
