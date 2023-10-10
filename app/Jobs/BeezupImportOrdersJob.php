@@ -92,7 +92,7 @@ class BeezupImportOrdersJob implements ShouldQueue
 
         $customer = Customer::where(function ($query) {
                 return $query->whereNotNull('external_id')
-                    ->where($data->order_Buyer_Identifier ?? '');
+                    ->where('external_id', $data->order_Buyer_Identifier ?? '');
             })
             ->orWhere(function ($query) {
                 return $query->whereNotNull('email')
