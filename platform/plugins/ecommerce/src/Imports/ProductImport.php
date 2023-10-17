@@ -825,8 +825,15 @@ class ProductImport implements
 
                     $slugService = new SlugService($slugRepository);
 
+                    $parentSlug = $parent ? $slugRepository->getFirstBy([
+                        'reference_type' => get_class($parent),
+                        'reference_id' => $parent->id,
+                    ]) : null;
+
+                    $slugBase = $parentSlug ? $parentSlug->key . '/' : '';
+
                     $slugRepository->createOrUpdate([
-                        'key' => $slugService->create($value, 0, get_class($category)),
+                        'key' => $slugBase . $slugService->create($value, 0, get_class($category)),
                         'reference_type' => get_class($category),
                         'reference_id' => $category->id,
                         'prefix' => SlugHelper::getPrefix(get_class($category)),
