@@ -220,9 +220,10 @@ abstract class RepositoriesAbstract implements RepositoryInterface
     public function createOrUpdate($data, array $condition = [])
     {
         if ($data instanceof Model) {
+            $keyName = $data->getKeyName();
             $data = $data->getAttributes();
-            if ($data['id'] ?? false) {
-                $condition['id'] = $data['id'];
+            if ($data[$keyName] ?? false) {
+                $condition[$keyName] = $data[$keyName];
             }
         }
 
