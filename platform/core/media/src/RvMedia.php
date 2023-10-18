@@ -347,7 +347,7 @@ class RvMedia
             ->header('Content-Type', 'text/html');
     }
 
-    public function handleUpload(?UploadedFile $fileUpload, ?int $folderId = 0, ?string $folderSlug = null, bool $skipValidation = false, string $note): array
+    public function handleUpload(?UploadedFile $fileUpload, ?int $folderId = 0, ?string $folderSlug = null, bool $skipValidation = false, string $note = ''): array
     {
         $request = request();
 
