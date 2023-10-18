@@ -16,7 +16,7 @@ class MetaBox extends BaseModel
     protected $table = 'meta_boxes';
 
     protected $casts = [
-        'meta_value' => 'json',
+        'meta_value' => 'array',
     ];
 
     public function reference(): BelongsTo

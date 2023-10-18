@@ -175,13 +175,11 @@ class MetaBox
             return $single ? '' : [];
         }
 
-        $metaValue = json_decode($field->meta_value, true);
-
         if ($single) {
-            return $metaValue[0];
+            return $field->meta_value[0];
         }
 
-        return $metaValue;
+        return $field->meta_value;
     }
 
     public function getMeta(Model $object, string $key, array $select = ['meta_value']): ?Model
