@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use League\Csv\Reader;
 use League\Csv\Statement;
 
@@ -24,9 +25,14 @@ class ProductImageRetrievalService
 
         $row = $this->getProductRow($sku);
         $images = $row[self::IMAGES_KEY] ?? '';
-
-        return collect(explode(',', $images))
+        $images = collect(explode(',', $images))
             ->map(fn ($image) => trim($image));
+
+        if ($images->isEmpty()) {
+            $images = $this->getImagesFromLocalDisk($sku);
+        }
+
+        return $images;
     }
 
     protected function getProductRow($sku): array
@@ -70,5 +76,17 @@ class ProductImageRetrievalService
         file_put_contents($filename, $contents);
 
         return $filename;
+    }
+
+    protected function getImagesFromLocalDisk($sku): Collection
+    {
+        $path = config('filesystems.disks.gcs.root');
+        $files = glob("$path/$sku*");
+
+        $images = collect($files)
+            ->map(fn ($file) => basename($file))
+            ->map(fn ($file) => Storage::disk('gcs')->url($file));
+
+        return $images;
     }
 }

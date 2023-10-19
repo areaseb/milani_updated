@@ -61,6 +61,13 @@ return [
             'root' => storage_path('app/tmp'),
             'throw' => false,
         ],
+
+        'gcs' => [
+            'driver' => 'local',
+            'root' => public_path('storage/products_source'),
+            'url' => env('APP_URL').'/storage/products_source',
+            'visibility' => 'public',
+        ],
     ],
 
     /*
