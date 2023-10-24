@@ -1,10 +1,14 @@
 @php
 	$tot = $attributes->where('attribute_set_id', $set->id)->count();
 
-    $show = false;
+    $nPe = 0;
     foreach($attributes->where('attribute_set_id', $set->id) as $attribute) {
-        $show = $show || $variationInfo->where('id', $attribute->id)->count();
+        if (!$variationInfo->where('id', $attribute->id)->count()) {
+            $nPe++;
+        }
     }
+
+    $show = $tot > 1 && ($tot - $nPe > 1);
 @endphp
 <div class="visual-swatches-wrapper attribute-swatches-wrapper form-group product__attribute product__color" data-type="visual" style="margin-bottom: 0px; padding-bottom: 0px; @if (!$show || $tot == 1) display: none; @endif">
     <label class="attribute-name"><b>{{ $set->title }}</b></label>

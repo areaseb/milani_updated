@@ -1,10 +1,14 @@
 @php
 	$tot = $attributes->where('attribute_set_id', $set->id)->count();
 
-    $show = false;
+    $nPe = 0;
     foreach($attributes->where('attribute_set_id', $set->id) as $attribute) {
-        $show = $show || $variationInfo->where('id', $attribute->id)->count();
+        if (!$variationInfo->where('id', $attribute->id)->count()) {
+            $nPe++;
+        }
     }
+
+    $show = $tot > 1 && ($tot - $nPe > 1);
 @endphp
 <div class="dropdown-swatches-wrapper attribute-swatches-wrapper" data-type="dropdown" @if(!$show || $tot <= 1) style="display: none;" @endif>
     <div class="attribute-name"><b>{{ $set->title }}</b></div>
