@@ -148,9 +148,11 @@
                     slider.slick('unslick');
 
                     let imageHtml = '';
-                    res.data.image_with_sizes.origin.forEach(function (item) {
-                        imageHtml += '<figure class="border-radius-10"><a href="' + item + '"><img src="' + item + '" alt="image"/></a></figure>'
-                    });
+                    if (res?.data?.image_with_sizes?.origin?.length) {
+                        res.data.image_with_sizes.origin.forEach(function (item) {
+                            imageHtml += '<figure class="border-radius-10"><a href="' + item + '"><img src="' + item + '" alt="image"/></a></figure>'
+                        });
+                    }
 
                     slider.html(imageHtml);
 
@@ -168,9 +170,11 @@
                     sliderThumbnail.slick('unslick');
 
                     let thumbHtml = '';
-                    res.data.image_with_sizes.thumb.forEach(function (item) {
-                        thumbHtml += '<div class="item"><img src="' + item + '" alt="image"/></div>'
-                    });
+                    if (res?.data?.image_with_sizes?.thumb?.length) {
+                        res.data.image_with_sizes.thumb.forEach(function (item) {
+                            thumbHtml += '<div class="item"><img src="' + item + '" alt="image"/></div>'
+                        });
+                    }
 
                     sliderThumbnail.html(thumbHtml);
 

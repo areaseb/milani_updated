@@ -85,6 +85,7 @@ var __webpack_exports__ = {};
           $('.number-items-available').html('<span class="text-danger">(' + res.message + ')</span>').show();
           $('.hidden-product-id').val('');
         } else {
+          var _res$data, _res$data2;
           $('.add-to-cart-form').find('.error-message').hide();
           $('.product-price ins span.text-brand').text(res.data.display_sale_price);
           if (res.data.sale_price !== res.data.price) {
@@ -126,9 +127,11 @@ var __webpack_exports__ = {};
           var slider = $('.product-image-slider');
           slider.slick('unslick');
           var imageHtml = '';
-          res.data.image_with_sizes.origin.forEach(function (item) {
-            imageHtml += '<figure class="border-radius-10"><a href="' + item + '"><img src="' + item + '" alt="image"/></a></figure>';
-          });
+          if (res !== null && res !== void 0 && (_res$data = res.data) !== null && _res$data !== void 0 && (_res$data = _res$data.image_with_sizes) !== null && _res$data !== void 0 && (_res$data = _res$data.origin) !== null && _res$data !== void 0 && _res$data.length) {
+            res.data.image_with_sizes.origin.forEach(function (item) {
+              imageHtml += '<figure class="border-radius-10"><a href="' + item + '"><img src="' + item + '" alt="image"/></a></figure>';
+            });
+          }
           slider.html(imageHtml);
           slider.slick({
             slidesToShow: 1,
@@ -141,9 +144,11 @@ var __webpack_exports__ = {};
           var sliderThumbnail = $('.slider-nav-thumbnails');
           sliderThumbnail.slick('unslick');
           var thumbHtml = '';
-          res.data.image_with_sizes.thumb.forEach(function (item) {
-            thumbHtml += '<div class="item"><img src="' + item + '" alt="image"/></div>';
-          });
+          if (res !== null && res !== void 0 && (_res$data2 = res.data) !== null && _res$data2 !== void 0 && (_res$data2 = _res$data2.image_with_sizes) !== null && _res$data2 !== void 0 && (_res$data2 = _res$data2.thumb) !== null && _res$data2 !== void 0 && _res$data2.length) {
+            res.data.image_with_sizes.thumb.forEach(function (item) {
+              thumbHtml += '<div class="item"><img src="' + item + '" alt="image"/></div>';
+            });
+          }
           sliderThumbnail.html(thumbHtml);
           sliderThumbnail.slick({
             slidesToShow: 5,

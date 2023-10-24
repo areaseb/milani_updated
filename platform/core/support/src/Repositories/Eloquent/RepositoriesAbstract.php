@@ -223,7 +223,7 @@ abstract class RepositoriesAbstract implements RepositoryInterface
             $keyName = $data->getKeyName();
             $data = $data->getAttributes();
             if ($data[$keyName] ?? false) {
-                $condition[$keyName] = $data[$keyName];
+                $condition = [$keyName => $data[$keyName]];
             }
         }
 
