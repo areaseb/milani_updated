@@ -18,6 +18,7 @@ use Botble\Base\Repositories\Interfaces\MetaBoxInterface;
 use Botble\Base\Supports\Action;
 use Botble\Base\Supports\BreadcrumbsManager;
 use Botble\Base\Supports\CustomResourceRegistrar;
+use Botble\Base\Supports\EmailHandler;
 use Botble\Base\Supports\Filter;
 use Botble\Base\Supports\GoogleFonts;
 use Botble\Base\Supports\Helper;
@@ -63,6 +64,8 @@ class BaseServiceProvider extends ServiceProvider
         $this->app->singleton(ExceptionHandler::class, Handler::class);
 
         $this->app->singleton(BreadcrumbsManager::class, BreadcrumbsManager::class);
+
+        $this->app->singleton(EmailHandler::class);
 
         $this->app->bind(MetaBoxInterface::class, function () {
             return new MetaBoxCacheDecorator(new MetaBoxRepository(new MetaBoxModel()));
