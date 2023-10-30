@@ -40,6 +40,7 @@ add_action([BASE_ACTION_AFTER_CREATE_CONTENT, BASE_ACTION_AFTER_UPDATE_CONTENT],
     if (get_class($object) == MenuNode::class) {
         if ($request->has('data.icon_image')) {
             if ($iconImage = $request->input('data.icon_image')) {
+                dd($iconImage);
                 MetaBox::saveMetaBoxData($object, 'icon_image', $iconImage);
             } else {
                 MetaBox::deleteMetaData($object, 'icon_image');
@@ -50,17 +51,7 @@ add_action([BASE_ACTION_AFTER_CREATE_CONTENT, BASE_ACTION_AFTER_UPDATE_CONTENT],
 
         $menuNodes = json_decode($request->input('menu_nodes'), true);
 
-        foreach ($menuNodes as $node) {
-            if ($node['menuItem']['id'] == $object->id && isset($node['menuItem']['icon_image'])) {
-                if ($iconImage = $node['menuItem']['icon_image']) {
-                    MetaBox::saveMetaBoxData($object, 'icon_image', $iconImage);
-                } else {
-                    MetaBox::deleteMetaData($object, 'icon_image');
-                }
-
-                break;
-            }
-        }
+        recursive_save_menu_node_metabox($menuNodes, $object);
     }
 }, 170, 3);
 
@@ -69,3 +60,22 @@ add_filter('menu_nodes_item_data', function ($data) {
 
     return $data;
 }, 170);
+
+function recursive_save_menu_node_metabox($nodes, $object)
+{
+    foreach ($nodes as $node) {
+        if ($node['menuItem']['id'] == $object->id && isset($node['menuItem']['icon_image'])) {
+            if ($iconImage = $node['menuItem']['icon_image']) {
+                MetaBox::saveMetaBoxData($object, 'icon_image', $iconImage);
+            } else {
+                MetaBox::deleteMetaData($object, 'icon_image');
+            }
+
+            break;
+        }
+
+        if (isset($node['children'])) {
+            recursive_save_menu_node_metabox($node['children'], $object);
+        }
+    }
+}

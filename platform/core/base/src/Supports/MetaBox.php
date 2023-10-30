@@ -7,6 +7,7 @@ use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Botble\Base\Models\MetaBox as MetaBoxModel;
+use Illuminate\Support\Arr;
 
 class MetaBox
 {
@@ -156,8 +157,9 @@ class MetaBox
                 $fieldMeta->options = $options;
             }
 
-            $fieldMeta->meta_value = [$value];
-            $this->metaBoxRepository->createOrUpdate($fieldMeta);
+            $fieldMeta->meta_value = Arr::wrap($value);
+            $fieldMeta->save();
+            // $this->metaBoxRepository->createOrUpdate($fieldMeta);
         } catch (Exception $exception) {
             info($exception->getMessage());
         }
