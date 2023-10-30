@@ -9087,7 +9087,7 @@ small {
   height: auto;
 }
 
-@media screen and (min-width: 769px) {
+@media screen and (min-width: 992px) {
   .mobile-header-wrapper-style.sidebar-visible {
     opacity: 0;
     transform: translate(200px);
