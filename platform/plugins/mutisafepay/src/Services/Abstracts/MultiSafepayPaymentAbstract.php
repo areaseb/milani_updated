@@ -318,7 +318,7 @@ abstract class MultiSafepayPaymentAbstract
                 ->addFirstName($orderAddress->name)
                 ->addAddress($address)
                 ->addEmailAddress(new EmailAddress($orderAddress->email))
-                ->addPhoneNumber(new PhoneNumber($orderAddress->phone))
+                // ->addPhoneNumber(new PhoneNumber($orderAddress->phone))
                 ->addLocale(LanguageFacade::getCurrentLocaleCode());
 
             $pluginDetails = (new PluginDetails())
