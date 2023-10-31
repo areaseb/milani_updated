@@ -1265,30 +1265,71 @@
             });
 
             $(document).on('change', '.category-filter-input', event => {
+                let self = $(event.currentTarget)
+                if (self.prop('checked')) {
+                    let $children = $('.category-filter-input[data-parent-id=' + self.attr('data-id') + ']')
+                    $children.each((index, el) => {
+                        $(el).prop('checked', true)
+                        $(el).trigger('change')
+                    })
 
-                let _self = $(event.currentTarget);
+                    // Let's check that all the parents are checked if a child is checked
+                    let $parent = $('.category-filter-input[data-id=' + self.attr('data-parent-id') + ']')
+                    while ($parent?.length) {
+                        $parent.prop('checked', true)
 
-                let checked = _self.prop('checked');
-                $('.category-filter-input[data-parent-id=' + _self.attr('data-id') + ']').each((index, el) => {
-                    if (checked) {
-                        $(el).prop('checked', true);
-                    } else {
-                        $(el).prop('checked', false);
+                        $parent = $('.category-filter-input[data-id=' + $parent.attr('data-parent-id') + ']')
                     }
-                });
-
-                if (parseInt(_self.attr('data-parent-id')) !== 0) {
-                    let ids = [];
-                    let children = $('.category-filter-input[data-parent-id=' + _self.attr('data-parent-id') + ']');
-
-                    children.each((i, el) => {
-                        if ($(el).is(':checked')) {
-                            ids.push($(el).val());
-                        }
-                    });
-
-                    $('.category-filter-input[data-id=' + _self.attr('data-parent-id') + ']').prop('checked', ids.length === children.length);
+                } else {
+                    let $children = $('.category-filter-input[data-parent-id=' + self.attr('data-id') + ']')
+                    $children.each((index, el) => {
+                        $(el).prop('checked', false)
+                        $(el).trigger('change')
+                    })
                 }
+
+                // Let's check that parent is not checked if all children are not checked
+                let $parent = $('.category-filter-input[data-id=' + self.attr('data-parent-id') + ']')
+                while ($parent?.length) {
+                    let $children = $('.category-filter-input[data-parent-id=' + self.attr('data-parent-id') + ']')
+                    let allChildrenNotChecked = true
+                    $children.each((index, el) => {
+                        if ($(el).prop('checked')) {
+                            allChildrenNotChecked = false
+                        }
+                    })
+
+                    if (allChildrenNotChecked) {
+                        $parent.prop('checked', false)
+                    }
+
+                    $parent = $('.category-filter-input[data-id=' + $parent.attr('data-parent-id') + ']')
+                }
+
+
+                // let _self = $(event.currentTarget);
+
+                // let checked = _self.prop('checked');
+                // $('.category-filter-input[data-parent-id=' + _self.attr('data-id') + ']').each((index, el) => {
+                //     if (checked) {
+                //         $(el).prop('checked', true);
+                //     } else {
+                //         $(el).prop('checked', false);
+                //     }
+                // });
+
+                // if (parseInt(_self.attr('data-parent-id')) !== 0) {
+                //     let ids = [];
+                //     let children = $('.category-filter-input[data-parent-id=' + _self.attr('data-parent-id') + ']');
+
+                //     children.each((i, el) => {
+                //         if ($(el).is(':checked')) {
+                //             ids.push($(el).val());
+                //         }
+                //     });
+
+                //     $('.category-filter-input[data-id=' + _self.attr('data-parent-id') + ']').prop('checked', ids.length === children.length);
+                // }
             });
         }
 

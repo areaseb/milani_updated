@@ -1101,27 +1101,75 @@ var __webpack_exports__ = {};
         $formSearch.trigger('submit');
       });
       $(document).on('change', '.category-filter-input', function (event) {
-        var _self = $(event.currentTarget);
-        var checked = _self.prop('checked');
-        $('.category-filter-input[data-parent-id=' + _self.attr('data-id') + ']').each(function (index, el) {
-          if (checked) {
+        var self = $(event.currentTarget);
+        if (self.prop('checked')) {
+          var $children = $('.category-filter-input[data-parent-id=' + self.attr('data-id') + ']');
+          $children.each(function (index, el) {
             $(el).prop('checked', true);
-          } else {
-            $(el).prop('checked', false);
+            $(el).trigger('change');
+          });
+
+          // Let's check that all the parents are checked if a child is checked
+          var _$parent = $('.category-filter-input[data-id=' + self.attr('data-parent-id') + ']');
+          while ((_$parent2 = _$parent) !== null && _$parent2 !== void 0 && _$parent2.length) {
+            var _$parent2;
+            _$parent.prop('checked', true);
+            _$parent = $('.category-filter-input[data-id=' + _$parent.attr('data-parent-id') + ']');
           }
-        });
-        if (parseInt(_self.attr('data-parent-id')) !== 0) {
-          var ids = [];
-          var children = $('.category-filter-input[data-parent-id=' + _self.attr('data-parent-id') + ']');
-          children.each(function (i, el) {
-            if ($(el).is(':checked')) {
-              ids.push($(el).val());
+        } else {
+          var _$children = $('.category-filter-input[data-parent-id=' + self.attr('data-id') + ']');
+          _$children.each(function (index, el) {
+            $(el).prop('checked', false);
+            $(el).trigger('change');
+          });
+        }
+
+        // Let's check that parent is not checked if all children are not checked
+        var $parent = $('.category-filter-input[data-id=' + self.attr('data-parent-id') + ']');
+        var _loop2 = function _loop2() {
+          var $children = $('.category-filter-input[data-parent-id=' + self.attr('data-parent-id') + ']');
+          var allChildrenNotChecked = true;
+          $children.each(function (index, el) {
+            if ($(el).prop('checked')) {
+              allChildrenNotChecked = false;
             }
           });
-          $('.category-filter-input[data-id=' + _self.attr('data-parent-id') + ']').prop('checked', ids.length === children.length);
+          if (allChildrenNotChecked) {
+            $parent.prop('checked', false);
+          }
+          $parent = $('.category-filter-input[data-id=' + $parent.attr('data-parent-id') + ']');
+        };
+        while ((_$parent3 = $parent) !== null && _$parent3 !== void 0 && _$parent3.length) {
+          var _$parent3;
+          _loop2();
         }
+
+        // let _self = $(event.currentTarget);
+
+        // let checked = _self.prop('checked');
+        // $('.category-filter-input[data-parent-id=' + _self.attr('data-id') + ']').each((index, el) => {
+        //     if (checked) {
+        //         $(el).prop('checked', true);
+        //     } else {
+        //         $(el).prop('checked', false);
+        //     }
+        // });
+
+        // if (parseInt(_self.attr('data-parent-id')) !== 0) {
+        //     let ids = [];
+        //     let children = $('.category-filter-input[data-parent-id=' + _self.attr('data-parent-id') + ']');
+
+        //     children.each((i, el) => {
+        //         if ($(el).is(':checked')) {
+        //             ids.push($(el).val());
+        //         }
+        //     });
+
+        //     $('.category-filter-input[data-id=' + _self.attr('data-parent-id') + ']').prop('checked', ids.length === children.length);
+        // }
       });
     }
+
     function parseParamsSearch(query) {
       var includeArray = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       var pairs = query || window.location.search.substring(1);
