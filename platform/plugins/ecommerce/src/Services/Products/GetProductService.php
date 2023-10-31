@@ -4,6 +4,7 @@ namespace Botble\Ecommerce\Services\Products;
 
 use BaseHelper;
 use Botble\Base\Enums\BaseStatusEnum;
+use Botble\Ecommerce\Models\ProductCategory;
 use Botble\Ecommerce\Repositories\Interfaces\ProductInterface;
 use EcommerceHelper;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -49,8 +50,10 @@ class GetProductService
         ];
 
         if ($category) {
-            $queryVar['categories'] = array_merge($queryVar['categories'], [$category]);
+            $queryVar['categories'] = array_merge($queryVar['categories'], [is_object($category) ? $category->id : $category]);
         }
+
+        $queryVar['categories'] = $this->purgeCategories($queryVar['categories']);
 
         if ($brand) {
             $queryVar['brands'] = array_merge(($queryVar['brands']), [$brand]);
@@ -162,5 +165,26 @@ class GetProductService
         }
 
         return $products;
+    }
+
+    protected function purgeCategories($categories)
+    {
+        $valid = [];
+        foreach ($categories as $id) {
+            $category = ProductCategory::find($id);
+            if (!$category) {
+                continue;
+            }
+
+            foreach ($category->children as $child) {
+                if (in_array($child->id, $categories)) {
+                    continue 2;
+                }
+            }
+
+            $valid[] = $id;
+        }
+
+        return $valid;
     }
 }

@@ -21,7 +21,7 @@ class ProductCategoryHelper
             $this->allCategories = collect();
         }
 
-        if ($this->allCategories->count() == 0) {
+        // if ($this->allCategories->count() == 0) {
             $with = array_merge(Arr::get($params, 'with', []), ['slugable', 'metadata']);
             if (is_plugin_active('language-advanced') && Language::getCurrentLocaleCode() != Language::getDefaultLocaleCode()) {
                 $with[] = 'translations';
@@ -33,7 +33,7 @@ class ProductCategoryHelper
                 Arr::get($params, 'withCount', []),
                 $onlyParent
             );
-        }
+        // }
 
         return $this->allCategories;
     }
