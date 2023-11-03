@@ -178,7 +178,7 @@ class MetaBox
         }
 
         if ($single) {
-            return $field->meta_value[0];
+            return $field->meta_value[0] ?? null;
         }
 
         return $field->meta_value;
