@@ -212,7 +212,7 @@
 
                         <div id="collapse-prod-soddisfatti" class="collapse" aria-labelledby="heading-prod-soddisfatti" data-parent="#prod-accordion">
                             <div class="card-body">
-                                Testo
+                                La vostra soddisfazione &egrave; la nostra priorit&agrave;. Se non siete completamente soddisfatti del vostro acquisto, accettiamo resi e rimborsi entro 30 giorni dalla data di consegna. Contattateci per avviare il processo di reso.
                             </div>
                         </div>
                     </div>
@@ -227,7 +227,7 @@
 
                         <div id="collapse-prod-garanzia" class="collapse" aria-labelledby="heading-prod-garanzia" data-parent="#prod-accordion">
                             <div class="card-body">
-                                Testo
+                                Tutti i nostri prodotti vengono forniti con una garanzia di 2 anni che copre difetti di fabbricazione. La vostra tranquillit&agrave; &egrave; fondamentale per noi, pertanto in caso di problemi, ci impegneremo a risolverli. Contattate il nostro servizio clienti per assistenza e supporto.
                             </div>
                         </div>
                     </div>
@@ -242,7 +242,7 @@
 
                         <div id="collapse-prod-trasporto" class="collapse" aria-labelledby="heading-prod-trasporto" data-parent="#prod-accordion">
                             <div class="card-body">
-                                Testo
+                                Gli ordini superiori a &not;20 sono idonei per la spedizione gratuita! Approfittate di questa offerta per arredare il vostro giardino con i nostri prodotti di qualit&agrave;. La spedizione gratuita verr&agrave; applicata automaticamente al momento del checkout.
                             </div>
                         </div>
                     </div>
