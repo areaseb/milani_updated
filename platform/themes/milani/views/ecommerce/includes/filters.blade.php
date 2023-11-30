@@ -6,32 +6,66 @@
 @endphp
 
 <div class="shop-product-filter-header_">
-    <div class="row">
-        @php
-            $categories = ProductCategoryHelper::getProductCategoriesWithIndent()
-                        ->where('status', \Botble\Base\Enums\BaseStatusEnum::PUBLISHED);
+    <div class="row tab-pane faqs-list" id="tab-cat">
+    	<div class="accordion" id="cat-accordion">
+	        @php
+	            $categories = ProductCategoryHelper::getProductCategoriesWithIndent()
+	                        ->where('status', \Botble\Base\Enums\BaseStatusEnum::PUBLISHED);
 
-            if (Route::currentRouteName() != 'public.products' && request()->input('categories', [])) {
-                $categories = $categories->whereIn('id', (array)request()->input('categories', []));
-            }
-        @endphp
-        @if (count($categories) > 0)
-            <div class="col-12 pb-4 widget-filter-item">
-                <h5 class="mb-20 widget__title" data-title="{{ __('Categories') }}">{{ __('By :name', ['name' => __('categories')]) }}</h5>
-                <div class="custome-checkbox ps-custom-scrollbar_">
-                    @foreach($categories as $category)
-                        {!! $category->indent_text !!}<input class="form-check-input category-filter-input" data-id="{{ $category->id }}" data-parent-id="{{ $category->parent_id }}"
-                               name="categories[]"
-                               type="checkbox"
-                               id="category-filter-{{ $category->id }}"
-                               value="{{ $category->id }}"
-                               @if (in_array($category->id, request()->input('categories', []))) checked @endif>
-                        <label class="form-check-label" for="category-filter-{{ $category->id }}"><span class="d-inline-block">{{ $category->name }}</span></label>
-                        <br>
-                    @endforeach
-                </div>
-            </div>
-        @endif
+	            if (Route::currentRouteName() != 'public.products' && request()->input('categories', [])) {
+	                $categories = $categories->whereIn('id', (array)request()->input('categories', []));
+	            }
+	        @endphp
+	        @if (count($categories) > 0)
+	            {{-- <div class="col-12 pb-4 widget-filter-item">
+	                <h5 class="mb-20 widget__title" data-title="{{ __('Categories') }}">{{ __('By :name', ['name' => __('categories')]) }}</h5>
+	                <div class="custome-checkbox ps-custom-scrollbar_">
+	                    @foreach($categories as $category)
+	                        {!! $category->indent_text !!}<input class="form-check-input category-filter-input" data-id="{{ $category->id }}" data-parent-id="{{ $category->parent_id }}"
+	                               name="categories[]"
+	                               type="checkbox"
+	                               id="category-filter-{{ $category->id }}"
+	                               value="{{ $category->id }}"
+	                               @if (in_array($category->id, request()->input('categories', []))) checked @endif>
+	                        <label class="form-check-label" for="category-filter-{{ $category->id }}"><span class="d-inline-block">{{ $category->name }}</span></label>
+	                        <br>
+	                    @endforeach
+	                </div>
+	            </div> --}}
+	            
+	            
+	            <div class="card col-12 mb-4 widget-filter-item" data-type="visual">
+					<div class="card-header" id="heading-{{ str_replace(' ', '-', __('By :name', ['name' => __('categories')])) }}">
+					    <h5 class="mb-20 widget__title" data-title="{{ __('Categories') }}" >
+					        <a class="text-left collapsed" data-bs-toggle="collapse" data-bs-target="#collapse-{{ str_replace(' ', '-', __('By :name', ['name' => __('categories')])) }}" aria-expanded="true" aria-controls="collapse-{{ str_replace(' ', '-', __('By :name', ['name' => __('categories')])) }}">
+					            {{ __('By :name', ['name' => __('categories')]) }}
+					        </a>
+					    </h5>
+					</div>
+
+					<div id="collapse-{{ str_replace(' ', '-', __('By :name', ['name' => __('categories')])) }}" class="collapse" aria-labelledby="heading-{{ str_replace(' ', '-', __('By :name', ['name' => __('categories')])) }}" data-parent="#cat-accordion">
+					    <div class="card-body list-filter size-filter font-small ps-custom-scrollbar_ p-4">
+					    	<ul class="list-filter ps-custom-scrollbar_">
+						        @foreach($categories as $category)
+			                        {!! $category->indent_text !!}<input class="form-check-input category-filter-input" data-id="{{ $category->id }}" data-parent-id="{{ $category->parent_id }}"
+			                               name="categories[]"
+			                               type="checkbox"
+			                               id="category-filter-{{ $category->id }}"
+			                               value="{{ $category->id }}"
+			                               @if (in_array($category->id, request()->input('categories', []))) checked @endif>
+			                        <label class="form-check-label" for="category-filter-{{ $category->id }}"><span class="d-inline-block">{{ $category->name }}</span></label>
+			                        <br>
+			                    @endforeach
+					    	</ul>
+					    </div>
+					</div>
+				</div>
+	            
+	        @endif
+	    </div>
+    </div>
+    
+    <div class="row">
 
 {{--        @php--}}
 {{--            $brands = get_all_brands(['status' => \Botble\Base\Enums\BaseStatusEnum::PUBLISHED], [], ['products']);--}}
@@ -110,10 +144,12 @@
     </div>
 
     <div class="advanced-search-widgets">
-        <div class="row">
-            {!! render_product_swatches_filter([
-            'view' => Theme::getThemeNamespace() . '::views.ecommerce.attributes.attributes-filter-renderer'
-        ]) !!}
+        <div class="row tab-pane faqs-list" id="tab-filter">
+        	<div class="accordion" id="filter-accordion">
+	            {!! render_product_swatches_filter([
+		            'view' => Theme::getThemeNamespace() . '::views.ecommerce.attributes.attributes-filter-renderer'
+		        ]) !!}
+	    	</div>
         </div>
     </div>
 

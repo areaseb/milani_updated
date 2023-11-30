@@ -21,7 +21,9 @@
     	<ul style="list-style-type: disc; padding-left: calc(var(--bs-gutter-x)/ 2);" class="ps-list--categories_">
             @if(!is_null($bullets))
                 @foreach($bullets as $bullet)
-                    <li>{{ $bullet[0] }}</li>
+                    @if($bullet[0])
+                    	<li>{{ $bullet[0] }}</li>
+                    @endif
                 @endforeach
             @endif
     	</ul>

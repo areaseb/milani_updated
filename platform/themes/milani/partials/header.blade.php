@@ -6,7 +6,16 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
         <meta name="csrf-token" content="{{ csrf_token() }}">
-
+		
+		@php
+        	$url = explode('/',Illuminate\Support\Facades\URL::current());
+        @endphp
+        @if(isset($url[3]) && $url[3] == 'blog' && isset($url[4]) && $url[4] != 'come-illuminare-un-gazebo-in-legno' && $url[4] != 'come-decorare-un-tavolo-da-giardino')
+        	<meta name="robots" content="noindex, nofollow">
+        @elseif(isset($url[3]) && $url[3] == 'blog')
+        	<meta name="robots" content="noindex, nofollow">
+        @endif
+        
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family={{ urlencode(theme_option('font_text', 'Poppins')) }}:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">

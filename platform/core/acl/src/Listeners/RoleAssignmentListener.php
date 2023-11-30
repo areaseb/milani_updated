@@ -9,7 +9,11 @@ class RoleAssignmentListener
 {
     public function handle(RoleAssignmentEvent $event): void
     {
-        $permissions = $event->role->permissions;
+        if(is_array($event->role->permissions)){
+    		$permissions = $event->role->permissions;
+    	} else {
+    		$permissions = json_decode($event->role->permissions, true);
+    	} 
         $permissions[ACL_ROLE_SUPER_USER] = $event->user->super_user;
         $permissions[ACL_ROLE_MANAGE_SUPERS] = $event->user->manage_supers;
 

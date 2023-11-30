@@ -1,5 +1,6 @@
 @php
     Theme::asset()->container('footer')->usePath()->add('jquery.theia.sticky-js', 'js/plugins/jquery.theia.sticky.js');
+    $url = explode('/',Illuminate\Support\Facades\URL::current());
 @endphp
 
 {!! Theme::partial('header') !!}
@@ -14,14 +15,22 @@
         <div class="container">
             <div class="row mb-4">
                 @php
-                    if(request('categories')){
-                        $category = \Botble\Ecommerce\Models\ProductCategory::where('id', request('categories')[0])->first();
+                	$array_cat = request('categories');
+                	if(isset($url[5])){
+                		$cat = end($array_cat);
+                	} else {
+                		$cat = $array_cat[0];
+                	}
+                    if($cat){
+                        $category = \Botble\Ecommerce\Models\ProductCategory::where('id', $cat)->first();
                     }
                 @endphp
                 @if(request('categories'))
                     <div class="col-12 p-4 text-center" style="background: url('/storage/{{$category->image}}') center center no-repeat; background-size: cover; min-height: 50px;">
                         <div style="background-color: white; opacity: 0.4;">
-                            {{$category->description}}
+                        	@if($category)
+                            	{!! htmlspecialchars_decode($category->description) !!}
+                            @endif
                         </div>
                     </div>
                 @endif

@@ -22,7 +22,7 @@ class RoleForm extends FormAbstract
         $active = [];
 
         if ($this->getModel()) {
-            $active = array_keys($this->getModel()->permissions);
+            $active = array_keys(json_decode($this->getModel()->permissions, true));
         }
 
         $this

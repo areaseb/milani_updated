@@ -242,7 +242,7 @@
 
                         <div id="collapse-prod-trasporto" class="collapse" aria-labelledby="heading-prod-trasporto" data-parent="#prod-accordion">
                             <div class="card-body">
-                                Gli ordini superiori a &not;20 sono idonei per la spedizione gratuita! Approfittate di questa offerta per arredare il vostro giardino con i nostri prodotti di qualit&agrave;. La spedizione gratuita verr&agrave; applicata automaticamente al momento del checkout.
+                                Gli ordini superiori a &euro; 20,00 sono idonei per la spedizione gratuita! Approfittate di questa offerta per arredare il vostro giardino con i nostri prodotti di qualit&agrave;. La spedizione gratuita verr&agrave; applicata automaticamente al momento del checkout.
                             </div>
                         </div>
                     </div>
