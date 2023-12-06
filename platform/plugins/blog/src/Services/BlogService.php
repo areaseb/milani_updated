@@ -78,6 +78,7 @@ class BlogService
                 }
 
                 Theme::breadcrumb()->add(__('Home'), route('public.index'));
+                Theme::breadcrumb()->add(__('Blog'), route('public.index') . '/blog');
 
                 $category = $post->categories->sortByDesc('id')->first();
                 if ($category) {
