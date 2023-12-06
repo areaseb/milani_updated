@@ -600,6 +600,9 @@ class ProductImport implements
 
         $row = $this->fixProductRow($row);
 
+        $row['order'] = $row['ord'];
+        unset($row['ord']);
+
         $this->request->merge($row);
 
         return $row;
@@ -664,7 +667,7 @@ class ProductImport implements
         $row['peso_con_imballo_collo_5'] = (float) $row['peso_con_imballo_collo_5'];
         $row['assemblato'] = (string) $row['assemblato'];
         $row['kit_e_istruzioni_incluse_si_intendono_anche_pile'] = (string) $row['kit_e_istruzioni_incluse_si_intendono_anche_pile'];
-        $row['carrier'] = (int) $row['carrier'];
+        $row['carrier'] = (int) ($row['carrier'] ?? null);
         $row['product_type'] = (string) $row['product_type'];
         $row['name'] = (string) $row['name'];
         $row['is_slug_editable'] = (boolean) $row['is_slug_editable'];
