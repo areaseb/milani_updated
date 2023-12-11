@@ -672,7 +672,7 @@ class ProductImport implements
         $row['name'] = (string) $row['name'];
         $row['is_slug_editable'] = (boolean) $row['is_slug_editable'];
         $row['brand_id'] = (int) $row['brand_id'];
-        $row['tax_id'] = (int) $row['tax_id'];
+        $row['tax_id'] = (int) ($row['tax_id'] ?: env('DEFAULT_TAX_ID'));
 
         return $row;
     }

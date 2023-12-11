@@ -26,6 +26,6 @@
         @endif
     </div>
     <div class="col-4 text-end">
-        <p>{{ format_price($cartItem->price) }}</p>
+        <p>{{ format_price($cartItem->priceTax) }}</p>
     </div>
 </div> <!--  /item -->

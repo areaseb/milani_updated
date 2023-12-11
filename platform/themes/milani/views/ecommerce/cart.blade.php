@@ -43,7 +43,7 @@
                                                 @endif
                                             </td>
                                             <td class="price" data-title="{{ __('Price') }}">
-                                                <span>{{ format_price($cartItem->price) }}</span>
+                                                <span>{{ format_price($cartItem->priceTax) }}</span>
                                                 @if ($product->front_sale_price != $product->price)
                                                     <small><del>{{ format_price($product->price) }}</del></small>
                                                 @endif
@@ -57,7 +57,7 @@
                                                 </div>
                                             </td>
                                             <td class="text-right" data-title="{{ __('Subtotal') }}">
-                                                <span>{{ format_price($cartItem->price * $cartItem->qty) }}</span>
+                                                <span>{{ format_price($cartItem->priceTax * $cartItem->qty) }}</span>
                                             </td>
                                             <td class="action" data-title="{{ __('Remove') }}">
                                                 <a href="#" class="text-muted remove-cart-button" data-url="{{ route('public.cart.remove', $cartItem->rowId) }}"><i class="fa fa-trash-alt"></i></a>
