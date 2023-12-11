@@ -48,6 +48,9 @@
                                                     <span class="item-quantity text-danger">{{ $returnRequestItem->qty }}</span>
                                                 </td>
                                                 <td class="pl5 p-r5 width-100-px min-width-130-px text-end">{{ format_price($returnRequestItem->price * $returnRequestItem->qty) }}</td>
+                                                <td class="pl5 p-r5 text-infor-subdued text-danger">
+                                                    <span>{{ $returnRequestItem->reason->label() }}</span>
+                                                </td>
                                             </tr>
                                         @endif
                                     @endforeach
@@ -160,7 +163,7 @@
                             </li>
                         </ul>
                     </div>
-                    <div class="next-card-section">
+                    {{-- <div class="next-card-section">
                         <ul class="ws-nm">
                             <li class="clearfix">
                                 <div class="flexbox-grid-default">
@@ -173,7 +176,7 @@
                                 {{ $returnRequest->reason->label() }}
                             </li>
                         </ul>
-                    </div>
+                    </div> --}}
                 </div>
 
             </div>
