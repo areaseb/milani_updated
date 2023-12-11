@@ -117,7 +117,7 @@ class BeezupImportOrdersJob implements ShouldQueue
     protected function createOrder($data, $customer)
     {
         $order = new Order();
-        $order->source = $data->marketplaceBusinessCode ?? '_';
+        $order->source = $data->order_MarketPlaceChannel ?? '_';
         $order->external_id = $data->beezUPOrderId;
         $order->user_id = $customer->id;
         $order->amount = (float) $data->order_TotalPrice;
@@ -130,7 +130,7 @@ class BeezupImportOrdersJob implements ShouldQueue
         $order->completed_at = Carbon::parse($data->order_PurchaseUtcDate)->format('Y-m-d H:i:s');
         $order->is_exported = false;
         $order->status = 'processing';
-        $order->source = $this->carriers[$data->marketplaceBusinessCode] ?? '_';
+        $order->source = $this->carriers[$data->marketplaceBusinessCode ?? '_'];
 
         $order->save();
 

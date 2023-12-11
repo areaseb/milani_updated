@@ -116,6 +116,7 @@ class OrderTable extends TableAbstract
             ->with(['user', 'payment'])
             ->select([
                 'id',
+                'source',
                 'status',
                 'user_id',
                 'created_at',
@@ -136,6 +137,10 @@ class OrderTable extends TableAbstract
             'id' => [
                 'title' => trans('core/base::tables.id'),
                 'width' => '20px',
+                'class' => 'text-start',
+            ],
+            'source' => [
+                'title' => trans('core/base::tables.source'),
                 'class' => 'text-start',
             ],
             'user_id' => [
