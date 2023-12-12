@@ -90,14 +90,8 @@ class BeezupImportOrdersJob implements ShouldQueue
             throw new BeezupCustomerNotValidException();
         }
 
-        $customer = Customer::where(function ($query) {
-                return $query->whereNotNull('external_id')
-                    ->where('external_id', $data->order_Buyer_Identifier ?? '');
-            })
-            ->orWhere(function ($query) {
-                return $query->whereNotNull('email')
-                    ->where('email', $data->order_Buyer_Email ?? '');
-            })
+        $customer = Customer::when($data->order_Buyer_Identifier ?? null, fn ($query) => $query->where('external_id', $data->order_Buyer_Identifier))
+            ->when($data->order_Buyer_Email ?? null, fn ($query) => $query->where('email', $data->order_Buyer_Email))
             ->first();
 
         if ($customer) {
@@ -130,7 +124,7 @@ class BeezupImportOrdersJob implements ShouldQueue
         $order->completed_at = Carbon::parse($data->order_PurchaseUtcDate)->format('Y-m-d H:i:s');
         $order->is_exported = false;
         $order->status = 'processing';
-        $order->source = $this->carriers[$data->marketplaceBusinessCode ?? '_'];
+        $order->carrier = $this->carriers[$data->marketplaceBusinessCode] ?? '_';
 
         $order->save();
 
