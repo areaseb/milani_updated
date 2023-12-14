@@ -4,12 +4,12 @@
     @if (Theme::get('hasBreadcrumb', true))
         {!! Theme::partial('breadcrumb') !!}
     @endif
-
+    
     <section class="mt-60 mb-60">
         <div class="container custom">
                 {!! Theme::content() !!}
         </div>
-    </section>
+    </section> 
 </main>
 {!! Theme::partial('footer') !!}
 

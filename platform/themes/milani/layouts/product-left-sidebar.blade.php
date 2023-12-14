@@ -15,15 +15,19 @@
         <div class="container">
             <div class="row mb-4">
                 @php
-                	$array_cat = request('categories');
-                	if(isset($url[5])){
-                		$cat = end($array_cat);
-                	} else {
-                		$cat = $array_cat[0];
-                	}
-                    if($cat){
-                        $category = \Botble\Ecommerce\Models\ProductCategory::where('id', $cat)->first();
-                    }
+
+                	if(request('categories')){
+	                	$array_cat = request('categories');
+	                	if(isset($url[5])){
+	                		$cat = end($array_cat);
+	                	} else {
+	                		$cat = $array_cat[0];
+	                	}
+	                    if($cat){
+	                        $category = \Botble\Ecommerce\Models\ProductCategory::where('id', $cat)->first();
+	                    }
+	                }
+	                
                 @endphp
                 @if(request('categories'))
                     <div class="col-12 p-4 text-center" style="background: url('/storage/{{$category->image}}') center center no-repeat; background-size: cover; min-height: 50px;">
@@ -31,6 +35,12 @@
                         	@if($category)
                             	{!! htmlspecialchars_decode($category->description) !!}
                             @endif
+                        </div>
+                    </div>
+                @elseif(request('q'))
+                    <div class="col-12 p-4 text-center">
+                        <div style="background-color: white; opacity: 0.4;">
+                        	<h2>{{__('Search')}}: {{request('q')}}</h2>
                         </div>
                     </div>
                 @endif

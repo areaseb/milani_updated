@@ -3,7 +3,7 @@
     "-- None --": "-- None --",
     "-- Select --": "-- Select --",
     "-- select --": "-- select --",
-    "...and receive $25 coupon for first shopping.": "...and receive $25 coupon for first shopping.",
+    "...and receive $25 coupon for first shopping.": " ",
     "404 - Not found": "404 - Not found",
     ":avg out of 5": ":avg out of 5",
     ":count Articles": ":count Articles",
@@ -659,5 +659,14 @@
     "to": "to",
     "to write review!": "to write review!",
     "when shipping fee less than or equal": "when shipping fee less than or equal",
-    "✅ Purchased :time": "✅ Purchased :time"
+    "✅ Purchased :time": "✅ Purchased :time",
+    "Dimensions": "Dimensions",
+    "Length": "Length",
+    "Wide": "Wide",
+    "Height": "Height",
+    "Weight": "Weight",
+    "Money back guarantee": "Money back guarantee",
+    "2 year guarantee": "2 year guarantee",
+    "Free shipping for orders over": "Free shipping for orders over",
+    "Details": "Details" 
 }
