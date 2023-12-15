@@ -77,8 +77,9 @@ class BlogService
                     );
                 }
 
-                Theme::breadcrumb()->add(__('Home'), route('public.index'));
-                Theme::breadcrumb()->add(__('Blog'), route('public.index') . '/blog');
+                Theme::breadcrumb()
+                    ->add(__('Home'), route('public.index'))
+                    ->add(__('Blog'), route('public.index') . '/blog');
 
                 $category = $post->categories->sortByDesc('id')->first();
                 if ($category) {
@@ -144,7 +145,8 @@ class BlogService
                     ->getByCategory($allRelatedCategoryIds, (int)theme_option('number_of_posts_in_a_category', 12));
 
                 Theme::breadcrumb()
-                    ->add(__('Home'), route('public.index'));
+                    ->add(__('Home'), route('public.index'))
+                    ->add(__('Blog'), route('public.index') . '/blog');
 
                 if ($category->parents->count()) {
                     foreach ($category->parents->reverse() as $parentCategory) {
@@ -190,6 +192,7 @@ class BlogService
 
                 Theme::breadcrumb()
                     ->add(__('Home'), route('public.index'))
+                    ->add(__('Blog'), route('public.index') . '/blog')
                     ->add($tag->name, $tag->url);
 
                 do_action(BASE_ACTION_PUBLIC_RENDER_SINGLE, TAG_MODULE_SCREEN_NAME, $tag);
