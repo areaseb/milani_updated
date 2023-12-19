@@ -7,11 +7,12 @@
 	
 					$model = $row->reference_type;
 					$cat = $model::where('id', $row->reference_id)->first();
-					if($cat->parent_id != 0 && $cat->image){
-						print "<img src='/storage/$cat->image' width='80%' class='mb-10'>";
+					if($cat){
+						if($cat->parent_id != 0 && $cat->image){
+							print "<img src='/storage/$cat->image' width='80%' class='mb-10'>";
+						}
 					}
-								
-				
+					
 			@endphp
 			
             <a href="{{ url($row->url) }}" @if ($row->active) class="active" @endif target="{{ $row->target }}">

@@ -22,7 +22,7 @@
             @if(!is_null($bullets))
                 @foreach($bullets as $bullet)
                     @if($bullet[0])
-                    	<li>{{ $bullet[0] }}</li>
+                    	<li>{!! nl2br($bullet[0]) !!}</li>
                     @endif
                 @endforeach
             @endif
