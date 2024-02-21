@@ -3666,6 +3666,33 @@ table .product-thumbnail img {
   background-color: var(--color-brand);
 }
 
+.banners .banners-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  justify-content: center;
+}
+.banners .banners-row .banners-item {
+  max-width: 18%;
+  flex-shrink: 0;
+  width: 100%;
+}
+@media (max-width: 1200px) {
+  .banners .banners-row .banners-item {
+    max-width: 30%;
+  }
+}
+@media (max-width: 992px) {
+  .banners .banners-row .banners-item {
+    max-width: 45%;
+  }
+}
+@media (max-width: 768px) {
+  .banners .banners-row .banners-item {
+    max-width: 100%;
+  }
+}
+
 /*BLOG*/
 .post-list article:not(:last-child) {
   margin-bottom: 20px;

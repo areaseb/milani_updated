@@ -1,4 +1,4 @@
-@for ($i = 1; $i < 5; $i++)
+@for ($i = 1; $i < 6; $i++)
     <label class="control-label">Ad {{ $i }}</label>
     <div class="ui-select-wrapper form-group">
         <select name="ads_{{ $i }}" class="form-control ui-select">

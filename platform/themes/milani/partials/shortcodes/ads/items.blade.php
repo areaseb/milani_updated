@@ -1,9 +1,9 @@
 @if ($keys->count())
     <section class="banners pt-60">
         <div class="container">
-            <div class="row">
+            <div class="banners-row">
                 @foreach ($keys as $key)
-                    <div class="col-md-{{ 12 / $keys->count() }}">
+                    <div class="banners-item">
                         {!! display_ad($key) !!}
                     </div>
                 @endforeach
