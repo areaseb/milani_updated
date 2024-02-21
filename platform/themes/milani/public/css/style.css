@@ -3644,6 +3644,28 @@ table .product-thumbnail img {
   background-color: var(--color-brand);
 }
 
+.product-tabs ul li {
+  list-style: none;
+}
+.product-tabs ul li button.nav-link {
+  position: relative;
+  padding-bottom: 15px !important;
+  font-size: 22px !important;
+  color: var(--color-heading) !important;
+  font-family: var(--font-text), sans-serif !important;
+  font-weight: 600 !important;
+  border: none !important;
+}
+.product-tabs ul li button.nav-link::after {
+  content: "";
+  width: 100px;
+  height: 2px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background-color: var(--color-brand);
+}
+
 /*BLOG*/
 .post-list article:not(:last-child) {
   margin-bottom: 20px;
