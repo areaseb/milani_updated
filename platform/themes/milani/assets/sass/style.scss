@@ -55,3 +55,8 @@ TABLE CONTENT
 
 @import 'components/reviews';
 @import 'custom';
+
+
+body {
+    overflow-x: hidden !important;
+}

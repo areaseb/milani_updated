@@ -577,6 +577,15 @@ var __webpack_exports__ = {};
   $(document).ready(function () {
     productDetails();
   });
+
+  /* Newsletter form */
+  $('.newsletter-form #privacy_policy').on('click', function (e) {
+    if ($(this).is(':checked')) {
+      $(this).closest('form').find('button[type="submit"]').removeAttr('disabled');
+    } else {
+      $(this).closest('form').find('button[type="submit"]').attr('disabled', 'disabled');
+    }
+  });
 })(jQuery);
 /******/ })()
 ;

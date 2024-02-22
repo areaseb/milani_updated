@@ -8816,6 +8816,24 @@ small {
 .newsletter .form-subcriber button {
   white-space: nowrap;
 }
+.newsletter .newsletter-form .chek-form {
+  margin-top: 7px;
+  margin-left: 29px;
+}
+.newsletter .newsletter-form .chek-form label {
+  color: #fff;
+}
+.newsletter .newsletter-form .chek-form label a {
+  color: #fff;
+  text-decoration: underline;
+}
+.newsletter .newsletter-form .chek-form .custome-checkbox .form-check-label::before {
+  border-color: #fff !important;
+}
+.newsletter .newsletter-form [type=submit]:hover,
+.newsletter .newsletter-form [type=submit]:focus {
+  background-color: #0a0c0d !important;
+}
 
 .header-info.header-info-right > ul > li img {
   vertical-align: middle;
@@ -9436,4 +9454,8 @@ input.qty-input[type=number] {
 }
 .product-detail .shop_info_tab.entry-main-content h6 {
   font-size: 0.9rem;
+}
+
+body {
+  overflow-x: hidden !important;
 }

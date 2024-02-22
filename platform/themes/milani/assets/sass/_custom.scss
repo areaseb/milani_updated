@@ -889,6 +889,31 @@ small {
             white-space: nowrap;
         }
     }
+
+    .newsletter-form {
+        .chek-form {
+            margin-top: 7px;
+            margin-left: 29px;
+
+            label {
+                color: #fff;
+
+                a {
+                    color: #fff;
+                    text-decoration: underline;
+                }
+            }
+
+            .custome-checkbox .form-check-label::before {
+                border-color: #fff !important;
+            }
+        }
+
+        [type="submit"]:hover,
+        [type="submit"]:focus {
+            background-color: darken(#212529, 10%) !important;
+        }
+    }
 }
 
 .header-info.header-info-right {

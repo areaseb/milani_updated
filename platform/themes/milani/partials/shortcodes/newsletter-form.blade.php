@@ -18,8 +18,16 @@
                     @csrf
                     <div class="form-subcriber d-flex wow fadeIn animated ">
                         <input type="email" name="email" class="form-control bg-white font-small" placeholder="{{ __('Enter your email') }}">
-                        <button class="btn bg-dark text-white" type="submit">{{ __('Subscribe') }}</button>
+                        <button class="btn bg-dark text-white" type="submit" disabled>{{ __('Subscribe') }}</button>
                     </div>
+
+                    <div class="chek-form">
+                        <div class="custome-checkbox">
+                            <input class="form-check-input" type="checkbox" name="privacy_policy" id="privacy_policy" required>
+                            <label class="form-check-label" for="privacy_policy"><span>{!! __('I agree to the :[1]privacy policy:[/1]', ['[1]' => '<a href="/privacy-policy">', '[/1]' => '<a>']) !!}</span></label>
+                        </div>
+                    </div>
+
                     @if (setting('enable_captcha') && is_plugin_active('captcha'))
                         <div class="col-auto">
                             {!! Captcha::display() !!}
