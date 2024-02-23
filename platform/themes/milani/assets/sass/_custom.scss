@@ -891,6 +891,14 @@ small {
     }
 
     .newsletter-form {
+        .desktop-button {
+            display: block;
+        }
+
+        .mobile-button {
+            display: none;
+        }
+
         .chek-form {
             margin-top: 7px;
             margin-left: 29px;
@@ -912,6 +920,43 @@ small {
         [type="submit"]:hover,
         [type="submit"]:focus {
             background-color: darken(#212529, 10%) !important;
+        }
+    }
+
+    @media (max-width: 991px) {
+        .form-subcriber input {
+            border-radius: 50px;
+        }
+
+        .title {
+            min-width: 100%;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .newsletter-form {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            .desktop-button {
+                display: none;
+            }
+
+            .mobile-button {
+                display: block;
+                margin-top: 20px;
+            }
+
+            .chek-form {
+                margin-top: 15px;
+                margin-left: 0;
+
+                .custome-checkbox {
+                    display: flex;
+                    justify-content: center;
+                }
+            }
         }
     }
 }

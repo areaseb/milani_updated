@@ -8816,6 +8816,12 @@ small {
 .newsletter .form-subcriber button {
   white-space: nowrap;
 }
+.newsletter .newsletter-form .desktop-button {
+  display: block;
+}
+.newsletter .newsletter-form .mobile-button {
+  display: none;
+}
 .newsletter .newsletter-form .chek-form {
   margin-top: 7px;
   margin-left: 29px;
@@ -8833,6 +8839,36 @@ small {
 .newsletter .newsletter-form [type=submit]:hover,
 .newsletter .newsletter-form [type=submit]:focus {
   background-color: #0a0c0d !important;
+}
+@media (max-width: 991px) {
+  .newsletter .form-subcriber input {
+    border-radius: 50px;
+  }
+  .newsletter .title {
+    min-width: 100%;
+    justify-content: center;
+    margin-bottom: 25px;
+  }
+  .newsletter .newsletter-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .newsletter .newsletter-form .desktop-button {
+    display: none;
+  }
+  .newsletter .newsletter-form .mobile-button {
+    display: block;
+    margin-top: 20px;
+  }
+  .newsletter .newsletter-form .chek-form {
+    margin-top: 15px;
+    margin-left: 0;
+  }
+  .newsletter .newsletter-form .chek-form .custome-checkbox {
+    display: flex;
+    justify-content: center;
+  }
 }
 
 .header-info.header-info-right > ul > li img {
