@@ -193,7 +193,8 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       isLoading: true,
-      data: []
+      data: [],
+      id: (Math.random() + 1).toString(36).substring(7)
     };
   },
   props: {
@@ -259,7 +260,8 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       isLoading: true,
-      data: []
+      data: [],
+      id: (Math.random() + 1).toString(36).substring(7)
     };
   },
   mounted: function mounted() {
@@ -4018,14 +4020,14 @@ var render = function () {
             _c("div", {
               staticClass:
                 "slider-arrow slider-arrow-2 carousel-6-columns-arrow",
-              attrs: { id: "carousel-6-columns-arrows" },
+              attrs: { id: _vm.id + "-arrows" },
             }),
             _vm._v(" "),
             _c(
               "div",
               {
                 staticClass: "carousel-slider-wrapper carousel-6-columns",
-                attrs: { id: "carousel-6-columns" },
+                attrs: { id: "" + _vm.id },
               },
               _vm._l(_vm.data, function (item) {
                 return _c(
@@ -4107,14 +4109,14 @@ var render = function () {
             _c("div", {
               staticClass:
                 "slider-arrow slider-arrow-2 carousel-6-columns-arrow",
-              attrs: { id: "carousel-6-columns-arrows" },
+              attrs: { id: _vm.id + "-arrows" },
             }),
             _vm._v(" "),
             _c(
               "div",
               {
                 staticClass: "carousel-slider-wrapper carousel-6-columns",
-                attrs: { id: "carousel-6-columns-products" },
+                attrs: { id: "" + _vm.id },
               },
               _vm._l(_vm.data, function (item) {
                 return !_vm.isLoading && _vm.data.length

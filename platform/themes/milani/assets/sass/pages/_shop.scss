@@ -185,6 +185,11 @@
             left: 20px;
             bottom: -18px;
             z-index: 9;
+
+            @media (max-width: 991px) {
+                left: 50%;
+                transform: translateX(-50%);
+            }
         }
 
         span {

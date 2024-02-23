@@ -278,7 +278,8 @@ class WowyController extends PublicController
         $data = [];
         foreach ($products as $product) {
             $data[] = view(
-                Theme::getThemeNamespace() . '::views.ecommerce.includes.product-item',
+                // Theme::getThemeNamespace() . '::views.ecommerce.includes.product-item',
+                Theme::getThemeNamespace() . '::views.ecommerce.includes.product-item-small',
                 compact('product')
             )->render();
         }

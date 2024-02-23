@@ -7,8 +7,8 @@
             </div>
         </div>
         <div v-carousel class="carousel-6-columns-cover position-relative" v-if="!isLoading">
-            <div class="slider-arrow slider-arrow-2 carousel-6-columns-arrow" id="carousel-6-columns-arrows"></div>
-            <div class="carousel-slider-wrapper carousel-6-columns" id="carousel-6-columns">
+            <div class="slider-arrow slider-arrow-2 carousel-6-columns-arrow" :id="`${id}-arrows`"></div>
+            <div class="carousel-slider-wrapper carousel-6-columns" :id="`${id}`">
                 <div class="card-1 border-radius-10 hover-up p-20" v-for="item in data">
                     <figure class="mb-30 img-hover-scale overflow-hidden">
                         <a :href="item.url"><img :src="item.thumbnail" :alt="item.name" /></a>
@@ -25,7 +25,8 @@
         data: function() {
             return {
                 isLoading: true,
-                data: []
+                data: [],
+                id: (Math.random() + 1).toString(36).substring(7),
             };
         },
         props: {

@@ -2665,6 +2665,12 @@ table .product-thumbnail img {
   bottom: -18px;
   z-index: 9;
 }
+@media (max-width: 991px) {
+  .product-cart-wrap .product-badges.product-badges-position {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
 .product-cart-wrap .product-badges span {
   display: inline-block;
   font-size: 12px;
