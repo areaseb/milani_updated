@@ -32,13 +32,13 @@
 	                    @endforeach
 	                </div>
 	            </div> --}}
-	            
-	            
+
+
 	            <div class="card col-12 mb-4 widget-filter-item" data-type="visual">
 					<div class="card-header" id="heading-{{ str_replace(' ', '-', __('By :name', ['name' => __('categories')])) }}">
 					    <h5 class="mb-20 widget__title" data-title="{{ __('Categories') }}" >
 					        <a class="text-left collapsed" data-bs-toggle="collapse" data-bs-target="#collapse-{{ str_replace(' ', '-', __('By :name', ['name' => __('categories')])) }}" aria-expanded="true" aria-controls="collapse-{{ str_replace(' ', '-', __('By :name', ['name' => __('categories')])) }}">
-					            {{ __('By :name', ['name' => __('categories')]) }}
+					            {{ __(':name', ['name' => __('categories')]) }}
 					        </a>
 					    </h5>
 					</div>
@@ -60,11 +60,11 @@
 					    </div>
 					</div>
 				</div>
-	            
+
 	        @endif
 	    </div>
     </div>
-    
+
     <div class="row">
 
 {{--        @php--}}

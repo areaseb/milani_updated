@@ -19,7 +19,7 @@
 	<div class="card-header" id="heading-{{ str_replace(' ', '-', __('By :name', ['name' => str_replace(' ', '-', $set->title)])) }}">
 	    <h5 class="mb-15 widget__title" data-title="{{ $set->title }}" >
 	        <a class="text-left collapsed" data-bs-toggle="collapse" data-bs-target="#collapse-{{ str_replace(' ', '-', __('By :name', ['name' => str_replace(' ', '-', $set->title)])) }}" aria-expanded="true" aria-controls="collapse-{{ str_replace(' ', '-', __('By :name', ['name' => str_replace(' ', '-', $set->title)])) }}">
-	            {{ __('By :name', ['name' => str_replace('1', '', $set->title)]) }} 
+	            {{ __(':name', ['name' => str_replace('1', '', $set->title)]) }}
 	        </a>
 	    </h5>
 	</div>
