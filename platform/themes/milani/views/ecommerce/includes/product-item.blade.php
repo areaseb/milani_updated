@@ -39,7 +39,7 @@
                     <a href="{{ $category->url }}">{{ $category->name }}</a>
                 </div>
             @endif
-            <h2><a href="{{ $product->url }}">{{ $product->name }}</a></h2>
+            <h2><a href="{{ $product->url }}">{{ \Illuminate\Support\Str::limit($product->name, 102, '...') }}</a></h2>
 
             @if (EcommerceHelper::isReviewEnabled())
                 <div class="rating_wrap">
