@@ -45,13 +45,13 @@
         <div class="col-md-7 col-sm-12 col-xs-12">
             <div class="detail-info">
                 <h1 class="title-detail">{{ $product->name }}</h1>
-                
+
                 <div class="short-desc mt-15">
                     {!! apply_filters('ecommerce_before_product_description', null, $product) !!}
                     {!! BaseHelper::clean($product->description) !!}
                     {!! apply_filters('ecommerce_after_product_description', null, $product) !!}
                 </div>
-                
+
                 <div class="product-detail-rating">
                     @if ($product->brand->id)
                         <!-- <div class="pro-details-brand">
@@ -87,7 +87,7 @@
                     </div>
                 </div>
                 <div class="bt-1 border-color-1 mt-30 mb-30"></div>
-                <form class="add-to-cart-form sticky-bar stick-cart" method="POST" action="{{ route('public.cart.add-to-cart') }}">
+                <form class="add-to-cart-form" method="POST" action="{{ route('public.cart.add-to-cart') }}">
                     @csrf
                     {!! apply_filters(ECOMMERCE_PRODUCT_DETAIL_EXTRA_HTML, null, $product) !!}
                     <input type="hidden" name="id" class="hidden-product-id" value="{{ ($product->is_variation || !$product->defaultVariation->product_id) ? $product->id : $product->defaultVariation->product_id }}"/>
@@ -113,7 +113,7 @@
 	                                    </div>
 	                                @endif
 	                            @endif
-								
+
 								<div class="col-md-3 col-xs-3 mt-10 text-center">
 		                            @if (EcommerceHelper::isWishlistEnabled())
 		                                <a aria-label="{{ __('Add To Wishlist') }}" title="{{ __('Add To Wishlist') }}" class="action-btn hover-up js-add-to-wishlist-button" data-url="{{ route('public.wishlist.add', $product->id) }}" href="#"><i class="far fa-heart"></i></a>
@@ -125,34 +125,35 @@
 	                        </div>
                         </div>
 --}}
-                        
-                		@if (EcommerceHelper::isCartEnabled())
-                            <div class="col-md-2 col-xs-2 detail-qty_ border_ radius_ text-center mt-10">
-                                {{-- <a href="#" class="qty-down"><i class="fa fa-caret-down" aria-hidden="true"></i></a> --}}
-                                <input type="number" min="1" value="1" name="qty" class="qty-val qty-input_"/>
-                                {{-- <a href="#" class="qty-up"><i class="fa fa-caret-up" aria-hidden="true"></i></a> --}}
-                            </div>
-                        @endif
-                        @if (EcommerceHelper::isCartEnabled())
-                        	<div class="col-md-3 col-xs-3 mt-10 text-center">
-                            	<button type="submit" class="button button-add-to-cart @if ($product->isOutOfStock()) btn-disabled @endif" type="submit" @if ($product->isOutOfStock()) disabled @endif aria-label="{{ __('Add to cart') }}" title="{{ __('Add to cart') }}"><i class="far fa-shopping-bag" style="font-size: 27px"></i></button> <!-- <img alt="cart" src="{{URL::asset('/storage/general/icon-cart-white.png')}}" width="22"> {{ __('Add to cart') }} -->
-                            </div>
-                            @if (EcommerceHelper::isQuickBuyButtonEnabled())
-                            	<div class="col-md-3 col-xs-3 mt-10 text-center">
-                                	<button class="button button-buy-now @if ($product->isOutOfStock()) btn-disabled @endif" type="submit" name="checkout" @if ($product->isOutOfStock()) disabled @endif aria-label="{{ __('Buy Now') }}" title="{{ __('Buy Now') }}"><i class="far fa-euro-sign" style="font-size: 27px"></i></button>	<!-- <img alt="cart" src="{{URL::asset('/storage/general/euro.png')}}" width="22"> {{ __('Buy Now') }} -->
+
+                        <div class="add-to-cart-container">
+                            @if (EcommerceHelper::isCartEnabled())
+                                <div class="detail-qty_ border_ radius_ text-center">
+                                    {{-- <a href="#" class="qty-down"><i class="fa fa-caret-down" aria-hidden="true"></i></a> --}}
+                                    <input type="number" min="1" value="1" name="qty" class="qty-val qty-input_"/>
+                                    {{-- <a href="#" class="qty-up"><i class="fa fa-caret-up" aria-hidden="true"></i></a> --}}
                                 </div>
                             @endif
-                        @endif
-						
-						<div class="col-md-2 col-xs-2 mt-10 text-center">
-                            @if (EcommerceHelper::isWishlistEnabled())
-                                <a aria-label="{{ __('Add To Wishlist') }}" title="{{ __('Add To Wishlist') }}" class="action-btn hover-up js-add-to-wishlist-button" data-url="{{ route('public.wishlist.add', $product->id) }}" href="#"><i class="far fa-heart"></i></a>
-                            @endif
-                            @if (EcommerceHelper::isCompareEnabled())
-                                <a aria-label="{{ __('Add To Compare') }}" title="{{ __('Add To Compare') }}" href="#" class="action-btn hover-up js-add-to-compare-button" data-url="{{ route('public.compare.add', $product->id) }}"><i class="far fa-exchange-alt"></i></a>
-                            @endif
+
+                            <div class="add-to-cart-actions">
+                                @if (EcommerceHelper::isCartEnabled())
+                                    <button type="submit" class="button button-add-to-cart hover-up @if ($product->isOutOfStock()) btn-disabled @endif" type="submit" @if ($product->isOutOfStock()) disabled @endif aria-label="{{ __('Add to cart') }}" title="{{ __('Add to cart') }}"><i class="far fa-shopping-bag" style="font-size: 27px"></i></button> <!-- <img alt="cart" src="{{URL::asset('/storage/general/icon-cart-white.png')}}" width="22"> {{ __('Add to cart') }} -->
+                                    {{-- @if (EcommerceHelper::isQuickBuyButtonEnabled())
+                                        <div class="col-md-3 col-xs-3 mt-10 text-center">
+                                            <button class="button button-buy-now @if ($product->isOutOfStock()) btn-disabled @endif" type="submit" name="checkout" @if ($product->isOutOfStock()) disabled @endif aria-label="{{ __('Buy Now') }}" title="{{ __('Buy Now') }}"><i class="far fa-euro-sign" style="font-size: 27px"></i></button>	<!-- <img alt="cart" src="{{URL::asset('/storage/general/euro.png')}}" width="22"> {{ __('Buy Now') }} -->
+                                        </div>
+                                    @endif --}}
+                                @endif
+
+                                @if (EcommerceHelper::isWishlistEnabled())
+                                    <a aria-label="{{ __('Add To Wishlist') }}" title="{{ __('Add To Wishlist') }}" class="action-btn hover-up js-add-to-wishlist-button" data-url="{{ route('public.wishlist.add', $product->id) }}" href="#"><i class="far fa-heart"></i></a>
+                                @endif
+                                @if (EcommerceHelper::isCompareEnabled())
+                                    <a aria-label="{{ __('Add To Compare') }}" title="{{ __('Add To Compare') }}" href="#" class="action-btn hover-up js-add-to-compare-button" data-url="{{ route('public.compare.add', $product->id) }}"><i class="far fa-exchange-alt"></i></a>
+                                @endif
+                            </div>
                         </div>
-                        
+
                     </div>
                 </form>
                 <div class="bt-1 border-color-1 mt-15 mb-15"></div>
@@ -194,7 +195,7 @@
                     </div>
                 @endif
 
-                
+
             </div>
             <!-- Detail Info -->
 
@@ -303,14 +304,14 @@
                         {!! apply_filters(BASE_FILTER_PUBLIC_COMMENT_AREA, Theme::partial('comments')) !!}
                     @endif
                 </div>
-                
+
                 <div class="tab-pane fade" id="Details">
                     @php
                           $prod = $product->defaultVariation;
                           $prod_id = $prod->configurable_product_id;
 
                           $attributes = \Botble\Ecommerce\Models\Product::where('id', $prod_id)->first();
-                         
+
                           $attr_list = array(
                           		'sku',
                           		'made_in',
@@ -338,11 +339,11 @@
 								'assemblato',
 								'kit_e_istruzioni_incluse'
                           );
-                          
+
                           $attrib = array();
-                          
+
                           foreach($attr_list as $al){
-                          
+
                           	if($attributes->$al){
                           		$attrib[$al] = $attributes->$al;
                           	}
@@ -356,7 +357,7 @@
                                     <tr>
                                         <td>{{ ucfirst(str_replace('_', ' ', $key)) }}</td>
                                         <td>
-                                        	{{ $value }} 
+                                        	{{ $value }}
                                         	@php
                                         		switch(explode('_', $key)[0]){
                                         			case 'larghezza':

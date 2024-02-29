@@ -1673,3 +1673,47 @@ body {
         }
     }
 }
+
+/**
+ * SINGLE PRODUCT PAGE
+ */
+.add-to-cart-container {
+    display: flex !important;
+    align-items: center;
+
+    .add-to-cart-actions {
+        display: flex;
+        margin-left: 22px;
+
+        * + * {
+            margin-left: 20px;
+        }
+
+        .js-add-to-wishlist-button {
+            height: 42px;
+        }
+    }
+
+    .detail-qty_ {
+        width: 33%;
+
+        input[type=number] {
+            border-radius: 4px;
+        }
+    }
+
+    .button-add-to-cart {
+        height: 42px;
+        width: 34px;
+        border-radius: 4px;
+        position: relative;
+
+        i {
+            font-size: 22px !important;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    }
+}
