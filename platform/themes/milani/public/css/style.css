@@ -9529,8 +9529,11 @@ body {
 }
 
 /**
- * FIX NOME PRODOTTO NELLA MINIATURA DI LISTATO
+ * FIX MINIATURA PRODOTTO
  */
+.product-cart-wrap {
+  overflow: visible;
+}
 .product-cart-wrap .product-content-wrap h2 {
   min-height: 80px;
 }
@@ -9543,6 +9546,11 @@ body {
   .product-cart-wrap .product-content-wrap h2 {
     min-height: 80px;
   }
+}
+
+/** - DEBUG - **/
+#preloader-active {
+  display: none;
 }
 
 body {
