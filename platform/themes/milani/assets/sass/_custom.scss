@@ -1647,3 +1647,10 @@ input.qty-input[type=number] {
 body {
     overflow-x: hidden !important;
 }
+
+
+.category-description {
+    @media (max-width: 991px) {
+        display: none;
+    }
+}

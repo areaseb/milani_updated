@@ -27,19 +27,22 @@
 	                        $category = \Botble\Ecommerce\Models\ProductCategory::where('id', $cat)->first();
 	                    }
 	                }
-	                
+
                 @endphp
                 @if(request('categories'))
                     <div class="col-12 p-4 text-center" style="background: url('/storage/{{$category->image}}') center center no-repeat; background-size: cover; min-height: 50px;">
-                        <div style="background-color: white; opacity: 0.4;">
+                        <div style="background-color: white; opacity: 1;">
                         	@if($category)
-                            	{!! htmlspecialchars_decode($category->description) !!}
+                                <h1 style="margin-bottom: 25px;">{{$category->name}}</h1>
+                                <div class="category-description">
+                            	    {!! htmlspecialchars_decode($category->description) !!}
+                                </div>
                             @endif
                         </div>
                     </div>
                 @elseif(request('q'))
                     <div class="col-12 p-4 text-center">
-                        <div style="background-color: white; opacity: 0.4;">
+                        <div style="background-color: white; opacity: 1;">
                         	<h2>{{__('Search')}}: {{request('q')}}</h2>
                         </div>
                     </div>

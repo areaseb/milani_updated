@@ -9522,6 +9522,12 @@ body {
   overflow-x: hidden !important;
 }
 
+@media (max-width: 991px) {
+  .category-description {
+    display: none;
+  }
+}
+
 body {
   overflow-x: hidden !important;
 }
