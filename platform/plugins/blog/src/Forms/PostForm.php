@@ -40,6 +40,8 @@ class PostForm extends FormAbstract
             $this->formHelper->addCustomField('categoryMulti', CategoryMultiField::class);
         }
 
+        $created_at = $this->getModel() ? $this->getModel()->created_at : now();
+
         $this
             ->setupModel(new Post())
             ->setValidatorClass(PostRequest::class)
@@ -80,6 +82,11 @@ class PostForm extends FormAbstract
                 'label' => trans('core/base::tables.status'),
                 'label_attr' => ['class' => 'control-label required'],
                 'choices' => BaseStatusEnum::labels(),
+            ])
+            ->add('created_at', 'date', [
+                'label' => trans('core/base::tables.published_at'),
+                'label_attr' => ['class' => 'control-label required'],
+                'value' => $created_at->format('Y-m-d'),
             ])
             ->add('categories[]', 'categoryMulti', [
                 'label' => trans('plugins/blog::posts.form.categories'),

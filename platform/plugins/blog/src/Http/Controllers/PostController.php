@@ -20,6 +20,7 @@ use Botble\Blog\Repositories\Interfaces\TagInterface;
 use Botble\Blog\Services\StoreCategoryService;
 use Botble\Blog\Services\StoreTagService;
 use Botble\Blog\Tables\PostTable;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -71,6 +72,7 @@ class PostController extends BaseController
             array_merge($request->input(), [
                 'author_id' => Auth::id(),
                 'author_type' => User::class,
+                'created_at' => Carbon::parse($request->input('created_at'))->format('Y-m-d H:i:s'),
             ])
         );
 
@@ -109,6 +111,10 @@ class PostController extends BaseController
         $post = $this->postRepository->findOrFail($id);
 
         $post->fill($request->input());
+
+        if ($request->has('created_at')) {
+            $post->created_at = Carbon::parse($request->input('created_at'));
+        }
 
         $this->postRepository->createOrUpdate($post);
 

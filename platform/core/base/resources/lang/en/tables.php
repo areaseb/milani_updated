@@ -63,4 +63,5 @@ return [
     'please_select_record' => 'Please select at least one record to perform this action!',
     'carrier' => 'Carrier',
     'source' => 'Source',
+    'published_at' => 'Published At',
 ];

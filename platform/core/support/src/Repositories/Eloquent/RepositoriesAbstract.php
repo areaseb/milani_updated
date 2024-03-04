@@ -242,6 +242,13 @@ abstract class RepositoriesAbstract implements RepositoryInterface
             }
 
             $item = $item->fill($data);
+            if ($data['created_at'] ?? false) {
+                $item->created_at = $data['created_at'];
+            }
+            if ($data['updated_at'] ?? false) {
+                $item->updated_at = $data['updated_at'];
+            }
+
         } else {
             return false;
         }
