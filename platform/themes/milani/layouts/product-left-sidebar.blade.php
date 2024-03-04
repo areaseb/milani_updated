@@ -51,10 +51,13 @@
             <div class="row">
                 <div class="col-lg-3 primary-sidebar sticky-sidebar">
 
+                    <div x-data="{ open: false }" class="page-list-filters" x-cloak>
+                        <button x-on:click.stop.prevent="open = !open" x-bind:class="{ 'open': open }"><span x-show="!open">{{ __('Mostra filtri') }}</span><span x-show="open">{{ __('Chiudi filtri') }}</span> <i class="icon fas fa-angle-down"></i></button>
 
-                    <form action="{{ isset($filterURL) ? $filterURL : route('public.products') }}" method="GET" id="products-filter-ajax">
-                        @include(Theme::getThemeNamespace() . '::views/ecommerce/includes/filters')
-                    </form>
+                        <form action="{{ isset($filterURL) ? $filterURL : route('public.products') }}" method="GET" id="products-filter-ajax" x-show="open">
+                            @include(Theme::getThemeNamespace() . '::views/ecommerce/includes/filters')
+                        </form>
+                    </div>
                     <div class="widget-area">
 
 

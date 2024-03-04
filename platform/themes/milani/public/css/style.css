@@ -9585,6 +9585,46 @@ body {
   transform: translate(-50%, -50%);
 }
 
+[x-cloak] {
+  display: none;
+}
+
+.page-list-filters {
+  margin-bottom: 15px;
+}
+.page-list-filters > button {
+  border: none;
+  font-size: 20px;
+  font-weight: bold;
+  background: var(--color-brand);
+  color: white;
+  width: 100%;
+  padding: 12px 0px;
+  border-radius: 4px;
+}
+.page-list-filters > button.open .icon {
+  transform: rotate(180deg);
+}
+@media (min-width: 992px) {
+  .page-list-filters > button {
+    display: none;
+  }
+}
+.page-list-filters form {
+  margin-top: 15px;
+}
+@media (min-width: 992px) {
+  .page-list-filters form {
+    margin-top: 0px;
+    display: block !important;
+  }
+}
+
+/** - DEBUG - **/
+#preloader-active {
+  display: none;
+}
+
 body {
   overflow-x: hidden !important;
 }

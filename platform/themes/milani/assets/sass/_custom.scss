@@ -1717,3 +1717,42 @@ body {
         }
     }
 }
+
+[x-cloak] {
+    display: none;
+}
+
+.page-list-filters {
+    margin-bottom: 15px;
+
+    & > button {
+        border: none;
+        font-size: 20px;
+        font-weight: bold;
+        background: var(--color-brand);
+        color: white;
+        width: 100%;
+        padding: 12px 0px;
+        border-radius: 4px;
+
+        &.open {
+            .icon {
+                transform: rotate(180deg);
+            }
+        }
+
+        @media (min-width: 992px) {
+            display: none;
+        }
+    }
+
+    form {
+        margin-top: 15px;
+
+        @media (min-width: 992px) {
+            margin-top: 0px;
+
+            display: block !important;
+        }
+    }
+}

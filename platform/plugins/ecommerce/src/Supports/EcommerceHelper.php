@@ -232,7 +232,7 @@ class EcommerceHelper
     {
         $sort = [
             'default_sorting' => __('Default'),
-            'date_asc' => __('Oldest'),
+            // 'date_asc' => __('Oldest'),
             'date_desc' => __('Newest'),
             'price_asc' => __('Price: low to high'),
             'price_desc' => __('Price: high to low'),
