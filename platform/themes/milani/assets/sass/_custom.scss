@@ -1756,3 +1756,20 @@ body {
         }
     }
 }
+
+@media (max-width: 991px) {
+    .totall-product p {
+        text-align: center;
+        font-size: 18px;
+        margin: 15px 0 25px;
+    }
+
+    .sort-by-product-area {
+        display: flex;
+        justify-content: center;
+
+        & > div:first-child {
+            display: none;
+        }
+    }
+}
