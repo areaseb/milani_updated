@@ -12,7 +12,7 @@
                 <span class="post-by">{{ __('By') }} {{ $post->author->name }}</span>
                 <span class="post-on has-dot">{{ $post->created_at->translatedFormat('M d, Y') }}</span>
                 <span class="time-reading has-dot">{{ __(':count mins read', ['count' => get_time_to_read($post)]) }}</span>
-                <span class="hit-count has-dot">{{ __(':count Views', ['count' => number_format($post->views)]) }}</span>
+                {{-- <span class="hit-count has-dot">{{ __(':count Views', ['count' => number_format($post->views)]) }}</span> --}}
             </div>
             <div class="social-icons social-icons-colored-hover">
                 <ul class="text-grey-5 d-inline-block">
@@ -85,7 +85,7 @@
                             <div class="entry-meta meta-1 font-xs color-grey mt-10 pb-10">
                                 <div>
                                     <span class="post-on has-dot"> <i class="far fa-clock"></i> {{ $relatedItem->created_at->translatedFormat('M d, Y') }}</span>
-                                    <span class="hit-count has-dot">{{ __(':count Views', ['count' => number_format($relatedItem->views)]) }}</span>
+                                    {{-- <span class="hit-count has-dot">{{ __(':count Views', ['count' => number_format($relatedItem->views)]) }}</span> --}}
                                 </div>
                                 <a href="{{ $relatedItem->url }}" class="text-brand">{{ __('Read more') }} <i class="fa fa-arrow-right fw-300 text-brand ml-5"></i></a>
                             </div>

@@ -3954,14 +3954,6 @@ var render = function () {
                               _c("i", { staticClass: "far fa-clock" }),
                               _vm._v(" " + _vm._s(item.created_at)),
                             ]),
-                            _vm._v(" "),
-                            _c("span", { staticClass: "hit-count has-dot" }, [
-                              _vm._v(
-                                _vm._s(item.views) +
-                                  " " +
-                                  _vm._s(_vm.__("Views"))
-                              ),
-                            ]),
                           ]),
                           _vm._v(" "),
                           _c("a", { attrs: { href: item.url } }, [

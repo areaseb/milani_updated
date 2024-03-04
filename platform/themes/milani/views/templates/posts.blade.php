@@ -70,7 +70,7 @@
                                 <div class="entry-meta meta-1 font-xs color-grey mt-10 pb-10">
                                     <div>
                                         <span class="post-on has-dot"> <i class="far fa-clock"></i> {{ $post->created_at->translatedFormat('M d, Y') }}</span>
-                                        <span class="hit-count has-dot">{{ __(':count Views', ['count' => number_format($post->views)]) }}</span>
+                                        {{-- <span class="hit-count has-dot">{{ __(':count Views', ['count' => number_format($post->views)]) }}</span> --}}
                                     </div>
                                     <a href="{{ $post->url }}" class="text-brand">{{ __('Read more') }} <i class="fa fa-arrow-right fw-300 text-brand ml-5"></i></a>
                                 </div>

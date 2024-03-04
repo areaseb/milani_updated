@@ -23,7 +23,7 @@
                             <div class="entry-meta meta-1 font-xs color-grey mt-10 pb-10">
                                 <div>
                                     <span class="post-on"> <i class="far fa-clock"></i> {{ item.created_at }}</span>
-                                    <span class="hit-count has-dot">{{ item.views }} {{ __('Views')}}</span>
+                                    <!-- <span class="hit-count has-dot">{{ item.views }} {{ __('Views')}}</span> -->
                                 </div>
                                 <a :href="item.url">{{ __('Read more') }} <i class="fa fa-arrow-right font-xxs ml-5"></i></a>
                             </div>

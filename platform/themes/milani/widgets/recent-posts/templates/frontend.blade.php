@@ -19,7 +19,7 @@
                             <a href="{{ $post->url }}"><h6 class="post-title mb-10 text-limit-2-row">{{ $post->name }}</h6></a>
                             <div class="entry-meta meta-1 font-xxs color-grey">
                                 <span class="post-on has-dot">{{ $post->created_at->translatedFormat('M d, Y') }}</span>
-                                <span class="hit-count has-dot">{{ __(':count Views', ['count' => number_format($post->views)]) }}</span>
+                                {{-- <span class="hit-count has-dot">{{ __(':count Views', ['count' => number_format($post->views)]) }}</span> --}}
                             </div>
                         </div>
                     </div>
