@@ -1,5 +1,5 @@
 @if ($posts->count() > 0)
-    <div class="single-header mb-80">
+    {{-- <div class="single-header mb-80">
         <h1 class="font-xxl text-brand">{{ SeoHelper::getTitle() }}</h1>
 
         <div class="entry-meta meta-1 font-xs mt-15 mb-15">
@@ -7,7 +7,7 @@
             <span class="post-on d-inline-block has-dot">{{ __(':count Articles', ['count' => app(\Botble\Blog\Repositories\Interfaces\PostInterface::class)->count(['status' => \Botble\Base\Enums\BaseStatusEnum::PUBLISHED])]) }}</span>
             <span class="hit-count d-inline-block has-dot">{{ __(':count Views', ['count' => number_format(app(\Botble\Blog\Repositories\Interfaces\PostInterface::class)->getModel()->sum('views'))]) }}</span>
         </div>
-    </div>
+    </div> --}}
 
     <div class="loop-grid pr-30">
         <div class="row">
