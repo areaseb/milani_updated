@@ -599,6 +599,6 @@
         <div class="col-12">
             <h3 class="section-title style-1 mb-30">{{ __('Related products') }}</h3>
         </div>
-        <related-products-component url="{{ route('public.ajax.related-products', $product->id) }}" :limit="{{ $layout == 'product-full-width' ? 4 : 3 }}"></related-products-component>
+        <related-products-component url="{{ route('public.ajax.related-products', $product->id) }}" ::limit="{{ $layout == 'product-full-width' ? 4 : 3 }}"></related-products-component>
     </div>
 </div>
