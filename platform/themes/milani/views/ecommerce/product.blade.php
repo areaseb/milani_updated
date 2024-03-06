@@ -32,15 +32,17 @@
                 </div>
             </div>
             <!-- End Gallery -->
-            <div class="single-social-share clearfix mt-50 mb-15">
-                <p class="mb-15 mt-30 font-sm"> <i class="fa fa-share-alt mr-5"></i> <span class="d-inline-block">{{ __('Share this') }}</span></p>
-                <div class="mobile-social-icon wow fadeIn  mb-sm-5 mb-md-0 animated">
-                    <a class="facebook" href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($product->url) }}" target="_blgiank"><i class="fab fa-facebook-f"></i></a>
-                    <a class="twitter" href="https://twitter.com/intent/tweet?url={{ urlencode($product->url) }}&text={{ strip_tags($product->description) }}" target="_blank"><i class="fab fa-twitter"></i></a>
-                    <a class="linkedin" href="https://www.linkedin.com/shareArticle?mini=true&url={{ urlencode($product->url) }}&summary={{ rawurldecode(strip_tags($product->description)) }}" target="_blank"><i class="fab fa-linkedin"></i></a>
+            <div x-data="{ open: false }">
+                <div class="single-social-share clearfix mt-50 mb-15">
+                    <p class="mb-15 mt-30 font-sm" x-on:click.prevent.stop="open = !open"> <i class="fa fa-share-alt mr-5"></i> <span class="d-inline-block">{{ __('Share this') }}</span></p>
+                    <div class="mobile-social-icon mb-sm-5 mb-md-0" x-show="open">
+                        <a class="facebook" href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($product->url) }}" target="_blgiank"><i class="fab fa-facebook-f"></i></a>
+                        <a class="twitter" href="https://twitter.com/intent/tweet?url={{ urlencode($product->url) }}&text={{ strip_tags($product->description) }}" target="_blank"><i class="fab fa-twitter"></i></a>
+                        <a class="linkedin" href="https://www.linkedin.com/shareArticle?mini=true&url={{ urlencode($product->url) }}&summary={{ rawurldecode(strip_tags($product->description)) }}" target="_blank"><i class="fab fa-linkedin"></i></a>
+                    </div>
                 </div>
+                {{-- <a class="mail-to-friend font-sm color-grey" href="mailto:someone@example.com?subject={{ __('Buy') }} {{ $product->name }}&body={{ __('Buy this one: :link', ['link' => $product->url]) }}" x-show="open"><i class="far fa-envelope"></i> {{ __('Email to a Friend') }}</a> --}}
             </div>
-            <a class="mail-to-friend font-sm color-grey" href="mailto:someone@example.com?subject={{ __('Buy') }} {{ $product->name }}&body={{ __('Buy this one: :link', ['link' => $product->url]) }}"><i class="far fa-envelope"></i> {{ __('Email to a Friend') }}</a>
         </div>
         <div class="col-md-7 col-sm-12 col-xs-12">
             <div class="detail-info">
