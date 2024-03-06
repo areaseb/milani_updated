@@ -527,6 +527,11 @@
         </div>
     </div>
 
+    <div class="widget-area widget-area-mobile bg-grey-9">
+        {!! dynamic_sidebar('product_sidebar') !!}
+        {!! do_shortcode('[bullets][/bullets]') !!}
+    </div>
+
     <!-- Detail Info -->
     <div class="mb-30 reassurance-block-container">
         <div class="reassurance-block">
