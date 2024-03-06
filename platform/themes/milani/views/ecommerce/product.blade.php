@@ -197,60 +197,6 @@
 
 
             </div>
-            <!-- Detail Info -->
-
-            <div class="tab-pane faqs-list mt-30" id="tab-prod">
-                <div class="accordion" id="prod-accordion">
-
-                    <div class="card">
-                        <div class="card-header" id="heading-prod-soddisfatti">
-                            <h2 class="mb-0">
-                                <button class="btn btn-link btn-block text-left collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-prod-soddisfatti" aria-expanded="true" aria-controls="collapse-prod-soddisfatti">
-                                    {{ strtoupper(__('Money back guarantee')) }}
-                                </button>
-                            </h2>
-                        </div>
-
-                        <div id="collapse-prod-soddisfatti" class="collapse" aria-labelledby="heading-prod-soddisfatti" data-parent="#prod-accordion">
-                            <div class="card-body">
-                                La vostra soddisfazione &egrave; la nostra priorit&agrave;. Se non siete completamente soddisfatti del vostro acquisto, accettiamo resi e rimborsi entro 30 giorni dalla data di consegna. Contattateci per avviare il processo di reso.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header" id="heading-prod-garanzia">
-                            <h2 class="mb-0">
-                                <button class="btn btn-link btn-block text-left collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-prod-garanzia" aria-expanded="true" aria-controls="collapse-prod-garanzia">
-                                    {{ strtoupper(__('2 year guarantee')) }}
-                                </button>
-                            </h2>
-                        </div>
-
-                        <div id="collapse-prod-garanzia" class="collapse" aria-labelledby="heading-prod-garanzia" data-parent="#prod-accordion">
-                            <div class="card-body">
-                                Tutti i nostri prodotti vengono forniti con una garanzia di 2 anni che copre difetti di fabbricazione. La vostra tranquillit&agrave; &egrave; fondamentale per noi, pertanto in caso di problemi, ci impegneremo a risolverli. Contattate il nostro servizio clienti per assistenza e supporto.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-header" id="heading-prod-trasporto">
-                            <h2 class="mb-0">
-                                <button class="btn btn-link btn-block text-left collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-prod-trasporto" aria-expanded="true" aria-controls="collapse-prod-trasporto">
-                                    {{ strtoupper(__('Free shipping for orders over')) }} &euro; 20,00
-                                </button>
-                            </h2>
-                        </div>
-
-                        <div id="collapse-prod-trasporto" class="collapse" aria-labelledby="heading-prod-trasporto" data-parent="#prod-accordion">
-                            <div class="card-body">
-                                Gli ordini superiori a &euro; 20,00 sono idonei per la spedizione gratuita! Approfittate di questa offerta per arredare il vostro giardino con i nostri prodotti di qualit&agrave;. La spedizione gratuita verr&agrave; applicata automaticamente al momento del checkout.
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
         </div>
     </div>
 
@@ -578,6 +524,82 @@
             </div>
         </div>
     </div>
+
+    <!-- Detail Info -->
+    <div class="mb-30 reassurance-block-container">
+        <div class="reassurance-block">
+            <h2 class="reassurance-block-title"><span>{{ strtoupper(__('Money back guarantee')) }}</span></h2>
+            <div class="reassurance-block-content">
+                La vostra soddisfazione &egrave; la nostra priorit&agrave;. Se non siete completamente soddisfatti del vostro acquisto, accettiamo resi e rimborsi entro 30 giorni dalla data di consegna. Contattateci per avviare il processo di reso.
+            </div>
+        </div>
+
+        <div class="reassurance-block">
+            <h2 class="reassurance-block-title"><span>{{ strtoupper(__('2 year guarantee')) }}</span></h2>
+            <div class="reassurance-block-content">
+                Tutti i nostri prodotti vengono forniti con una garanzia di 2 anni che copre difetti di fabbricazione. La vostra tranquillit&agrave; &egrave; fondamentale per noi, pertanto in caso di problemi, ci impegneremo a risolverli. Contattate il nostro servizio clienti per assistenza e supporto.
+            </div>
+        </div>
+
+        <div class="reassurance-block">
+            <h2 class="reassurance-block-title"><span>{{ strtoupper(__('Free shipping for orders over')) }} &euro; 20,00</span></h2>
+            <div class="reassurance-block-content">
+                Gli ordini superiori a &euro; 20,00 sono idonei per la spedizione gratuita! Approfittate di questa offerta per arredare il vostro giardino con i nostri prodotti di qualit&agrave;. La spedizione gratuita verr&agrave; applicata automaticamente al momento del checkout.
+            </div>
+        </div>
+    </div>
+
+    {{-- <div class="tab-pane faqs-list " id="tab-prod">
+        <div class="accordion" id="prod-accordion">
+
+            <div class="card">
+                <div class="card-header" id="heading-prod-soddisfatti">
+                    <h2 class="mb-0">
+                        <button class="btn btn-link btn-block text-left collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-prod-soddisfatti" aria-expanded="true" aria-controls="collapse-prod-soddisfatti">
+                            {{ strtoupper(__('Money back guarantee')) }}
+                        </button>
+                    </h2>
+                </div>
+
+                <div id="collapse-prod-soddisfatti" class="collapse" aria-labelledby="heading-prod-soddisfatti" data-parent="#prod-accordion">
+                    <div class="card-body">
+                        La vostra soddisfazione &egrave; la nostra priorit&agrave;. Se non siete completamente soddisfatti del vostro acquisto, accettiamo resi e rimborsi entro 30 giorni dalla data di consegna. Contattateci per avviare il processo di reso.
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header" id="heading-prod-garanzia">
+                    <h2 class="mb-0">
+                        <button class="btn btn-link btn-block text-left collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-prod-garanzia" aria-expanded="true" aria-controls="collapse-prod-garanzia">
+                            {{ strtoupper(__('2 year guarantee')) }}
+                        </button>
+                    </h2>
+                </div>
+
+                <div id="collapse-prod-garanzia" class="collapse" aria-labelledby="heading-prod-garanzia" data-parent="#prod-accordion">
+                    <div class="card-body">
+                        Tutti i nostri prodotti vengono forniti con una garanzia di 2 anni che copre difetti di fabbricazione. La vostra tranquillit&agrave; &egrave; fondamentale per noi, pertanto in caso di problemi, ci impegneremo a risolverli. Contattate il nostro servizio clienti per assistenza e supporto.
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header" id="heading-prod-trasporto">
+                    <h2 class="mb-0">
+                        <button class="btn btn-link btn-block text-left collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-prod-trasporto" aria-expanded="true" aria-controls="collapse-prod-trasporto">
+                            {{ strtoupper(__('Free shipping for orders over')) }} &euro; 20,00
+                        </button>
+                    </h2>
+                </div>
+
+                <div id="collapse-prod-trasporto" class="collapse" aria-labelledby="heading-prod-trasporto" data-parent="#prod-accordion">
+                    <div class="card-body">
+                        Gli ordini superiori a &euro; 20,00 sono idonei per la spedizione gratuita! Approfittate di questa offerta per arredare il vostro giardino con i nostri prodotti di qualit&agrave;. La spedizione gratuita verr&agrave; applicata automaticamente al momento del checkout.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div> --}}
 
     @php
         $crossSellProducts = get_cross_sale_products($product, $layout == 'product-full-width' ? 4 : 3);

@@ -1774,6 +1774,35 @@ body {
     }
 }
 
+.reassurance-block {
+    &-title {
+        color: var(--color-brand);
+        font-size: 16px;
+        text-transform: uppercase;
+        font-weight: 500;
+        border-bottom: 1px solid #dee2e6;
+
+        span {
+            display: inline-block;
+            padding: 10px 0;
+            border-bottom: 2px solid var(--color-brand);
+        }
+    }
+
+    &-content {
+        margin-top: 20px;
+        margin-bottom: 0;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 24px;
+        color: var(--color-body);
+    }
+
+    & + & {
+        margin-top: 30px;
+    }
+}
+
 
 /** - DEBUG - **/
 #preloader-active {
