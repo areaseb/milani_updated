@@ -27,6 +27,18 @@
 
     {!! apply_filters('ecommerce_checkout_header', null) !!}
 
+    <style>
+        .checkout-page .checkout-logo .container {
+            width: 100% !important;
+            margin: 0;
+            padding: 0;
+        }
+
+        .checkout-page .checkout-logo .container img {
+            width: 250px;
+        }
+    </style>
+
     @stack('header')
 </head>
 <body class="checkout-page" @if (BaseHelper::siteLanguageDirection() == 'rtl') dir="rtl" @endif>
