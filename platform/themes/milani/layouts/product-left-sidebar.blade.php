@@ -54,7 +54,7 @@
                     <div x-data="{ open: false }" class="page-list-filters" x-cloak>
                         <button x-on:click.stop.prevent="open = !open" x-bind:class="{ 'open': open }"><span x-show="!open">{{ __('Mostra filtri') }}</span><span x-show="open">{{ __('Chiudi filtri') }}</span> <i class="icon fas fa-angle-down"></i></button>
 
-                        <form action="{{ isset($filterURL) ? $filterURL : route('public.products') }}" method="GET" id="products-filter-ajax" x-show="open">
+                        <form action="/{{ Request::path() }}" method="GET" x-show="open">
                             @include(Theme::getThemeNamespace() . '::views/ecommerce/includes/filters')
                         </form>
                     </div>
