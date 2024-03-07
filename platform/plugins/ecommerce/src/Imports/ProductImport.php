@@ -274,7 +274,11 @@ class ProductImport implements
         $slug = $this->request->input('slug');
 
         if (in_array($importType, ['products', 'all']) && $row['import_type'] == 'product') {
-            return $this->storeProduct();
+            // Here we need to import the product
+            // and the default variation which is
+            // the same as parent product
+            $product = $this->storeProduct();
+            return $this->storeVariant($product, true);
 
         } else if (in_array($importType, ['variations', 'all']) && $row['import_type'] == 'variation') {
             $product = $this->getProduct($name, $slug);
@@ -441,7 +445,7 @@ class ProductImport implements
      * @param $product
      * @return ProductVariation|null
      */
-    public function storeVariant($product): ?ProductVariation
+    public function storeVariant($product, $default = false): ?ProductVariation
     {
         if (!$product) {
             if (method_exists($this, 'onFailure')) {
@@ -478,7 +482,7 @@ class ProductImport implements
         $variation = $result['variation'];
 
         $version = array_merge($variation->toArray(), $this->request->toArray());
-        $version['variation_default_id'] = Arr::get($version, 'is_variation_default') ? $version['id'] : null;
+        $version['variation_default_id'] = $default ? $version['id'] : null;
         $version['attribute_sets'] = $addedAttributes;
 
         if ($version['description']) {
@@ -624,7 +628,7 @@ class ProductImport implements
         $row['status'] = (string) $row['status'];
         $row['is_featured'] = (boolean) $row['is_featured'];
         $row['price'] = (float) $row['price'];
-        $row['is_variation_default'] = (boolean) $row['is_variation_default'];
+        $row['is_variation_default'] = false;
         $row['stock_status'] = (string) $row['stock_status'];
         $row['with_storehouse_management'] = (boolean) $row['with_storehouse_management'];
         $row['quantity'] = (int) $row['quantity'];
@@ -1019,81 +1023,72 @@ class ProductImport implements
         $row['attribute_sets'] = [];
         $row['product_attributes'] = [];
 
-        if ($row['import_type'] == 'variation') {
+        // First let's create the attribute sets
+        foreach ($attributeSets as $title => $value) {
+            $attributeSet = $this->productAttributeSetRepository
+                ->firstOrCreate(['title' => $title], [
+                    'slug' => Str::slug($title),
+                    'status' => 'published',
+                    'order' => $this->productAttributeSetRepository->getModel()->max('order') + 1,
+                    'display_layout' => 'text',
+                    'is_searchable' => 1,
+                    'is_comparable' => 1,
+                    'is_use_in_product_listing' => 1,
+                    'use_image_from_product_variation' => 0,
+                ]);
 
-            $name = $row['name'];
-            $slug = $row['slug'];
-
-            $parent = $this->getProduct($name, $slug);
-
-            if ($parent) {
-                $parentAttributeSets = $this->productAttributeSetRepository->getByProductId($parent->id);
-                foreach ($parentAttributeSets as $attributeSet) {
-                    if (!in_array($attributeSet->title, array_keys($attributeSets))) {
-                        $attributeSets[$attributeSet->title] = 'NO';
-                    }
-                }
-
-                // Filter out attribute sets that are not in the parent product
-                $filteredAttributesSets = [];
-                foreach ($attributeSets as $title => $value) {
-                    foreach ($parentAttributeSets as $attributeSet) {
-                        if ($attributeSet->title == $title) {
-                            $filteredAttributesSets[$title] = $value;
-                        }
-                    }
-                }
-
-                $attributeSets = $filteredAttributesSets;
-            }
-
-            foreach ($attributeSets as $title => $value) {
-                if (!$title || !$value) {
-                    continue;
-                }
-
-                $attributeSet = $this->productAttributeSetRepository
-                    ->firstOrCreate(['title' => $title], [
-                        'slug' => Str::slug($title),
-                        'status' => 'published',
-                        'order' => $this->productAttributeSetRepository->getModel()->max('order') + 1,
-                        'display_layout' => 'text',
-                        'is_searchable' => 1,
-                        'is_comparable' => 1,
-                        'is_use_in_product_listing' => 1,
-                        'use_image_from_product_variation' => 0,
-                    ]);
-
-                $attribute = $attributeSet->attributes()
-                    ->firstOrCreate(['title' => $value], [
-                        'slug' => Str::slug($value),
-                        'color' => null,
-                        'status' => 'published',
-                        'order' => $attributeSet->attributes()->max('order') + 1,
-                        'image' => null,
-                        'is_default' => 0,
-                    ]);
-
-                $row['product_attributes'][$attributeSet->id] = $attribute->id;
-            }
+            $row['attribute_sets'][] = $attributeSet->id;
         }
 
-        if ($row['import_type'] == 'product') {
-            foreach ($attributeSets as $title => $value) {
-                $attributeSet = $this->productAttributeSetRepository
-                    ->firstOrCreate(['title' => $title], [
-                        'slug' => Str::slug($title),
-                        'status' => 'published',
-                        'order' => $this->productAttributeSetRepository->getModel()->max('order') + 1,
-                        'display_layout' => 'text',
-                        'is_searchable' => 1,
-                        'is_comparable' => 1,
-                        'is_use_in_product_listing' => 1,
-                        'use_image_from_product_variation' => 0,
-                    ]);
+        // if ($parent) {
+        //     $parentAttributeSets = $this->productAttributeSetRepository->getByProductId($parent->id);
+        //     foreach ($parentAttributeSets as $attributeSet) {
+        //         if (!in_array($attributeSet->title, array_keys($attributeSets))) {
+        //             $attributeSets[$attributeSet->title] = 'NO';
+        //         }
+        //     }
 
-                $row['attribute_sets'][] = $attributeSet->id;
+        //     // Filter out attribute sets that are not in the parent product
+        //     $filteredAttributesSets = [];
+        //     foreach ($attributeSets as $title => $value) {
+        //         foreach ($parentAttributeSets as $attributeSet) {
+        //             if ($attributeSet->title == $title) {
+        //                 $filteredAttributesSets[$title] = $value;
+        //             }
+        //         }
+        //     }
+
+        //     $attributeSets = $filteredAttributesSets;
+        // }
+
+        foreach ($attributeSets as $title => $value) {
+            if (!$title || !$value) {
+                continue;
             }
+
+            $attributeSet = $this->productAttributeSetRepository
+                ->firstOrCreate(['title' => $title], [
+                    'slug' => Str::slug($title),
+                    'status' => 'published',
+                    'order' => $this->productAttributeSetRepository->getModel()->max('order') + 1,
+                    'display_layout' => 'text',
+                    'is_searchable' => 1,
+                    'is_comparable' => 1,
+                    'is_use_in_product_listing' => 1,
+                    'use_image_from_product_variation' => 0,
+                ]);
+
+            $attribute = $attributeSet->attributes()
+                ->firstOrCreate(['title' => $value], [
+                    'slug' => Str::slug($value),
+                    'color' => null,
+                    'status' => 'published',
+                    'order' => $attributeSet->attributes()->max('order') + 1,
+                    'image' => null,
+                    'is_default' => 0,
+                ]);
+
+            $row['product_attributes'][$attributeSet->id] = $attribute->id;
         }
 
         // Let's fix the sku_set attribute
