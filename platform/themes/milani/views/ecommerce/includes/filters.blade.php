@@ -88,7 +88,7 @@
 {{--            </div>--}}
 {{--        @endif--}}
 
-        @php
+        {{-- @php
             $tags = app(\Botble\Ecommerce\Repositories\Interfaces\ProductTagInterface::class)->advancedGet([
                 'condition' => ['status' => \Botble\Base\Enums\BaseStatusEnum::PUBLISHED],
                 'withCount' => ['products'],
@@ -112,7 +112,7 @@
                     @endforeach
                 </div>
             </div>
-        @endif
+        @endif --}}
 
         <div class="col-12 pb-4 widget-filter-item" data-type="price">
             <h5 class="mb-20 widget__title" data-title="{{ __('Price') }}">{{ __('By :name', ['name' => __('Price')]) }}</h5>

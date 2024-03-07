@@ -37,6 +37,11 @@ class RenderProductAttributeSetsOnSearchPageSupport
                 'with' => $with,
             ]);
 
+        // First let's filter out not wanted attribute sets
+        $attributeSets = $attributeSets->filter(function ($attributeSet) {
+            return in_array($attributeSet->slug, ['colore-1', 'materiale-1', 'forma', 'stile']);
+        });
+
         return view($params['view'], compact('attributeSets'))->render();
     }
 }
