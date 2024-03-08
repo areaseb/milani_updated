@@ -27,7 +27,8 @@ class GetProductService
         $brand = null,
         array $with = [],
         array $withCount = [],
-        array $conditions = []
+        array $conditions = [],
+        $paginate = true
     ): Collection|LengthAwarePaginator {
         $num = (int)$request->input('num');
         $shows = EcommerceHelper::getShowParams();
@@ -84,6 +85,10 @@ class GetProductService
                 'with' => $with,
                 'withCount' => $withCount,
             ], EcommerceHelper::withReviewsParams());
+
+        if (!$paginate) {
+            $params['paginate']['per_page'] = false;
+        }
 
         switch ($queryVar['sort_by']) {
             case 'date_asc':

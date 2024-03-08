@@ -115,7 +115,7 @@
         @endif --}}
 
         <div class="col-12 pb-4 widget-filter-item" data-type="price">
-            <h5 class="mb-20 widget__title" data-title="{{ __('Price') }}">{{ __('By :name', ['name' => __('Price')]) }}</h5>
+            <h5 class="mb-20 widget__title" data-title="{{ __('Price') }}">{{ __(':name', ['name' => __('Price')]) }}</h5>
             <div class="price-filter range">
                 <div class="price-filter-inner">
                     <div class="slider-range"></div>
@@ -128,8 +128,8 @@
                     <input type="hidden"
                         class="min_price max-range"
                         name="max_price"
-                           value="{{ request()->input('max_price', (int)theme_option('max_filter_price', 100000) * get_current_exchange_rate()) }}"
-                           data-max="{{ (int)theme_option('max_filter_price', 100000) * get_current_exchange_rate() }}"
+                           value="{{ request()->input('max_price', app(Botble\Ecommerce\Supports\RenderProductAttributeSetsOnSearchPageSupport::class)->getMaxPrice()) }}"
+                           data-max="{{ app(Botble\Ecommerce\Supports\RenderProductAttributeSetsOnSearchPageSupport::class)->getMaxPrice() }}"
                         data-label="{{ __('Max price') }}"/>
                     <div class="price_slider_amount">
                         <div class="label-input">

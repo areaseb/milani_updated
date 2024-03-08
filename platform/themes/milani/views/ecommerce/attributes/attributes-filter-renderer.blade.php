@@ -1,15 +1,15 @@
-@foreach($attributeSets as $attributeSet)
-	@if($attributeSet->slug != 'portata-massima')
-	    @if(view()->exists(Theme::getThemeNamespace(). '::views.ecommerce.attributes._layouts-filter.' . $attributeSet->display_layout))
-	        @include(Theme::getThemeNamespace(). '::views.ecommerce.attributes._layouts-filter.' . $attributeSet->display_layout, [
-	            'set'        => $attributeSet,
-	            'attributes' => $attributeSet->attributes,
+@foreach($attributeSets as $data)
+	@if($data['attributeSet']->slug != 'portata-massima')
+	    @if(view()->exists(Theme::getThemeNamespace(). '::views.ecommerce.attributes._layouts-filter.' . $data['attributeSet']->display_layout))
+	        @include(Theme::getThemeNamespace(). '::views.ecommerce.attributes._layouts-filter.' . $data['attributeSet']->display_layout, [
+	            'set'        => $data['attributeSet'],
+	            'attributes' => $data['attributes'],
 	            'selected'   => (array)request()->query('attributes', []),
 	        ])
 	    @else
 	        @include(Theme::getThemeNamespace(). '::views.ecommerce.attributes._layouts.dropdown', [
-	            'set'        => $attributeSet,
-	            'attributes' => $attributeSet->attributes,
+	            'set'        => $data['attributeSet'],
+	            'attributes' => $data['attributes'],
 	            'selected'   => (array)request()->query('attributes', []),
 	        ])
 	    @endif

@@ -108,8 +108,7 @@ class PublicProductController
             ->add(__('Home'), route('public.index'))
             ->add(__('Products'), route('public.products'));
 
-        $products = $productService->getProduct($request, null, null, $with);
-
+        $products = $productService->getProduct($request, null, null, $with, [], [], true);
         if ($request->ajax()) {
             return $this->ajaxFilterProductsResponse($products, $request, $response);
         }
