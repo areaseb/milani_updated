@@ -382,7 +382,7 @@ class ProductRepository extends RepositoriesAbstract implements ProductInterface
         $params = array_merge([
             'condition' => [
                 'ec_products.status' => BaseStatusEnum::PUBLISHED,
-                'ec_products.is_variation' => 0,
+                'ec_products.is_variation' => 1,
             ],
             'order_by' => Arr::get($filters, 'order_by'),
             'take' => null,
@@ -446,6 +446,10 @@ class ProductRepository extends RepositoriesAbstract implements ProductInterface
             '), function ($join) {
                 return $join->on('products_with_final_price.id', '=', 'ec_products.id');
             });
+
+        // We are getting only variations, so we need to join with product_variations table
+        $this->model = $this->model
+            ->leftJoin('ec_product_variations', 'ec_product_variations.product_id', 'ec_products.id');
 
         $keyword = $filters['keyword'];
         if ($keyword && is_string($keyword)) {
@@ -601,39 +605,24 @@ class ProductRepository extends RepositoriesAbstract implements ProductInterface
         $filters['categories'] = array_filter($filters['categories']);
         if ($filters['categories']) {
             $this->model = $this->model
-                ->whereHas('categories', function ($query) use ($filters) {
-                    /**
-                     * @var Builder $query
-                     */
-                    return $query
-                        ->whereIn('ec_product_category_product.category_id', $filters['categories']);
-                });
+                ->rightJoin('ec_product_category_product', 'ec_product_category_product.product_id', 'ec_product_variations.configurable_product_id')
+                ->whereIn('ec_product_category_product.category_id', $filters['categories']);
         }
 
         // Filter product by tags
         $filters['tags'] = array_filter($filters['tags']);
         if ($filters['tags']) {
             $this->model = $this->model
-                ->whereHas('tags', function ($query) use ($filters) {
-                    /**
-                     * @var Builder $query
-                     */
-                    return $query
-                        ->whereIn('ec_product_tag_product.tag_id', $filters['tags']);
-                });
+                ->rightJoin('ec_product_tag_product', 'ec_product_tag_product.product_id', 'ec_product_variations.configurable_product_id')
+                ->whereIn('ec_product_tag_product.tag_id', $filters['tags']);
         }
 
         // Filter product by collections
         $filters['collections'] = array_filter($filters['collections']);
         if ($filters['collections']) {
             $this->model = $this->model
-                ->whereHas('productCollections', function ($query) use ($filters) {
-                    /**
-                     * @var Builder $query
-                     */
-                    return $query
-                        ->whereIn('ec_product_collection_products.product_collection_id', $filters['collections']);
-                });
+                ->rightJoin('ec_product_collection_products', 'ec_product_collection_products.product_id', 'ec_product_variations.configurable_product_id')
+                ->whereIn('ec_product_collection_products.product_collection_id', $filters['collections']);
         }
 
         // Filter product by brands
@@ -646,42 +635,28 @@ class ProductRepository extends RepositoriesAbstract implements ProductInterface
         // Filter product by attributes
         $filters['attributes'] = array_filter($filters['attributes']);
         if ($filters['attributes']) {
-            foreach ($filters['attributes'] as &$attributeId) {
-                $attributeId = (int)$attributeId;
+            $filters['attributes'] = array_map('intval', $filters['attributes']);
+
+            $attributeSets = [];
+            foreach ($filters['attributes'] as $attributeId) {
+                $attribute = ProductAttribute::find($attributeId);
+                if ($attribute) {
+                    $attributeSets[$attribute->attribute_set_id][] = $attributeId;
+                }
             }
 
-            $this->model = $this->model
-                ->join(
-                    DB::raw('
-                    (
-                        SELECT DISTINCT
-                            ec_product_variations.id,
-                            ec_product_variations.configurable_product_id,
-                            COUNT(ec_product_variation_items.attribute_id) AS count_attr
-
-                        FROM ec_product_variation_items
-
-                        INNER JOIN ec_product_variations ON ec_product_variations.id = ec_product_variation_items.variation_id
-
-                        WHERE ec_product_variation_items.attribute_id IN (' . implode(',', $filters['attributes']) . ')
-
-                        GROUP BY
-                            ec_product_variations.id,
-                            ec_product_variations.configurable_product_id
-                    ) AS t2'),
-                    function ($join) use ($filters) {
+            foreach ($attributeSets as $attributeSetId => $attributeIds) {
+                $this->model = $this->model
+                    ->rightJoin('ec_product_variation_items as t' . $attributeSetId, function ($join) use ($attributeIds, $attributeSetId) {
                         /**
                          * @var JoinClause $join
                          */
-                        $join = $join->on('t2.configurable_product_id', '=', 'ec_products.id');
-
-                        if ($filters['count_attribute_groups'] > 1) {
-                            $join = $join->on('t2.count_attr', '=', DB::raw($filters['count_attribute_groups']));
-                        }
+                        $join = $join->on('t' . $attributeSetId . '.variation_id', '=', 'ec_product_variations.id')
+                            ->whereIn('t' . $attributeSetId . '.attribute_id', $attributeIds);
 
                         return $join;
-                    }
-                );
+                    });
+            }
         }
 
         if (! Arr::get($params, 'include_out_of_stock_products')) {
