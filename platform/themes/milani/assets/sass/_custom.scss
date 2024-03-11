@@ -1838,8 +1838,11 @@ body {
     }
 }
 
-
-/** - DEBUG - **/
-#preloader-active {
-    display: none;
+.pagination-area {
+    overflow-x: scroll;
 }
+
+// /** - DEBUG - **/
+// #preloader-active {
+//     display: none;
+// }
