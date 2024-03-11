@@ -9693,9 +9693,8 @@ body {
     margin-top: 10px !important;
   }
 }
-/** - DEBUG - **/
-#preloader-active {
-  display: none;
+.pagination-area {
+  overflow-x: auto;
 }
 
 body {
