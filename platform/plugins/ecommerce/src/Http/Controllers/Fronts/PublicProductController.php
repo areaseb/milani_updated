@@ -239,6 +239,10 @@ class PublicProductController
             $productImages = $requestedProductVariation->images;
         }
 
+        $bodyClass = Theme::get('bodyClass', '');
+        $bodyClass .= ' single-product';
+        Theme::set('bodyClass', $bodyClass);
+
         return Theme::scope(
             'ecommerce.product',
             compact('product', 'selectedAttrs', 'productImages', 'productVariation'),
