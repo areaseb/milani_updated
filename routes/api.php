@@ -12,6 +12,8 @@
 */
 
 use App\Http\Controllers\Api\BeezupController;
+use App\Http\Controllers\Api\OrderController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('beezup/catalog', [BeezupController::class, 'catalog'])->name('api.beezup.catalog');
+Route::post('order/{code}/tracking', [OrderController::class, 'updateTracking'])->name('api.oprder.tracking');
