@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Console\Commands;
+namespace App\Console\Commands\Feeds;
 
-use App\Services\Feed\GSheet;
+use App\Services\Feeds\GSheet;
 use Illuminate\Console\Command;
 
 class FeedGSheetCommand extends Command

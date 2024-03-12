@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Feed;
+namespace App\Services\Feeds;
 
 use Botble\Ecommerce\Models\Product;
 use Carbon\Carbon;
