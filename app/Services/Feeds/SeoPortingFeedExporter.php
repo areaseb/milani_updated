@@ -6,18 +6,24 @@ use Botble\Ecommerce\Models\Product;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 
-class GSheet
+class SeoPortingFeedExporter
 {
     protected const DISK = 'feed';
-    protected const FILENAME = 'gsheet.csv';
-    protected const SEPARATAOR = ',';
+    protected const FILENAME = 'seo_porting.csv';
+    protected const SEPARATAOR = ';';
 
     protected const HEADER = [
         'SKU',
-        'COD COSMA',
-        'Giacenza',
-        'Prezzo',
-        'Tempesta',
+        'EAN',
+        'Nome prodotto',
+        'Descrizione',
+        'Descrizione breve',
+        'Meta description',
+        'Meta keywords',
+        'Meta title',
+        'Link',
+        'Categorie',
+        'Breadcrumb'
     ];
 
     protected const CHUNK = 100;
@@ -50,7 +56,7 @@ class GSheet
 
     protected function exportProductRows()
     {
-        Product::where('is_variation', false)
+        Product::where('is_variation', true)
             ->chunk(self::CHUNK, fn ($products) => $products->each(fn ($product) => $this->exportProductRow($product)));
     }
 
@@ -68,17 +74,23 @@ class GSheet
 
     protected function generateProductRow($product)
     {
-        $price = $product->price;
-        if (now()->isBetween(Carbon::parse($product->start_date), Carbon::parse($product->end_date))) {
-            $price = $product->sale_price;
-        }
+        $parentProduct = $product->parentProduct[0];
+
+        $categories = $parentProduct->categories->map(fn ($category) => $category->name)->implode(', ');
+        $breadcrumb = $parentProduct->categories->map(fn ($category) => $category->name)->implode(' - ');
 
         return [
             'SKU' => $product->sku,
-            'COD COSMA' => $product->codice_cosma,
-            'Giacenza' => $product->quantity,
-            'Prezzo' => number_format($price, 2, '.', ''),
-            'Tempesta' => $product->sku_set == 'tempesta' ? '1' : '0',
+            'EAN' => $product->ean,
+            'Nome prodotto' => $product->name,
+            'Descrizione' => $product->content,
+            'Descrizione breve' => $product->description,
+            'Meta description' => $product->description,
+            'Meta keywords' => '',
+            'Meta title' => $product->name,
+            'Link' => $parentProduct->url . '?s=' . $product->sku,
+            'Categorie' => $categories,
+            'Breadcrumb' => $breadcrumb,
         ];
     }
 }
