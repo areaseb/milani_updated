@@ -30,7 +30,7 @@
 
                 }
 
-                ul {
+                div {
                     &.sub-menu {
                         position: absolute;
                         left: 0;
@@ -292,7 +292,7 @@
                         color: $color-brand;
                     }
 
-                    ul {
+                    div {
                         &.sub-menu {
                             opacity: 1;
                             visibility: visible;
@@ -468,7 +468,7 @@
                 display: inline-block;
                 position: relative;
 
-                ul {
+                div {
                     &.sub-menu {
                         li {
                             a {

@@ -1847,7 +1847,72 @@ body {
         width: 100% !important;
     }
 }
-// /** - DEBUG - **/
-// #preloader-active {
-//     display: none;
-// }
+
+/** - MENU - **/
+.mobile-menu .dropdown {
+    background: transparent !important;
+}
+
+.main-menu > nav > ul > li div.sub-menu {
+    width: 100% !important;
+    text-align: left;
+    padding: 10px;
+    display: flex;
+
+    .first-col {
+        width: 60%;
+        padding-top: 40px;
+
+        & > div {
+            display: flex;
+        }
+
+        a {
+            font-weight: 500 !important;
+
+            &.active {
+                color: var(--color-brand2) !important;
+            }
+        }
+
+        .sub-sub-menu li a {
+            color: var(--color-brand2) !important;
+
+            &:hover {
+                color: var(--color-brand) !important;
+            }
+        }
+    }
+
+    .second-col {
+        width: 40%;
+
+        a {
+            display: block;
+            height: 100%;
+            width: 100%;
+
+            img {
+                width: 100%;
+                height: auto;
+                object-fit: contain;
+            }
+        }
+    }
+
+    li a {
+        display: inline-flex;
+        flex-direction: row;
+        align-items: center;
+
+        i {
+            margin-left: 10px;
+            position: static;
+        }
+    }
+}
+
+/** - DEBUG - **/
+#preloader-active {
+    display: none;
+}

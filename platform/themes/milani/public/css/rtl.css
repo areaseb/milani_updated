@@ -142,7 +142,7 @@ body[dir=rtl] {
   margin-left: 0;
   margin-right: 4px;
 }
-.main-menu > nav > ul > li ul.sub-menu {
+.main-menu > nav > ul > li .sub-menu {
   left: auto;
   right: 0;
 }
