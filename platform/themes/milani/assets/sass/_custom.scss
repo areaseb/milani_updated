@@ -1842,6 +1842,11 @@ body {
     overflow-x: auto;
 }
 
+@media (max-width: 991px) {
+    .theiaStickySidebar {
+        width: 100% !important;
+    }
+}
 // /** - DEBUG - **/
 // #preloader-active {
 //     display: none;
