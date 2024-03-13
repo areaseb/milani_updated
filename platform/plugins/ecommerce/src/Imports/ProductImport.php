@@ -597,6 +597,7 @@ class ProductImport implements
         $row = $this->setProductLabelsToRow($row);
         $row = $this->setProductImagesToRow($row);
         $row = $this->setProductDescriptions($row);
+        $row = $this->setRelatedProductsToRow($row);
 
         if (is_plugin_active('marketplace')) {
             $row = $this->setStoreToRow($row);
@@ -1098,6 +1099,26 @@ class ProductImport implements
                 $row['quantity'] = 99;
             }
         }
+
+        return $row;
+    }
+
+    protected function setRelatedProductsToRow($row)
+    {
+        $relatedProducts = [];
+        if ($row['import_type'] == 'product') {
+            $relatedProducts = array_map('trim', explode(',', $row['prodotti_correlati']));
+
+            $relatedProducts = collect(array_filter($relatedProducts))
+                ->map(function ($value) {
+                    $product = $this->productRepository->getFirstBy(['codice_cosma' => $value, 'is_variation' => false]);
+                    return $product ? $product->id : null;
+                })
+                ->filter()
+                ->toArray();
+        }
+
+        $row['related_products'] = implode(',', $relatedProducts);
 
         return $row;
     }

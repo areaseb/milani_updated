@@ -2,7 +2,7 @@
     <div class="product-cart-wrap mb-30">
         <div class="product-img-action-wrap">
             <div class="product-img product-img-zoom">
-                <a href="{{ $product->parentProduct[0]->url . '?s=' . $product->sku }}">
+                <a href="{{ $product->is_variantion ? ($product->parentProduct[0]->url . '?s=' . $product->sku) : $product->url }}">
                     <img class="default-img" src="{{ RvMedia::getImageUrl($product->image, 'product-thumb', false, RvMedia::getDefaultImage()) }}" alt="{{ $product->name }}">
                     <img class="hover-img" src="{{ RvMedia::getImageUrl(isset($product->images[1]) ? $product->images[1] : $product->image, 'product-thumb', false, RvMedia::getDefaultImage()) }}" alt="{{ $product->name }}">
                 </a>
@@ -39,7 +39,7 @@
                     <a href="{{ $category->url }}">{{ $category->name }}</a>
                 </div>
             @endif
-            <h2><a href="{{ $product->parentProduct[0]->url . '?s=' . $product->sku }}">{{ \Illuminate\Support\Str::limit($product->name, 102, '...') }}</a></h2>
+            <h2><a href="{{ $product->is_variantion ? ($product->parentProduct[0]->url . '?s=' . $product->sku) : $product->url }}">{{ \Illuminate\Support\Str::limit($product->name, 102, '...') }}</a></h2>
 
             @if (EcommerceHelper::isReviewEnabled())
                 <div class="rating_wrap">

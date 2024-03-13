@@ -19,6 +19,7 @@ class ProductImageRetrievalService
 
     public function getImages($sku): Collection
     {
+        return collect();
         if (!$sku) {
             return collect();
         }

@@ -65,7 +65,6 @@ class Product extends BaseModel
         'bullet_3',
         'bullet_4',
         'bullet_5',
-        'prodotti_corralati',
         'made_in',
         'larghezza_scatola_collo_1',
         'larghezza_scatola_collo_2',
