@@ -9746,6 +9746,10 @@ body {
   -o-object-fit: contain;
      object-fit: contain;
 }
+.main-menu > nav > ul > li div.sub-menu li {
+  margin-bottom: 0 !important;
+  padding-bottom: 21px;
+}
 .main-menu > nav > ul > li div.sub-menu li a {
   display: inline-flex;
   flex-direction: row;

@@ -1900,19 +1900,24 @@ body {
         }
     }
 
-    li a {
-        display: inline-flex;
-        flex-direction: row;
-        align-items: center;
+    li {
+        margin-bottom: 0 !important;
+        padding-bottom: 21px;
 
-        i {
-            margin-left: 10px;
-            position: static;
+        a {
+            display: inline-flex;
+            flex-direction: row;
+            align-items: center;
+
+            i {
+                margin-left: 10px;
+                position: static;
+            }
         }
     }
 }
 
-/** - DEBUG - **/
-#preloader-active {
-    display: none;
-}
+// /** - DEBUG - **/
+// #preloader-active {
+//     display: none;
+// }
