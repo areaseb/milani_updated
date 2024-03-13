@@ -7,10 +7,10 @@ use Botble\Ecommerce\Models\Product;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 
-class PrezzoStopFeedExporter
+class KijijiFeedExporter
 {
     protected const DISK = 'feed';
-    protected const FILENAME = 'prezzostop.xml';
+    protected const FILENAME = 'kijiji.xml';
 
     protected const CHUNK = 100;
 
@@ -41,7 +41,7 @@ class PrezzoStopFeedExporter
 
     protected function createCatalogFile()
     {
-       $this->xml = new SimpleXMLExtended('<?xml version="1.0" encoding="UTF-8"?>' . PHP_EOL . '<products></products>');
+       $this->xml = new SimpleXMLExtended('<?xml version="1.0" encoding="UTF-8"?>' . PHP_EOL . '<kijijipartners_xml></kijijipartners_xml>');
     }
 
     protected function saveCatalogFile()
@@ -51,8 +51,9 @@ class PrezzoStopFeedExporter
 
     protected function exportProductRows()
     {
+        $annunciXML = $this->xml->addChild('annunci');
         Product::where('is_variation', true)
-            ->chunk(self::CHUNK, fn ($products) => $products->each(fn ($product) => $this->exportProductRow($product, $this->xml)));
+            ->chunk(self::CHUNK, fn ($products) => $products->each(fn ($product) => $this->exportProductRow($product, $annunciXML)));
     }
 
     protected function exportProductRow($product, $parentNode)
@@ -62,7 +63,7 @@ class PrezzoStopFeedExporter
             return;
         }
 
-        $xmlProduct = $parentNode->addChild('product');
+        $xmlProduct = $parentNode->addChild('annuncio');
         return $this->generateXML($row, $xmlProduct);
     }
 
@@ -104,8 +105,6 @@ class PrezzoStopFeedExporter
     {
         $parentProduct = $product->parentProduct[0];
 
-        $categories = $parentProduct->categories->map(fn ($category) => $category->name)->implode(';');
-
         $price = $product->price;
         if (now()->isBetween(Carbon::parse($product->start_date), Carbon::parse($product->end_date))) {
             $price = $product->sale_price;
@@ -117,15 +116,27 @@ class PrezzoStopFeedExporter
         }
 
         return [
-            'ID' => $product->id,
-            'PRODOTTONO' => $product->name,
-            'MEDESCRIZIONE' => $product->content,
-            'CATEGORIA' => $categories,
-            'PREZZO' => number_format($price, 2, '.', ''),
-            'LINK' => $parentProduct->url . '?s=' . $product->sku,
-            'IMMAGINE' => $image ?? '',
-            'MPN' => $product->id,
-            'EAN' => $product->ean,
+            'id' => $product->id,
+            'titolo' => $product->name,
+            'descrizione' => $product->content,
+            'categoria' => [
+                '_attributes' => [
+                    'codice' => '319029248',
+                ],
+            ],
+            'data' => now()->format('Y-m-d'),
+            'comune' => [
+                '_attributes' => [
+                    'codice' => '024038'
+                ],
+            ],
+            'email' => 'info@milanihome.it',
+            'prezzo' => (float) number_format($price, 2, '.', ''),
+            'paypal' => 1,
+            'url_redirect' => $parentProduct->url . '?s=' . $product->sku,
+            'pictures' => [
+                'picture_url' => $image ?? '',
+            ],
         ];
     }
 }
