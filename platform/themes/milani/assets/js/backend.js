@@ -235,6 +235,33 @@
                             $(this).hide()
                         }
                     })
+
+                    const $attributesTable = $('#attributes-table table tbody');
+                    $attributesTable.html('');
+
+                    if (res.data.attributes && res.data.attributes.length) {
+                        res.data.attributes.forEach(function (item) {
+                            $attributesTable.append('<tr><td>' + item.name + '</td><td>' + item.value + '</td></tr>');
+                        });
+                    }
+
+                    const $detailsTable = $('#details-table table tbody');
+                    $detailsTable.html('');
+
+                    if (res.data.details && res.data.details.length) {
+                        res.data.details.forEach(function (item) {
+                            $detailsTable.append('<tr><td>' + item.name + '</td><td>' + item.value + '</td></tr>');
+                        });
+                    }
+
+                    const $dimensionsTable = $('#dimensions-table table tbody');
+                    $dimensionsTable.html('');
+
+                    if (res.data.dimensions && res.data.dimensions.length) {
+                        res.data.dimensions.forEach(function (item) {
+                            $dimensionsTable.append('<tr><td>' + item.name + '</td><td>' + item.value + '</td></tr>');
+                        });
+                    }
                 }
             }
         };

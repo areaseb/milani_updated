@@ -229,13 +229,11 @@
                     {!! BaseHelper::clean($product->content) !!}
 
                     @php
-                          $prod = $product->defaultVariation;
-                          $prod_id = $prod->product_id;
-
-                          $attributes = \Botble\Ecommerce\Models\Product::where('id', $prod_id)->first();
+                        $id_product = $productVariation->id;
+                        $attributes = \Botble\Ecommerce\Models\Product::where('id', $id_product)->first();
                     @endphp
 
-                    <div class="table-responsive mt-30">
+                    <div class="table-responsive mt-30" id="attributes-table">
                         <table class="table table-striped table-bordered">
                             @if(!is_null($attributes))
                                 @foreach($attributes->variationProductAttributes as $attribute)
@@ -255,50 +253,48 @@
 
                 <div class="tab-pane fade" id="Details">
                     @php
-                          $prod = $product->defaultVariation;
-                          $prod_id = $prod->configurable_product_id;
+                        $prod_id = $productVariation->id;
 
-                          $attributes = \Botble\Ecommerce\Models\Product::where('id', $prod_id)->first();
+                        $attributes = \Botble\Ecommerce\Models\Product::where('id', $prod_id)->first();
 
-                          $attr_list = array(
-                          		'sku',
-                          		'made_in',
-								'larghezza_scatola_collo_1',
-								'larghezza_scatola_collo_2',
-								'larghezza_scatola_collo_3',
-								'larghezza_scatola_collo_4',
-								'larghezza_scatola_collo_5',
-								'profondita_scatola_collo_1',
-								'profondita_scatola_collo_2',
-								'profondita_scatola_collo_3',
-								'profondita_scatola_collo_4',
-								'profondita_scatola_collo_5',
-								'altezza_scatola_collo_1',
-								'altezza_scatola_collo_2',
-								'altezza_scatola_collo_3',
-								'altezza_scatola_collo_4',
-								'altezza_scatola_collo_5',
-								'cubatura',
-								'peso_con_imballo_collo_1',
-								'peso_con_imballo_collo_2',
-								'peso_con_imballo_collo_3',
-								'peso_con_imballo_collo_4',
-								'peso_con_imballo_collo_5',
-								'assemblato',
-								'kit_e_istruzioni_incluse'
-                          );
+                        $attr_list = array(
+                            'sku',
+                            'made_in',
+                            'larghezza_scatola_collo_1',
+                            'larghezza_scatola_collo_2',
+                            'larghezza_scatola_collo_3',
+                            'larghezza_scatola_collo_4',
+                            'larghezza_scatola_collo_5',
+                            'profondita_scatola_collo_1',
+                            'profondita_scatola_collo_2',
+                            'profondita_scatola_collo_3',
+                            'profondita_scatola_collo_4',
+                            'profondita_scatola_collo_5',
+                            'altezza_scatola_collo_1',
+                            'altezza_scatola_collo_2',
+                            'altezza_scatola_collo_3',
+                            'altezza_scatola_collo_4',
+                            'altezza_scatola_collo_5',
+                            'cubatura',
+                            'peso_con_imballo_collo_1',
+                            'peso_con_imballo_collo_2',
+                            'peso_con_imballo_collo_3',
+                            'peso_con_imballo_collo_4',
+                            'peso_con_imballo_collo_5',
+                            'assemblato',
+                            'kit_e_istruzioni_incluse'
+                        );
 
-                          $attrib = array();
+                        $attrib = array();
 
-                          foreach($attr_list as $al){
-
-                          	if($attributes->$al){
-                          		$attrib[$al] = $attributes->$al;
-                          	}
-                          }
+                        foreach($attr_list as $al){
+                            if($attributes->$al){
+                                $attrib[$al] = $attributes->$al;
+                            }
+                        }
                     @endphp
 
-                    <div class="table-responsive mt-30">
+                    <div class="table-responsive mt-30" id="details-table">
                         <table class="table table-striped table-bordered">
                             @if(!is_null($attrib))
                                 @foreach($attrib as $key => $value)
@@ -502,7 +498,7 @@
             </ul>
             <div class="tab-content shop_info_tab entry-main-content">
                 <div class="tab-pane fade show active" id="Dimensions">
-                    <div class="table-responsive mt-30">
+                    <div class="table-responsive mt-30" id="dimensions-table">
                         <table class="table table-striped table-bordered">
                             <tr>
                                 <td>{{ __('Length') }}</td>

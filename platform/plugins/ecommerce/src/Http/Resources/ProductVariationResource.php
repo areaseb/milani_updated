@@ -2,6 +2,7 @@
 
 namespace Botble\Ecommerce\Http\Resources;
 
+use Botble\Ecommerce\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,6 +13,75 @@ class ProductVariationResource extends JsonResource
      */
     public function toArray($request): array
     {
+        $product = Product::find($this->id);
+
+        $details = collect([
+                'sku',
+                'made_in',
+                'larghezza_scatola_collo_1',
+                'larghezza_scatola_collo_2',
+                'larghezza_scatola_collo_3',
+                'larghezza_scatola_collo_4',
+                'larghezza_scatola_collo_5',
+                'profondita_scatola_collo_1',
+                'profondita_scatola_collo_2',
+                'profondita_scatola_collo_3',
+                'profondita_scatola_collo_4',
+                'profondita_scatola_collo_5',
+                'altezza_scatola_collo_1',
+                'altezza_scatola_collo_2',
+                'altezza_scatola_collo_3',
+                'altezza_scatola_collo_4',
+                'altezza_scatola_collo_5',
+                'cubatura',
+                'peso_con_imballo_collo_1',
+                'peso_con_imballo_collo_2',
+                'peso_con_imballo_collo_3',
+                'peso_con_imballo_collo_4',
+                'peso_con_imballo_collo_5',
+                'assemblato',
+                'kit_e_istruzioni_incluse'
+            ])->map(function ($value) use ($product) {
+                return [
+                    'key' => $value,
+                    'name' => ucfirst(str_replace('_', ' ', $value)),
+                    'value' => $product->{$value},
+                ];
+            })->filter(function ($value) {
+                return !empty($value['value']);
+            })->map(function ($value) {
+                $um = '';
+                switch (explode('_', $value['key'])[0]){
+                    case 'larghezza':
+                    case 'profondita':
+                    case 'altezza':
+                        $um = 'cm';
+                        break;
+                    case 'cubatura':
+                        $um = 'm3';
+                        break;
+                    case 'peso':
+                        $um = 'kg';
+                        break;
+                    default:
+                        $um = '';
+                        break;
+                }
+
+                return [
+                    'name' => $value['name'],
+                    'value' => $value['value'] . ' ' . $um,
+                ];
+            })
+            ->toArray();
+
+        $attributes = $this->variationProductAttributes->map(function ($attribute) {
+                return [
+                    'name' => $attribute->attribute_set_title,
+                    'value' => $attribute->title,
+                ];
+            })->toArray();
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -37,6 +107,29 @@ class ProductVariationResource extends JsonResource
             'height' => $this->height,
             'wide' => $this->wide,
             'length' => $this->length,
+
+            'attributes' => $attributes,
+
+            'details' => $details,
+
+            'dimensions' => [
+                [
+                    'name' => __('Length'),
+                    'value' => $product->length . ' cm',
+                ],
+                [
+                    'name' => __('Wide'),
+                    'value' => $product->wide . ' cm',
+                ],
+                [
+                    'name' => __('Height'),
+                    'value' => $product->height . ' cm',
+                ],
+                [
+                    'name' => __('Weight'),
+                    'value' => $product->weight . ' kg',
+                ],
+            ]
         ];
     }
 }
