@@ -68,6 +68,12 @@ return [
             'url' => env('APP_URL').'/storage/products_source',
             'visibility' => 'public',
         ],
+
+        'feed' => [
+            'driver' => 'local',
+            'root' => public_path('feed'),
+            'visibility' => 'public',
+        ]
     ],
 
     /*
