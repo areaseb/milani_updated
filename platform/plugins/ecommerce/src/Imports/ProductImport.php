@@ -465,19 +465,19 @@ class ProductImport implements
 
         $result = $this->productVariationRepository->getVariationByAttributesOrCreate($product->id, $addedAttributes);
 
-        if (!$result['created']) {
-            if (method_exists($this, 'onFailure')) {
-                $failures[] = new Failure(
-                    $this->rowCurrent,
-                    'variation',
-                    [trans('plugins/ecommerce::products.form.variation_existed') . ' ' . trans('plugins/ecommerce::products.form.product_id') . ': ' . $product->id],
-                    []
-                );
-                $this->onFailure(...$failures);
-            }
+        // if (!$result['created']) {
+        //     if (method_exists($this, 'onFailure')) {
+        //         $failures[] = new Failure(
+        //             $this->rowCurrent,
+        //             'variation',
+        //             [trans('plugins/ecommerce::products.form.variation_existed') . ' ' . trans('plugins/ecommerce::products.form.product_id') . ': ' . $product->id],
+        //             []
+        //         );
+        //         $this->onFailure(...$failures);
+        //     }
 
-            return null;
-        }
+        //     return null;
+        // }
 
         $variation = $result['variation'];
 
@@ -493,7 +493,11 @@ class ProductImport implements
             $version['content'] = BaseHelper::clean($version['content']);
         }
 
-        $productRelatedToVariation = $this->productRepository->getModel();
+        $productRelatedToVariation = Product::find($variation->product_id ?? null);
+        if (!$productRelatedToVariation) {
+            $productRelatedToVariation = $this->productRepository->getModel();
+        }
+
         $productRelatedToVariation->fill($version);
 
         $productRelatedToVariation->name = $product->name;
@@ -563,6 +567,10 @@ class ProductImport implements
         $productRelatedToVariation->status = Arr::get($version, 'status', $product->status);
 
         $productRelatedToVariation->product_type = $product->product_type;
+
+        if ($variation->product_id) {
+            $productRelatedToVariation->id = $variation->product_id;
+        }
 
         $productRelatedToVariation = $this->productRepository->createOrUpdate($productRelatedToVariation);
 
