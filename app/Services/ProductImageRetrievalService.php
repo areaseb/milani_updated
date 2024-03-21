@@ -23,13 +23,12 @@ class ProductImageRetrievalService
             return collect();
         }
 
-        $row = $this->getProductRow($sku);
-        $images = $row[self::IMAGES_KEY] ?? '';
-        $images = collect(explode(',', $images))
-            ->map(fn ($image) => trim($image));
-
+        $images = $this->getImagesFromLocalDisk($sku);
         if ($images->isEmpty()) {
-            $images = $this->getImagesFromLocalDisk($sku);
+            $row = $this->getProductRow($sku);
+            $images = $row[self::IMAGES_KEY] ?? '';
+            $images = collect(explode(',', $images))
+                ->map(fn ($image) => trim($image));
         }
 
         return $images;
