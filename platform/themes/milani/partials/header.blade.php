@@ -74,7 +74,11 @@
 {{--                                    @if (is_plugin_active('ecommerce') && EcommerceHelper::isOrderTrackingEnabled())--}}
 {{--                                        <li><i class="far fa-anchor mr-5"></i><a href="{{ route('public.orders.tracking') }}">{{ __('Track Your Order') }}</a></li>--}}
 {{--                                    @endif--}}
-                                    <b>4.4 TrustPilot su 2005 recensioni</b>
+                                    <!-- TrustBox widget - Micro Combo -->
+									<div class="trustpilot-widget" data-locale="it-IT" data-template-id="5419b6ffb0d04a076446a9af" data-businessunit-id="5ba21b21534f320001b0bfb8" data-style-height="20px" data-style-width="100%" data-theme="light" data-font-family="Roboto Condensed">
+									  <a href="https://it.trustpilot.com/review/www.milanihome.it" target="_blank" rel="noopener">Trustpilot</a>
+									</div>
+									<!-- End TrustBox widget -->
                                 </ul>
                             </div>
                         </div>
