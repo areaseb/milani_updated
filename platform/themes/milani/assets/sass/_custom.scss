@@ -1917,6 +1917,24 @@ body {
     }
 }
 
+.single-product .button-add-to-cart {
+    width: max-content;
+    padding: 10px;
+    display: flex;
+
+    i {
+        transform: none;
+        position: static;
+        margin-right: 7px;
+    }
+
+    span {
+        margin: 0;
+        display: block;
+        flex-shrink: 0;
+    }
+}
+
 // /** - DEBUG - **/
 // #preloader-active {
 //     display: none;

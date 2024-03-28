@@ -139,7 +139,7 @@
 
                             <div class="add-to-cart-actions">
                                 @if (EcommerceHelper::isCartEnabled())
-                                    <button type="submit" class="button button-add-to-cart hover-up @if ($product->isOutOfStock()) btn-disabled @endif" type="submit" @if ($product->isOutOfStock()) disabled @endif aria-label="{{ __('Add to cart') }}" title="{{ __('Add to cart') }}"><i class="far fa-shopping-bag" style="font-size: 27px"></i></button> <!-- <img alt="cart" src="{{URL::asset('/storage/general/icon-cart-white.png')}}" width="22"> {{ __('Add to cart') }} -->
+                                    <button type="submit" class="button button-add-to-cart hover-up @if ($product->isOutOfStock()) btn-disabled @endif" type="submit" @if ($product->isOutOfStock()) disabled @endif aria-label="{{ __('Add to cart') }}" title="{{ __('Add to cart') }}"><i class="far fa-shopping-bag" style="font-size: 27px"></i><span>{{ __('Aggiungi al carrello') }}</span></button> <!-- <img alt="cart" src="{{URL::asset('/storage/general/icon-cart-white.png')}}" width="22"> {{ __('Add to cart') }} -->
                                     {{-- @if (EcommerceHelper::isQuickBuyButtonEnabled())
                                         <div class="col-md-3 col-xs-3 mt-10 text-center">
                                             <button class="button button-buy-now @if ($product->isOutOfStock()) btn-disabled @endif" type="submit" name="checkout" @if ($product->isOutOfStock()) disabled @endif aria-label="{{ __('Buy Now') }}" title="{{ __('Buy Now') }}"><i class="far fa-euro-sign" style="font-size: 27px"></i></button>	<!-- <img alt="cart" src="{{URL::asset('/storage/general/euro.png')}}" width="22"> {{ __('Buy Now') }} -->

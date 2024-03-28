@@ -9760,9 +9760,21 @@ body {
   position: static;
 }
 
-/** - DEBUG - **/
-#preloader-active {
-  display: none;
+.single-product .button-add-to-cart {
+  width: -moz-max-content;
+  width: max-content;
+  padding: 10px;
+  display: flex;
+}
+.single-product .button-add-to-cart i {
+  transform: none;
+  position: static;
+  margin-right: 7px;
+}
+.single-product .button-add-to-cart span {
+  margin: 0;
+  display: block;
+  flex-shrink: 0;
 }
 
 body {
