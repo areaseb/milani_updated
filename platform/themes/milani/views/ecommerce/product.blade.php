@@ -192,7 +192,7 @@
                     </div>
                     <div class="number-items-available" style="@if (!$product->isOutOfStock()) display: none; @endif margin-bottom: 10px;">
                         @if ($product->isOutOfStock())
-                            <span class="text-danger">({{ __('Out of stock') }})</span>
+                            <span class="text-danger">Il prodotto è in arrivo il {{ date('d/m/Y', strtotime($product->data_arrivo)) }}</span>
                         @endif
                     </div>
                 @endif

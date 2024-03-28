@@ -92,6 +92,7 @@ class Product extends BaseModel
         'sku_set',
         'sku_parent',
         'carrier',
+        'data_arrivo',
     ];
 
     /**
