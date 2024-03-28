@@ -5,6 +5,7 @@ namespace Botble\Ecommerce\Http\Resources;
 use Botble\Ecommerce\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Str;
 
 class ProductVariationResource extends JsonResource
 {
@@ -77,7 +78,7 @@ class ProductVariationResource extends JsonResource
 
         $attributes = $this->variationProductAttributes->map(function ($attribute) {
                 return [
-                    'name' => $attribute->attribute_set_title,
+                    'name' => Str::endsWith($attribute->attribute_set_title, '1') ? Str::substr($attribute->attribute_set_title, 0, -2): $attribute->attribute_set_title,
                     'value' => $attribute->title,
                 ];
             })->toArray();

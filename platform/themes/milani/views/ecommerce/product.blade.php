@@ -238,7 +238,7 @@
                             @if(!is_null($attributes))
                                 @foreach($attributes->variationProductAttributes as $attribute)
                                     <tr>
-                                        <td>{{ $attribute->attribute_set_title }}</td>
+                                        <td>{{ Str::endsWith($attribute->attribute_set_title, '1') ? Str::substr($attribute->attribute_set_title, 0, -2): $attribute->attribute_set_title }}</td>
                                         <td>{{ $attribute->title }}</td>
                                     </tr>
                                 @endforeach
