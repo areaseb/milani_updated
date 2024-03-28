@@ -2,6 +2,7 @@
 
 namespace Botble\Ecommerce\Http\Controllers\Fronts;
 
+use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Base\Http\Responses\BaseHttpResponse;
 use Botble\Ecommerce\Models\Product;
 use Botble\Ecommerce\Repositories\Interfaces\ProductInterface;
@@ -35,6 +36,9 @@ class WishlistController extends Controller
         SeoHelper::setTitle(__('Wishlist'));
 
         $queryParams = array_merge([
+            'condition' => [
+                'ec_products.status' => BaseStatusEnum::PUBLISHED,
+            ],
             'paginate' => [
                 'per_page' => 10,
                 'current_paged' => (int)$request->input('page'),

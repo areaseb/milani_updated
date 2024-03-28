@@ -21,7 +21,7 @@
                                             <img alt="{{ $product->name }}" src="{{ RvMedia::getImageUrl($product->image, 'thumb', false, RvMedia::getDefaultImage()) }}">
                                         </td>
                                         <td class="product-des product-name">
-                                            <p class="product-name"><a href="{{ $product->url }}">{{ $product->name }}</a></p>
+                                            <p class="product-name"><a href="{{ $product->is_variation ? ($product->parentProduct[0]->url . '?s=' . $product->sku) : $product->url }}">{{ $product->name }}</a></p>
                                         </td>
 
                                         <td class="price" data-title="{{ __('Price') }}">
