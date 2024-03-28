@@ -545,9 +545,9 @@
         </div>
 
         <div class="reassurance-block">
-            <h2 class="reassurance-block-title"><span>{{ strtoupper(__('Free shipping for orders over')) }} &euro; 20,00</span></h2>
+            <h2 class="reassurance-block-title"><span>{{ strtoupper(__('Free shipping for orders over')) }} &euro; 30,00</span></h2>
             <div class="reassurance-block-content">
-                Gli ordini superiori a &euro; 20,00 sono idonei per la spedizione gratuita! Approfittate di questa offerta per arredare il vostro giardino con i nostri prodotti di qualit&agrave;. La spedizione gratuita verr&agrave; applicata automaticamente al momento del checkout.
+                Gli ordini superiori a &euro; 30,00 sono idonei per la spedizione gratuita! Approfittate di questa offerta per arredare il vostro giardino con i nostri prodotti di qualit&agrave;. La spedizione gratuita verr&agrave; applicata automaticamente al momento del checkout.
             </div>
         </div>
     </div>
@@ -589,14 +589,14 @@
                 <div class="card-header" id="heading-prod-trasporto">
                     <h2 class="mb-0">
                         <button class="btn btn-link btn-block text-left collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-prod-trasporto" aria-expanded="true" aria-controls="collapse-prod-trasporto">
-                            {{ strtoupper(__('Free shipping for orders over')) }} &euro; 20,00
+                            {{ strtoupper(__('Free shipping for orders over')) }} &euro; 30,00
                         </button>
                     </h2>
                 </div>
 
                 <div id="collapse-prod-trasporto" class="collapse" aria-labelledby="heading-prod-trasporto" data-parent="#prod-accordion">
                     <div class="card-body">
-                        Gli ordini superiori a &euro; 20,00 sono idonei per la spedizione gratuita! Approfittate di questa offerta per arredare il vostro giardino con i nostri prodotti di qualit&agrave;. La spedizione gratuita verr&agrave; applicata automaticamente al momento del checkout.
+                        Gli ordini superiori a &euro; 30,00 sono idonei per la spedizione gratuita! Approfittate di questa offerta per arredare il vostro giardino con i nostri prodotti di qualit&agrave;. La spedizione gratuita verr&agrave; applicata automaticamente al momento del checkout.
                     </div>
                 </div>
             </div>

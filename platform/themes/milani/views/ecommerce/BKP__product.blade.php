@@ -70,7 +70,7 @@
                         @endif
                         @if($product->front_sale_price_with_taxes > 100)
                         	<div class="mt-20" style="display: flex; align-items:center;">
-                        		<img src="/storage/general/klarna.png" align="middle" height="30"> 
+                        		<img src="/storage/general/klarna.png" align="middle" height="30">
                         		<small class="ml-10">Paga in <b>3 rate da &euro; {!! format_price($product->front_sale_price_with_taxes / 3) !!}</b> senza interessi.
                         		<a href="https://www.klarna.com/" target="_blank">Maggiori informazioni</a></small>
                         	</div>
@@ -83,7 +83,7 @@
                     {!! BaseHelper::clean($product->description) !!}
                     {!! apply_filters('ecommerce_after_product_description', null, $product) !!}
                 </div>
-								
+
                 <ul class="product-meta font-xs color-grey mt-30">
                     @if ($product->sku)
                         <li class="mb-5"><span class="d-inline-block" id="product-sku">{{ __('SKU') }}</span>: <span>{{ $product->sku }}</span></li>
@@ -106,7 +106,7 @@
 --}}
                     <li><span class="d-inline-block">{{ __('Availability') }}:</span> <span class="in-stock text-success ml-5">{!! BaseHelper::clean($product->stock_status_html) !!}</span></li>
                 </ul>
-				
+
                 @if ($product->variations()->count() > 0)
                     <div class="pr_switch_wrap product-meta mt-30">
                         {!! render_product_swatches($product, [
@@ -154,10 +154,10 @@
                 </form>
             </div>
             <!-- Detail Info -->
-            
+
             <div class="tab-pane faqs-list mt-30" id="tab-prod">
                 <div class="accordion" id="prod-accordion">
-                	
+
                     <div class="card">
                         <div class="card-header" id="heading-prod-soddisfatti">
                             <h2 class="mb-0">
@@ -192,7 +192,7 @@
                         <div class="card-header" id="heading-prod-trasporto">
                             <h2 class="mb-0">
                                 <button class="btn btn-link btn-block text-left collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-prod-trasporto" aria-expanded="true" aria-controls="collapse-prod-trasporto">
-                                    TRASPORTO GRATUITO PER ORDINI SUPERIORI A &euro; 20,00
+                                    TRASPORTO GRATUITO PER ORDINI SUPERIORI A &euro; 30,00
                                 </button>
                             </h2>
                         </div>
@@ -203,7 +203,7 @@
                             </div>
                         </div>
                     </div>
-                        
+
                 </div>
             </div>
 
