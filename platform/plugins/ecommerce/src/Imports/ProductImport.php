@@ -639,7 +639,7 @@ class ProductImport implements
         $row['price'] = (float) $row['price'];
         $row['is_variation_default'] = false;
         $row['stock_status'] = (string) $row['stock_status'];
-        $row['with_storehouse_management'] = (boolean) $row['with_storehouse_management'];
+        $row['with_storehouse_management'] = true; //(boolean) $row['with_storehouse_management'];
         $row['quantity'] = (int) $row['quantity'];
         $row['allow_checkout_when_out_of_stock'] = (boolean) $row['allow_checkout_when_out_of_stock'];
         $row['sale_price'] = (float) $row['sale_price'];

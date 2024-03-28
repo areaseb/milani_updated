@@ -157,6 +157,7 @@ class PublicProductController
                     'options',
                     'options.values',
                 ],
+                'include_out_of_stock_products' => true,
             ], EcommerceHelper::withReviewsParams()));
 
         if (! $product) {
