@@ -10,6 +10,7 @@ class StockUpdaterService
 {
     protected const SKU_KEY = 'SKU';
     protected const QUANTITY_KEY = 'giacenza';
+    protected const IMPEGNATO_KEY = 'impegnato';
     protected const DATA_ARRIVO_KEY = 'data_arrivo';
 
     public function update($content)
@@ -46,7 +47,7 @@ class StockUpdaterService
             return;
         }
 
-        $product->quantity = (int) $record[self::QUANTITY_KEY];
+        $product->quantity = (int) $record[self::QUANTITY_KEY] - (int) $record[self::IMPEGNATO_KEY]
         $product->data_arrivo = $record[self::DATA_ARRIVO_KEY];
         $product->save();
     }
