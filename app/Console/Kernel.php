@@ -21,6 +21,8 @@ class Kernel extends ConsoleKernel
         $schedule->command(BeezupStartAutoImportCommand::class)->dailyAt('01:00');
         $schedule->job(app(BeezupImportOrdersJob::class))->everyTenMinutes();
         $schedule->command(ExportOrderCommand::class)->everyTenMinutes();
+
+        $schedule->command(StockUpdateCommand::class)->dailyAt('00:00');
     }
 
     /**
