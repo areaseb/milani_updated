@@ -47,7 +47,7 @@ class StockUpdaterService
             return;
         }
 
-        $product->quantity = (int) $record[self::QUANTITY_KEY] - (int) $record[self::IMPEGNATO_KEY]
+        $product->quantity = (int) $record[self::QUANTITY_KEY] - (int) $record[self::IMPEGNATO_KEY];
         $product->data_arrivo = $record[self::DATA_ARRIVO_KEY];
         $product->save();
     }
