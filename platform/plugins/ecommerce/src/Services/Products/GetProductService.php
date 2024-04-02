@@ -163,7 +163,7 @@ class GetProductService
             'attributes' => $queryVar['attributes'],
             'count_attribute_groups' => $countAttributeGroups,
             'order_by' => $orderBy,
-        ], $params);
+        ], $params, true);
 
         if ($queryVar['keyword'] && is_string($queryVar['keyword'])) {
             $products->setCollection(BaseHelper::sortSearchResults($products->getCollection(), $queryVar['keyword'], 'name'));

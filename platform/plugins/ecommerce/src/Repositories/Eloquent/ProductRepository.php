@@ -355,7 +355,347 @@ class ProductRepository extends RepositoriesAbstract implements ProductInterface
         return $this->filterProducts($filters, $params);
     }
 
-    public function filterProducts(array $filters, array $params = [])
+    public function filterProducts(array $filters, array $params = [], $onlyVariants = false)
+    {
+        if ($onlyVariants) {
+            return $this->filterProductsWithVariants($filters, $params);
+        }
+
+        $filters = array_merge([
+            'keyword' => null,
+            'min_price' => null,
+            'max_price' => null,
+            'categories' => [],
+            'tags' => [],
+            'brands' => [],
+            'attributes' => [],
+            'collections' => [],
+            'count_attribute_groups' => null,
+        ], $filters);
+
+        $isUsingDefaultCurrency = get_application_currency_id() == cms_currency()->getDefaultCurrency()->id;
+
+        if ($filters['min_price'] && ! $isUsingDefaultCurrency) {
+            $filters['min_price'] = (float)$filters['min_price'] / get_current_exchange_rate();
+        }
+
+        if ($filters['max_price'] && ! $isUsingDefaultCurrency) {
+            $filters['max_price'] = (float)$filters['max_price'] / get_current_exchange_rate();
+        }
+
+        $params = array_merge([
+            'condition' => [
+                'ec_products.status' => BaseStatusEnum::PUBLISHED,
+                'ec_products.is_variation' => 0,
+            ],
+            'order_by' => Arr::get($filters, 'order_by'),
+            'take' => null,
+            'paginate' => [
+                'per_page' => null,
+                'current_paged' => 1,
+            ],
+            'select' => [
+                'ec_products.*',
+                'products_with_final_price.final_price',
+            ],
+            'with' => [],
+            'withCount' => [],
+        ], $params);
+
+        $this->model = $this->originalModel;
+
+        $now = Carbon::now();
+
+        $this->model = $this->model
+            ->distinct()
+            ->join(DB::raw('
+                (
+                    SELECT DISTINCT
+                        `ec_products`.id,
+                        CASE
+                            WHEN (
+                                ec_products.sale_type = 0 AND
+                                ec_products.sale_price <> 0
+                            ) THEN ec_products.sale_price
+                            WHEN (
+                                ec_products.sale_type = 0 AND
+                                ec_products.sale_price = 0
+                            ) THEN ec_products.price
+                            WHEN (
+                                ec_products.sale_type = 1 AND
+                                (
+                                    ec_products.start_date > ' . esc_sql($now) . ' OR
+                                    ec_products.end_date < ' . esc_sql($now) . '
+                                )
+                            ) THEN ec_products.price
+                            WHEN (
+                                ec_products.sale_type = 1 AND
+                                ec_products.start_date <= ' . esc_sql($now) . ' AND
+                                ec_products.end_date >= ' . esc_sql($now) . '
+                            ) THEN ec_products.sale_price
+                            WHEN (
+                                ec_products.sale_type = 1 AND
+                                ec_products.start_date IS NULL AND
+                                ec_products.end_date >= ' . esc_sql($now) . '
+                            ) THEN ec_products.sale_price
+                            WHEN (
+                                ec_products.sale_type = 1 AND
+                                ec_products.start_date <= ' . esc_sql($now) . ' AND
+                                ec_products.end_date IS NULL
+                            ) THEN ec_products.sale_price
+                            ELSE ec_products.price
+                        END AS final_price
+                    FROM `ec_products`
+                ) AS products_with_final_price
+            '), function ($join) {
+                return $join->on('products_with_final_price.id', '=', 'ec_products.id');
+            });
+
+        $keyword = $filters['keyword'];
+        if ($keyword && is_string($keyword)) {
+            $searchProductsBy = EcommerceHelper::getProductsSearchBy();
+            $isPartial = get_ecommerce_setting('search_for_an_exact_phrase', 0) != 1;
+
+            if (is_plugin_active('language') && is_plugin_active('language-advanced') && Language::getCurrentLocale() != Language::getDefaultLocale()) {
+                $this->model = $this->model
+                    ->where(function ($query) use ($keyword, $searchProductsBy, $isPartial) {
+                        $hasWhere = false;
+
+                        if (in_array('sku', $searchProductsBy)) {
+                            $query
+                                ->where(function ($subQuery) use ($keyword) {
+                                    $subQuery->addSearch('ec_products.sku', $keyword, false);
+                                });
+
+                            $hasWhere = true;
+                        }
+
+                        if (in_array('name', $searchProductsBy) || in_array('description', $searchProductsBy)) {
+                            $function = $hasWhere ? 'orWhereHas' : 'whereHas';
+                            $hasWhere = true;
+
+                            $query
+                                ->{$function}('translations', function ($query) use ($keyword, $searchProductsBy, $isPartial) {
+                                    $query->where(function ($subQuery) use ($keyword, $searchProductsBy, $isPartial) {
+                                        if (in_array('name', $searchProductsBy)) {
+                                            $subQuery->addSearch('name', $keyword, $isPartial);
+                                        }
+
+                                        if (in_array('description', $searchProductsBy)) {
+                                            $subQuery->addSearch('description', $keyword, false);
+                                        }
+                                    });
+                                });
+                        }
+
+                        if (in_array('tag', $searchProductsBy)) {
+                            $function = $hasWhere ? 'orWhereHas' : 'whereHas';
+                            $hasWhere = true;
+
+                            $query->{$function}('tags', function ($query) use ($keyword) {
+                                $query->where(function ($subQuery) use ($keyword) {
+                                    $subQuery->addSearch('name', $keyword, false);
+                                });
+                            });
+                        }
+
+                        if (in_array('brand', $searchProductsBy)) {
+                            $function = $hasWhere ? 'orWhereHas' : 'whereHas';
+                            $hasWhere = true;
+
+                            $query->{$function}('brand.translations', function ($query) use ($keyword) {
+                                $query->where(function ($subQuery) use ($keyword) {
+                                    $subQuery->addSearch('name', $keyword, false);
+                                });
+                            });
+                        }
+
+                        if (in_array('variation_sku', $searchProductsBy)) {
+                            $function = $hasWhere ? 'orWhereHas' : 'whereHas';
+
+                            $query->{$function}('variations.product', function ($query) use ($keyword) {
+                                $query->where(function ($subQuery) use ($keyword) {
+                                    $subQuery->addSearch('sku', $keyword, false);
+                                });
+                            });
+                        }
+                    });
+            } else {
+                $this->model = $this->model
+                    ->where(function ($query) use ($keyword, $searchProductsBy, $isPartial) {
+                        $hasWhere = false;
+
+                        if (in_array('name', $searchProductsBy) || in_array('sku', $searchProductsBy) || in_array('description', $searchProductsBy)) {
+                            $query
+                                ->where(function ($subQuery) use ($keyword, $searchProductsBy, $isPartial) {
+                                    if (in_array('name', $searchProductsBy)) {
+                                        $subQuery->addSearch('ec_products.name', $keyword, $isPartial);
+                                    }
+
+                                    if (in_array('sku', $searchProductsBy)) {
+                                        $subQuery->addSearch('ec_products.sku', $keyword, false);
+                                    }
+
+                                    if (in_array('description', $searchProductsBy)) {
+                                        $subQuery->addSearch('ec_products.description', $keyword, false);
+                                    }
+                                });
+
+                            $hasWhere = true;
+                        }
+
+                        if (in_array('tag', $searchProductsBy)) {
+                            $function = $hasWhere ? 'orWhereHas' : 'whereHas';
+                            $hasWhere = true;
+
+                            $query->{$function}('tags', function ($query) use ($keyword) {
+                                $query->where(function ($subQuery) use ($keyword) {
+                                    $subQuery->addSearch('name', $keyword, false);
+                                });
+                            });
+                        }
+
+                        if (in_array('brand', $searchProductsBy)) {
+                            $function = $hasWhere ? 'orWhereHas' : 'whereHas';
+                            $hasWhere = true;
+
+                            $query->{$function}('brand', function ($query) use ($keyword) {
+                                $query->where(function ($subQuery) use ($keyword) {
+                                    $subQuery->addSearch('name', $keyword, false);
+                                });
+                            });
+                        }
+
+                        if (in_array('variation_sku', $searchProductsBy)) {
+                            $function = $hasWhere ? 'orWhereHas' : 'whereHas';
+
+                            $query->{$function}('variations.product', function ($query) use ($keyword) {
+                                $query->where(function ($subQuery) use ($keyword) {
+                                    $subQuery->addSearch('sku', $keyword, false);
+                                });
+                            });
+                        }
+                    });
+            }
+        }
+
+        // Filter product by min price and max price
+        if ($filters['min_price'] !== null || $filters['max_price'] !== null) {
+            $this->model = $this->model
+                ->where(function ($query) use ($filters) {
+                    /**
+                     * @var Builder $query
+                     */
+                    $priceMin = (float)Arr::get($filters, 'min_price');
+                    $priceMax = (float)Arr::get($filters, 'max_price');
+
+                    if ($priceMin != null) {
+                        $query = $query->where('products_with_final_price.final_price', '>=', $priceMin);
+                    }
+
+                    if ($priceMax != null) {
+                        $query = $query->where('products_with_final_price.final_price', '<=', $priceMax);
+                    }
+
+                    return $query;
+                });
+        }
+
+        // Filter product by categories
+        $filters['categories'] = array_filter($filters['categories']);
+        if ($filters['categories']) {
+            $this->model = $this->model
+                ->whereHas('categories', function ($query) use ($filters) {
+                    /**
+                     * @var Builder $query
+                     */
+                    return $query
+                        ->whereIn('ec_product_category_product.category_id', $filters['categories']);
+                });
+        }
+
+        // Filter product by tags
+        $filters['tags'] = array_filter($filters['tags']);
+        if ($filters['tags']) {
+            $this->model = $this->model
+                ->whereHas('tags', function ($query) use ($filters) {
+                    /**
+                     * @var Builder $query
+                     */
+                    return $query
+                        ->whereIn('ec_product_tag_product.tag_id', $filters['tags']);
+                });
+        }
+
+        // Filter product by collections
+        $filters['collections'] = array_filter($filters['collections']);
+        if ($filters['collections']) {
+            $this->model = $this->model
+                ->whereHas('productCollections', function ($query) use ($filters) {
+                    /**
+                     * @var Builder $query
+                     */
+                    return $query
+                        ->whereIn('ec_product_collection_products.product_collection_id', $filters['collections']);
+                });
+        }
+
+        // Filter product by brands
+        $filters['brands'] = array_filter($filters['brands']);
+        if ($filters['brands']) {
+            $this->model = $this->model
+                ->whereIn('ec_products.brand_id', $filters['brands']);
+        }
+
+        // Filter product by attributes
+        $filters['attributes'] = array_filter($filters['attributes']);
+        if ($filters['attributes']) {
+            foreach ($filters['attributes'] as &$attributeId) {
+                $attributeId = (int)$attributeId;
+            }
+
+            $this->model = $this->model
+                ->join(
+                    DB::raw('
+                    (
+                        SELECT DISTINCT
+                            ec_product_variations.id,
+                            ec_product_variations.configurable_product_id,
+                            COUNT(ec_product_variation_items.attribute_id) AS count_attr
+
+                        FROM ec_product_variation_items
+
+                        INNER JOIN ec_product_variations ON ec_product_variations.id = ec_product_variation_items.variation_id
+
+                        WHERE ec_product_variation_items.attribute_id IN (' . implode(',', $filters['attributes']) . ')
+
+                        GROUP BY
+                            ec_product_variations.id,
+                            ec_product_variations.configurable_product_id
+                    ) AS t2'),
+                    function ($join) use ($filters) {
+                        /**
+                         * @var JoinClause $join
+                         */
+                        $join = $join->on('t2.configurable_product_id', '=', 'ec_products.id');
+
+                        if ($filters['count_attribute_groups'] > 1) {
+                            $join = $join->on('t2.count_attr', '=', DB::raw($filters['count_attribute_groups']));
+                        }
+
+                        return $join;
+                    }
+                );
+        }
+
+        if (! Arr::get($params, 'include_out_of_stock_products')) {
+            $this->exceptOutOfStockProducts();
+        }
+
+        return $this->advancedGet($params);
+    }
+
+    protected function filterProductsWithVariants(array $filters, array $params = [])
     {
         $filters = array_merge([
             'keyword' => null,
