@@ -9781,6 +9781,10 @@ body {
   display: none;
 }
 
+.product-image-slider {
+  background: white !important;
+}
+
 /** - DEBUG - **/
 #preloader-active {
   display: none;

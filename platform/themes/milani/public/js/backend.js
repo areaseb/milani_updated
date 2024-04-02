@@ -173,7 +173,18 @@ var __webpack_exports__ = {};
             sliderThumbnail.find('.slick-slide').removeClass('slick-active');
             sliderThumbnail.find('.slick-slide').eq(mySlideNumber).addClass('slick-active');
           });
-          slider.lightGallery({
+
+          // slider.lightGallery({
+          //     selector: '.slick-slide:not(.slick-cloned) a',
+          //     thumbnail: true,
+          //     share: false,
+          //     fullScreen: false,
+          //     autoplay: false,
+          //     autoplayControls: false,
+          //     actualSize: false,
+          // });
+
+          lightGallery(slider[0], {
             selector: '.slick-slide:not(.slick-cloned) a',
             thumbnail: true,
             share: false,

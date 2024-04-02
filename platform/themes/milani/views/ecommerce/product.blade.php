@@ -3,9 +3,9 @@
     $layout = ($layout && in_array($layout, array_keys(get_product_single_layouts()))) ? $layout : 'product-right-sidebar';
     Theme::layout($layout);
 
-    Theme::asset()->usePath()->add('lightGallery-css', 'plugins/lightGallery/css/lightgallery.min.css');
-    Theme::asset()->container('footer')->usePath()
-        ->add('lightGallery-js', 'plugins/lightGallery/js/lightgallery.min.js', ['jquery']);
+    Theme::asset()->usePath(false)->add('lightGallery-css', 'https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/css/lightgallery.min.css');
+    Theme::asset()->container('footer')->usePath(false)
+        ->add('lightGallery-js', 'https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.2/lightgallery.min.js', ['jquery']);
 
     Session::put('product', $product->id);
 @endphp

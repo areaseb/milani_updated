@@ -530,7 +530,7 @@ var __webpack_exports__ = {};
         slickSlide.removeClass('slick-active');
         slickSlide.eq(mySlideNumber).addClass('slick-active');
       });
-      slider.lightGallery({
+      lightGallery(slider[0], {
         selector: '.slick-slide:not(.slick-cloned) a',
         thumbnail: true,
         share: false,
@@ -539,6 +539,16 @@ var __webpack_exports__ = {};
         autoplayControls: false,
         actualSize: false
       });
+
+      // slider.lightGallery({
+      //     selector: '.slick-slide:not(.slick-cloned) a',
+      //     thumbnail: true,
+      //     share: false,
+      //     fullScreen: false,
+      //     autoplay: false,
+      //     autoplayControls: false,
+      //     actualSize: false,
+      // });
     }
 
     //Filter color/Size
