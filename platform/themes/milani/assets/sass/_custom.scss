@@ -1935,7 +1935,11 @@ body {
     }
 }
 
-// /** - DEBUG - **/
-// #preloader-active {
-//     display: none;
-// }
+#main-section > .ck-content > .slider-arrow {
+    display: none;
+}
+
+/** - DEBUG - **/
+#preloader-active {
+    display: none;
+}

@@ -9777,6 +9777,15 @@ body {
   flex-shrink: 0;
 }
 
+#main-section > .ck-content > .slider-arrow {
+  display: none;
+}
+
+/** - DEBUG - **/
+#preloader-active {
+  display: none;
+}
+
 body {
   overflow-x: hidden !important;
 }
