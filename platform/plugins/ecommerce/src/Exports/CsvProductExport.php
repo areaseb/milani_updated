@@ -81,6 +81,11 @@ class CsvProductExport implements FromCollection, WithHeadings
             }
 
             foreach ($this->headings() as $key => $title) {
+                if ($key == 'sku') {
+                    $result[$key] = $product->sku . '_PARENT';
+                    continue;
+                }
+
                 $result[$key] = $product->{$key};
             }
 
@@ -124,7 +129,12 @@ class CsvProductExport implements FromCollection, WithHeadings
                 $result['vendor'] = $product->store_id ? $product->store->name : null;
             }
 
+            // Let's fix the key
+            $result['brand'] = $result['brand']->name ?? null;
+            $result['tax'] = $result['tax']->percentage ?? null;
+
             $results[] = $result;
+            $parentResult = $result;
 
             if ($product->variations->count()) {
                 foreach ($product->variations as $variation) {
@@ -132,7 +142,11 @@ class CsvProductExport implements FromCollection, WithHeadings
 
                     $result = [];
                     foreach ($this->headings() as $key => $title) {
-                        $result[$key] = $variation->product->{$key};
+                        if (!is_null($variation->product->{$key})) {
+                            $result[$key] = $variation->product->{$key};
+                        } else {
+                            $result[$key] = $parentResult[$key];
+                        }
                     }
 
                     $result['product_name'] = $variation->product->name;
@@ -159,6 +173,11 @@ class CsvProductExport implements FromCollection, WithHeadings
                     if ($this->isMarketplaceActive) {
                         $result['vendor'] = '';
                     }
+
+                    // Let's fix the key
+                    $result['brand'] = $result['brand']->name ?? null;
+                    $result['tax'] = $result['tax']->percentage ?? null;
+                    $result['tags'] = $result['tags']->pluck('name')->implode(',');
 
                     $results[] = $result;
                 }
