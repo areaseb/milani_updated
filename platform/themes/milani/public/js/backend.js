@@ -1120,6 +1120,7 @@ var __webpack_exports__ = {};
         e.preventDefault();
         var $this = $(e.currentTarget);
         var href = $this.attr('href');
+        console.log('href', href);
         var $parent = $this.closest('.products_ajaxsortby');
         $parent.find('a.selected').removeClass('selected');
         $this.addClass('selected');

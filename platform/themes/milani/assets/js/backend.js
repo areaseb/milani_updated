@@ -1288,6 +1288,7 @@
                 e.preventDefault();
                 const $this = $(e.currentTarget);
                 const href = $this.attr('href');
+                console.log('href', href)
                 const $parent = $this.closest('.products_ajaxsortby');
                 $parent.find('a.selected').removeClass('selected');
                 $this.addClass('selected');

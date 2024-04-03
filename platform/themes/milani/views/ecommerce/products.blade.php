@@ -17,7 +17,8 @@
 @endphp
 
 <div class="col-lg-12">
-    <form action="{{ isset($filterURL) ? $filterURL : route('public.products') }}" method="GET" id="products-filter-ajax">
+    {{-- <form action="{{ isset($filterURL) ? $filterURL : route('public.products') }}" method="GET" id="products-filter-ajax"> --}}
+    <form action="{{ request()->fullUrl() }}" method="GET" id="products-filter-ajax">
         @if ($layout != 'product-full-width')
             <input type="hidden" name="layout" value="{{ $layout }}">
         @endif
