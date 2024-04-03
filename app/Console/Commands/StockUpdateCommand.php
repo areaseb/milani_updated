@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 
 class StockUpdateCommand extends Command
 {
-    public const STOCK_FILE_URL = 'https://b2b.magazzinicosma.it/storage/exports/giacenze_extended.csv';
+    public const STOCK_FILE_URL = 'https://b2b.magazzinicosma.it/storage/exports/giacenze_extended_all.csv';
     /**
      * The name and signature of the console command.
      *

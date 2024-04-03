@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use Botble\Ecommerce\Models\Product;
-use Botble\Ecommerce\Repositories\Eloquent\ProductRepository;
 use League\Csv\Reader;
 
 class StockUpdaterService
@@ -42,12 +41,17 @@ class StockUpdaterService
 
     protected function updateProductStock($record)
     {
-        $product = Product::where('codice_cosma', $record[self::SKU_KEY])->first();
+        $product = Product::where('codice_cosma', $record[self::SKU_KEY])
+            ->where('is_variation', true)
+            ->first();
+
         if (!$product) {
             return;
         }
 
-        $product->quantity = (int) $record[self::QUANTITY_KEY] - (int) $record[self::IMPEGNATO_KEY];
+        $quantity = (int) $record[self::QUANTITY_KEY] - (int) $record[self::IMPEGNATO_KEY];
+
+        $product->quantity = $quantity > 0 ? $quantity : 0;
         $product->data_arrivo = $record[self::DATA_ARRIVO_KEY];
         $product->save();
     }
