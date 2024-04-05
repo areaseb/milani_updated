@@ -35,6 +35,8 @@ class StockUpdateCommand extends Command
 
         $stockUpdaterService->updateTempesta();
 
+        $stockUpdaterService->updateSets();
+
         return Command::SUCCESS;
     }
 
