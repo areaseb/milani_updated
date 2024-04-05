@@ -238,6 +238,8 @@ class PublicProductController
             $productVariation = $requestedProductVariation;
             $selectedAttrs = $requestedProductVariation->variationProductAttributes;
             $productImages = $requestedProductVariation->images;
+
+            $product = $requestedProductVariation;
         }
 
         $bodyClass = Theme::get('bodyClass', '');

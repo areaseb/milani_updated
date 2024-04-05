@@ -183,9 +183,9 @@
                     <li><span class="d-inline-block">{{ __('Availability') }}:</span> <span class="in-stock text-success ml-5">{!! BaseHelper::clean($product->stock_status_html) !!}</span></li>
                 </ul>
 
-                @if ($product->variations()->count() > 0)
+                @if ($product->variations()->count() > 0 || $product->is_variation)
                     <div class="pr_switch_wrap product-meta mt-30">
-                        {!! render_product_swatches($product, [
+                        {!! render_product_swatches($product->parentProduct[0], [
                             'selected' => $selectedAttrs,
                             'view'     => Theme::getThemeNamespace() . '::views.ecommerce.attributes.swatches-renderer'
                         ]) !!}
