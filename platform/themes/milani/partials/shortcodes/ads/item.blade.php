@@ -1,5 +1,5 @@
 <div class="banner-img wow fadeIn animated {{ $class ?? '' }}">
-    <img class="border-radius-10" src="{{ RvMedia::getImageUrl($ads->image) }}" alt="{{ $ads->name }}">
+    <img class="border-radius-10" src="{{ RvMedia::getImageUrl($ads->image, 'medium') }}" alt="{{ $ads->name }}">
     <div class="banner-text">
         <span>{{ $ads->name }}</span>
         <h4>{!! BaseHelper::clean(nl2br($ads->getMetaData('subtitle', true) ?: '')) !!}</h4>
