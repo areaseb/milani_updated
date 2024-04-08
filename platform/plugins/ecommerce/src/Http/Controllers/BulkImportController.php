@@ -41,15 +41,15 @@ class BulkImportController extends BaseController
             }
         });
 
-        $categoryRepository = app(ProductCategoryInterface::class);
-        ProductCategory::chunk(200, function ($category) use ($categoryRepository) {
-            foreach ($category as $category) {
-                $categoryRepository->delete($category);
-            }
-        });
+        // $categoryRepository = app(ProductCategoryInterface::class);
+        // ProductCategory::chunk(200, function ($category) use ($categoryRepository) {
+        //     foreach ($category as $category) {
+        //         $categoryRepository->delete($category);
+        //     }
+        // });
 
         Slug::where('reference_type', Product::class)->delete();
-        Slug::where('reference_type', ProductCategory::class)->delete();
+        // Slug::where('reference_type', ProductCategory::class)->delete();
 
         return redirect()->back();
     }
