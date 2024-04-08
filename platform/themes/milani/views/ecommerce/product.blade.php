@@ -185,7 +185,7 @@
 
                 @if ($product->variations()->count() > 0 || $product->is_variation)
                     <div class="pr_switch_wrap product-meta mt-30">
-                        {!! render_product_swatches($product->parentProduct[0], [
+                        {!! render_product_swatches($product, [
                             'selected' => $selectedAttrs,
                             'view'     => Theme::getThemeNamespace() . '::views.ecommerce.attributes.swatches-renderer'
                         ]) !!}
