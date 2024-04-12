@@ -76,7 +76,8 @@ class OrderExporterService
     protected function getOrdersToExportQuery()
     {
         return Order::whereHas('payment', fn ($query) => $query->where('status', 'completed'))
-            ->where('is_exported', false);
+            ->where('is_exported', false)
+            ->where('status', 'processing');
     }
 
     protected function exportOrder($order)
