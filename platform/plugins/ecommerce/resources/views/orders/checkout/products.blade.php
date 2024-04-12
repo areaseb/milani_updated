@@ -1,5 +1,5 @@
 @if (isset($products) && $products)
-    <p>{{ __('Product(s)') }}:</p>
+    <h5 class="checkout-payment-title">{{ __('Product(s)') }}:</h5>
     @foreach($products as $key => $product)
         @php
             $cartItem = $product->cartItem;
