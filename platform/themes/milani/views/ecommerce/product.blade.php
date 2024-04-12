@@ -191,9 +191,11 @@
                             'view'     => Theme::getThemeNamespace() . '::views.ecommerce.attributes.swatches-renderer'
                         ]) !!}
                     </div>
-                    <div class="number-items-available" style="@if (!$product->isOutOfStock()) display: none; @endif margin-bottom: 10px;">
+                    <div class="number-items-available" style="margin-bottom: 10px;">
                         @if ($product->isOutOfStock())
-                            <span class="text-danger">Il prodotto è in arrivo il {{ date('d/m/Y', strtotime($product->data_arrivo)) }}</span>
+                            <span class="text-danger">{{ __('The product will arrive on') }} {{ date('d/m/Y', strtotime($product->data_arrivo)) }}</span>
+                        @else
+                        	{{ __('Availability') }}: <span class="text-success">{{$product->quantity}} {{ __('products') }}</span>
                         @endif
                     </div>
                 @endif
