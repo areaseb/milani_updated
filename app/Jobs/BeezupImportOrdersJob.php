@@ -123,7 +123,7 @@ class BeezupImportOrdersJob implements ShouldQueue
         $order->is_finished = true;
         $order->completed_at = Carbon::parse($data->order_PurchaseUtcDate)->format('Y-m-d H:i:s');
         $order->is_exported = false;
-        $order->status = 'processing';
+        $order->status = 'pending';
         $order->carrier = $this->carriers[$data->marketplaceBusinessCode] ?? '_';
 
         $order->save();
