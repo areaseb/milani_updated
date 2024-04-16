@@ -135,6 +135,12 @@ class CsvProductExport implements FromCollection, WithHeadings
             if ($this->isMarketplaceActive) {
                 $result['vendor'] = $product->store_id ? $product->store->name : null;
             }
+            
+            for($n = 1; $n <= 5; $n++){
+            	if($result['peso_con_imballo_collo_'.$n] == '' || is_null($result['peso_con_imballo_collo_'.$n])){
+            		$result['peso_con_imballo_collo_'.$n] = 0;
+            	}
+            }
 			
 			$result['quantity'] = $product->quantity;
 			
@@ -194,6 +200,12 @@ class CsvProductExport implements FromCollection, WithHeadings
                         $result['vendor'] = '';
                     }
                     
+                    for($n = 1; $n <= 5; $n++){
+		            	if($result['peso_con_imballo_collo_'.$n] == '' || is_null($result['peso_con_imballo_collo_'.$n])){
+		            		$result['peso_con_imballo_collo_'.$n] = 0;
+		            	}
+		            }
+		            
                     $result['quantity'] = $product->quantity;
                     
                     $result['url'] = env('APP_URL').'/prodotti/'.$product->slug.'?s='.$product->sku;
