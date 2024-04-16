@@ -12,13 +12,13 @@
 
         <div class="container" id="main-checkout-product-info">
             <div class="row">
-                
+
                 <div class="col-md-12">
                 	<div class="d-block d-sm-none">
                         @include('plugins/ecommerce::orders.partials.logo')
                     </div>
                 </div>
-                   
+
                 <div class="col-lg-7 col-md-6 left">
                     <div class="d-none d-sm-block">
                         @include('plugins/ecommerce::orders.partials.logo')
@@ -96,16 +96,18 @@
                                     $selecting = $selected ?: $default;
                                 @endphp
 
-                                {!! apply_filters(PAYMENT_FILTER_ADDITIONAL_PAYMENT_METHODS, null, [
-                                        'amount'    => ($promotionDiscountAmount + $couponDiscountAmount - $shippingAmount) > Cart::instance('cart')->rawTotal() ? 0 : format_price(Cart::instance('cart')->rawTotal() - $promotionDiscountAmount - $couponDiscountAmount + $shippingAmount, null, true),
-                                        'currency'  => strtoupper(get_application_currency()->title),
-                                        'name'      => null,
-                                        'selected'  => $selected,
-                                        'default'   => $default,
-                                        'selecting' => $selecting,
-                                    ]) !!}
+                                @if (old('shipping_option', $defaultShippingOption) != 5)
+                                    {!! apply_filters(PAYMENT_FILTER_ADDITIONAL_PAYMENT_METHODS, null, [
+                                            'amount'    => ($promotionDiscountAmount + $couponDiscountAmount - $shippingAmount) > Cart::instance('cart')->rawTotal() ? 0 : format_price(Cart::instance('cart')->rawTotal() - $promotionDiscountAmount - $couponDiscountAmount + $shippingAmount, null, true),
+                                            'currency'  => strtoupper(get_application_currency()->title),
+                                            'name'      => null,
+                                            'selected'  => $selected,
+                                            'default'   => $default,
+                                            'selecting' => $selecting,
+                                        ]) !!}
+                                @endif
 
-                                @if (get_payment_setting('status', 'cod') == 1 && old('shipping_option', $defaultShippingOption) != 6)
+                                @if (get_payment_setting('status', 'cod') == 1 && old('shipping_option', $defaultShippingOption) == 5)
                                     <li class="list-group-item">
                                         <input class="magic-radio js_payment_method" type="radio" name="payment_method" id="payment_cod"
                                             @if ($selecting == \Botble\Payment\Enums\PaymentMethodEnum::COD) checked @endif
@@ -124,7 +126,7 @@
                                     </li>
                                 @endif
 
-                                @if (get_payment_setting('status', 'bank_transfer') == 1)
+                                @if (get_payment_setting('status', 'bank_transfer') == 1 && old('shipping_option', $defaultShippingOption) != 5)
                                     <li class="list-group-item">
                                         <input class="magic-radio js_payment_method" type="radio" name="payment_method" id="payment_bank_transfer"
                                             @if ($selecting == \Botble\Payment\Enums\PaymentMethodEnum::BANK_TRANSFER) checked @endif
@@ -172,9 +174,9 @@
 
                     </div> <!-- /form checkout -->
                 </div>
-                
-                
-                <div class="order-1 order-md-2 col-lg-5 col-md-6 right">                    
+
+
+                <div class="order-1 order-md-2 col-lg-5 col-md-6 right">
                     <div id="cart-item" class="position-relative">
 
                         <div class="payment-info-loading" style="display: none;">
@@ -263,7 +265,7 @@
                     <div class="mt-3 mb-5">
                         @include('plugins/ecommerce::themes.discounts.partials.form')
                     </div>
-                    
+
                     <div class="form-group mb-3">
                         <div class="row">
                             <div class="col-md-6 d-none d-md-block" style="line-height: 53px">
@@ -279,7 +281,7 @@
                             <a class="text-info" href="{{ route('public.cart') }}"><i class="fas fa-long-arrow-alt-left"></i> <span class="d-inline-block">{{ __('Back to cart') }}</span></a>
                         </div>
                     </div>
-                        
+
                 </div>
             </div>
         </div>
