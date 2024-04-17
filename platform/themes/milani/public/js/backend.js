@@ -1202,7 +1202,6 @@ var __webpack_exports__ = {};
         // }
       });
     }
-
     function parseParamsSearch(query) {
       var includeArray = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       var pairs = query || window.location.search.substring(1);

@@ -335,8 +335,7 @@ if (! function_exists('get_related_products')) {
                 },
             ],
             'order_by' => [
-                'ec_products.order' => 'ASC',
-                'ec_products.created_at' => 'DESC',
+                'ec_products.id' => 'ASC',
             ],
             'take' => $limit,
             'select' => [
@@ -358,7 +357,15 @@ if (! function_exists('get_related_products')) {
             $params['condition'][] = ['ec_products.id', 'IN', $relatedIds];
         } else {
             $params['condition'][] = ['ec_products.id', '!=', $product->id];
+
+			$products_ids = [];
+			foreach($product->categories as $category) {
+				$products_ids = array_merge($products_ids, $category->products()->pluck('ec_products.id')->toArray());
+			}
+			$params['condition'][] = ['ec_products.id', 'IN', $products_ids];
+			$params['order_by'] = 'RANDOM';
         }
+
 
         return app(ProductInterface::class)->getProducts($params);
     }
