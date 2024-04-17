@@ -113,6 +113,9 @@ class BeezupImportOrdersJob implements ShouldQueue
         $order = new Order();
         $order->source = $data->order_MarketPlaceChannel ?? '_';
         $order->external_id = $data->beezUPOrderId;
+        $order->marketplace_order_id = $data->order_MarketplaceOrderId;
+        $order->marketplace_technical_code = $data->marketplaceTechnicalCode;
+        $order->marketplace_account_id = $data->accountId;
         $order->user_id = $customer->id;
         $order->amount = (float) $data->order_TotalPrice;
         $order->tax_amount = 0;
@@ -141,7 +144,7 @@ class BeezupImportOrdersJob implements ShouldQueue
         $address->phone = $data->order_Shipping_Phone ?? '';
         $address->country = $data->order_Shipping_AddressCountryIsoCodeAlpha2;
         $address->city = $data->order_Shipping_AddressCity;
-        $address->address = $data->order_Shipping_AddressLine1;
+        $address->address = isset($data->order_Shipping_AddressLine2) ? $data->order_Shipping_AddressLine1 . ' ' . $data->order_Shipping_AddressLine2 : $data->order_Shipping_AddressLine1;
         $address->zip_code = $data->order_Shipping_AddressPostalCode;
         $address->order_id = $order->id;
         $address->type = 'shipping_address';
