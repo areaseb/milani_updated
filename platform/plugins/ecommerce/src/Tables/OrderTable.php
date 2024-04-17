@@ -65,6 +65,9 @@ class OrderTable extends TableAbstract
             })
             ->editColumn('products', function ($item) {
                 return $item->products->count();
+            })            
+            ->editColumn('marketplace_order_id', function ($item) {
+                return $item->marketplace_order_id;
             })
             ->editColumn('total_volume', function ($item) {
             	$cubatura = 0;
@@ -136,6 +139,7 @@ class OrderTable extends TableAbstract
             ->with(['user', 'payment'])
             ->select([
                 'id',
+                'marketplace_order_id',
                 'source',
                 'status',
                 'user_id',
@@ -159,6 +163,10 @@ class OrderTable extends TableAbstract
                 'width' => '20px',
                 'class' => 'text-start',
             ],
+            'marketplace_order_id' => [
+                'title' => 'Ordine marketplace',
+                'class' => 'text-start',
+            ], 
             'source' => [
                 'title' => trans('core/base::tables.source'),
                 'class' => 'text-start',
