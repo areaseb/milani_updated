@@ -29,14 +29,14 @@ class StockUpdaterService
     public function updateTempesta()
     {
         $products = Product::where('sku_set', 'tempesta')->get();
-        if (!$products->isEmpty()) {
+        if (!$products) {
             return;
         }
 
         foreach ($products as $product) {
-            $product->quantity = 0;
+            $product->quantity = 99;
             $product->save();
-        };
+        }
     }
 
     protected function updateProductStock($record)
