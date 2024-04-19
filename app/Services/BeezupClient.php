@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Carbon\Carbon;
 use GuzzleHttp\Client;
+use Botble\Ecommerce\Models\Order;
 
 class BeezupClient
 {
@@ -50,6 +51,25 @@ class BeezupClient
             'orders' => collect($body->orders),
             'hasMoreResults' => $pageNumber < (int) $body->paginationResult->pageCount,
         ];
+    }
+    
+    public function updateOrder(Order $order)
+    {
+        $response = $this->client()->post("/orders/v3/$order->marketplace_technical_code/$order->marketplace_account_id/$order->external_id/ShipOrder?userName=info@milanihome.it", [
+            'json' => [
+                'order_Shipping_FulfillmentDate' => date('Y-m-d').'T'.date('H:i:s').'Z',
+                'order_Shipping_CarrierName' => config('beezup.carriers_name')[$order->carrier] ?? config('beezup.carriers_name')[1],
+                'order_Shipping_Method' => 'express'
+            ],
+        ]);
+
+        $body = json_decode($response->getBody()->getContents());
+     
+        if(isset($body->errors->code)){
+        	return false;
+        }
+        
+        return true;
     }
 
     protected function client()
