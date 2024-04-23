@@ -19,11 +19,12 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family={{ urlencode(theme_option('font_text', 'Poppins')) }}:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
         --}}
-		
+		{{--
 		<link rel="preload" href="https://fonts.googleapis.com" as="style" onload="this.onload=null;this.rel='stylesheet'">
 		<noscript><link rel="stylesheet" href="https://fonts.googleapis.com"></noscript>
 		<link rel="preload" href="https://fonts.gstatic.com" as="style" onload="this.onload=null;this.rel='stylesheet'" crossorigin>
 		<noscript><link rel="stylesheet" href="https://fonts.gstatic.com" crossorigin></noscript>
+		--}}
 		<link rel="preload" href="https://fonts.googleapis.com/css2?family={{ urlencode(theme_option('font_text', 'Poppins')) }}:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 		<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ urlencode(theme_option('font_text', 'Poppins')) }}:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"></noscript>
 
@@ -63,8 +64,8 @@
         @endphp
         
         <script async type="text/javascript">
-		var _iub = _iub || [];
-		_iub.csConfiguration = {"askConsentAtCookiePolicyUpdate":true,"floatingPreferencesButtonDisplay":"bottom-left","perPurposeConsent":true,"siteId":2335001,"whitelabel":false,"cookiePolicyId":64090603,"lang":"it", "banner":{ "acceptButtonDisplay":true,"backgroundOverlay":true,"closeButtonRejects":true,"customizeButtonDisplay":true,"explicitWithdrawal":true,"listPurposes":true,"position":"bottom","showTitle":false }};
+			var _iub = _iub || [];
+			_iub.csConfiguration = {"askConsentAtCookiePolicyUpdate":true,"floatingPreferencesButtonDisplay":"bottom-left","perPurposeConsent":true,"siteId":2335001,"whitelabel":false,"cookiePolicyId":64090603,"lang":"it", "banner":{ "acceptButtonDisplay":true,"backgroundOverlay":true,"closeButtonRejects":true,"customizeButtonDisplay":true,"explicitWithdrawal":true,"listPurposes":true,"position":"bottom","showTitle":false }};
 		</script>
 		<script async type="text/javascript" src="https://cs.iubenda.com/autoblocking/2335001.js"></script>
 		<script async type="text/javascript" src="//cdn.iubenda.com/cs/iubenda_cs.js" charset="UTF-8" async></script>
@@ -102,6 +103,10 @@
 		  fbq('init', '119730032289920');
 		  fbq('track', 'PageView');
 		</script> 
+		<noscript> 
+			<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=119730032289920&amp;ev=PageView&amp;noscript=1"> 
+		</noscript> 
+		<!-- End Facebook Pixel Code -->
 		
 		<!-- Start of milanihomehelp Zendesk Widget script --> 
   		<script async id="ze-snippet" src="https://static.zdassets.com/ekr/snippet.js?key=8a656522-7db5-4312-b6da-15a333614096"></script> 
@@ -123,10 +128,9 @@
 		</noscript> 
 		<!-- end Pinterest Tag --> 
 		
-		
-  <noscript> 
-   <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=119730032289920&amp;ev=PageView&amp;noscript=1"> 
-  </noscript> <!-- End Facebook Pixel Code --> <!-- Doofinder Code --> 
+		<!-- TrustBox script -->
+		<script async type="text/javascript" src="//widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js"></script>
+		<!-- End TrustBox script -->
 		
     </head>
     <body @if (BaseHelper::siteLanguageDirection() == 'rtl') dir="rtl" @endif class="@if (BaseHelper::siteLanguageDirection() == 'rtl') rtl @endif header_full_true wowy-template css_scrollbar lazy_icons btnt4_style_2 zoom_tp_2 css_scrollbar template-index wowy_toolbar_true hover_img2 swatch_style_rounded swatch_list_size_small label_style_rounded wrapper_full_width header_full_true header_sticky_true hide_scrolld_true des_header_3 h_banner_true top_bar_true prs_bordered_grid_1 search_pos_canvas lazyload @if (Theme::get('bodyClass')) {{ Theme::get('bodyClass') }} @endif">
