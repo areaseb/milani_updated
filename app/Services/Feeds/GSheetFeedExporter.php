@@ -10,7 +10,8 @@ class GSheetFeedExporter
 {
     protected const DISK = 'feed';
     protected const FILENAME = 'gsheet.csv';
-    protected const SEPARATAOR = ',';
+    protected const SEPARATAOR = ';';
+    protected const IVA = 22;
 
     protected const HEADER = [
         'SKU',
@@ -68,7 +69,7 @@ class GSheetFeedExporter
 
     protected function generateProductRow($product)
     {
-        $price = $product->price;
+        $price = $product->price * ((100 + self::IVA) / 100);
         if (now()->isBetween(Carbon::parse($product->start_date), Carbon::parse($product->end_date))) {
             $price = $product->sale_price;
         }
@@ -77,7 +78,7 @@ class GSheetFeedExporter
             'SKU' => $product->sku,
             'COD COSMA' => $product->codice_cosma,
             'Giacenza' => $product->quantity,
-            'Prezzo' => number_format($price, 2, '.', ''),
+            'Prezzo' => number_format($price, 2, ',', ''),
             'Tempesta' => $product->sku_set == 'tempesta' ? '1' : '0',
         ];
     }
