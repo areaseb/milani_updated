@@ -41,7 +41,10 @@ class BeezupClient
                 'beginPeriodUtcDate' => $from->toIso8601ZuluString(),
                 'endPeriodUtcDate' => $to->toIso8601ZuluString(),
                 'pageSize' => $pageSize,
-                'pageNumber' => $pageNumber
+                'pageNumber' => $pageNumber,
+                'beezUPOrderStatuses' => [
+                	"InProgress"
+                ]
             ],
         ]);
 
@@ -55,7 +58,7 @@ class BeezupClient
     
     public function updateOrder(Order $order)
     {
-        $response = $this->client()->post("/orders/v3/$order->marketplace_technical_code/$order->marketplace_account_id/$order->external_id/ShipOrder?userName=info@milanihome.it", [
+/*        $response = $this->client()->post("/orders/v3/$order->marketplace_technical_code/$order->marketplace_account_id/$order->external_id/ShipOrder?userName=info@milanihome.it", [
             'json' => [
                 'order_Shipping_FulfillmentDate' => date('Y-m-d').'T'.date('H:i:s').'Z',
                 'order_Shipping_CarrierName' => config('beezup.carriers_name')[$order->carrier] ?? config('beezup.carriers_name')[1],
@@ -67,7 +70,7 @@ class BeezupClient
      
         if(isset($body->errors->code)){
         	return false;
-        }
+        }*/
         
         return true;
     }
