@@ -248,6 +248,9 @@ abstract class RepositoriesAbstract implements RepositoryInterface
             if ($data['updated_at'] ?? false) {
                 $item->updated_at = $data['updated_at'];
             }
+            if ($data['dob'] ?? false) {
+                $item->dob = trim($data['dob']);
+            }
 
         } else {
             return false;
