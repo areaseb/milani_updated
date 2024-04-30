@@ -26,7 +26,7 @@ class OrderExporterService
 
     public function export()
     {
-        $this->getOrdersToExportQuery()
+    	$this->getOrdersToExportQuery()
             ->chunk(self::NUMBER_OF_ORDERS_PER_REQUEST, fn ($orders) => $orders->each(fn ($order) => $this->exportOrder($order)));
 
         if ($this->exportLines()) {
@@ -132,14 +132,14 @@ class OrderExporterService
         if (!$carrier || $carrier == 1) {
             $carrier = (int) $product->carrier;
         }
-
+		
         return [
-            'sku' => $product->codice_cosma,
+            'sku' => $product->sku,
             'spedizioniere' => $carrier,
             'barcode' => '',
             'descrizione' => '',
             'quantita' => $quantity,
-            'prezzo' => $product->price,
+            'prezzo' => number_format(($product->price * 1.22) + ($order->shipping_amount / $order->products->count()), 2, '.', ''),
             'pagamento' => $this->getPayment($order),
             'nomeCliente' => $order->shippingAddress->name,
             'indirizzo' => $order->shippingAddress->address,
