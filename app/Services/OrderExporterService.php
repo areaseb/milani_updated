@@ -111,7 +111,7 @@ class OrderExporterService
             collect($skuSetExploded)->each(function ($set) use (&$rows, $order, $orderProduct, &$i) {
                 $setExploded = explode(':', $set);
                 $quantity = ((int) $setExploded[1]) * $orderProduct->qty;
-
+//\Log::info('Set: '. print_r($setExploded[0], true) . ' - Check prodotto: ' . print_r($this->getProductByCodiceCosma($setExploded[0]), true));
                 $line = $this->generateProductRow($order, $this->getProductByCodiceCosma($setExploded[0]), $quantity, $i++);
                 if ($line) {
                     $this->lines->push($line);
@@ -119,6 +119,7 @@ class OrderExporterService
             });
 
         } else {
+//\Log::info('Prodotto normale: '. print_r($orderProduct->product, true));        	
             $line = $this->generateProductRow($order, $orderProduct->product, $orderProduct->qty, $i++);
             if ($line) {
                 $this->lines->push($line);
@@ -132,14 +133,16 @@ class OrderExporterService
         if (!$carrier || $carrier == 1) {
             $carrier = (int) $product->carrier;
         }
-		
+if(is_null($product)){
+	\Log::info('errore import ordine: '. print_r($order, true));
+}
         return [
             'sku' => $product->sku,
             'spedizioniere' => $carrier,
             'barcode' => '',
             'descrizione' => '',
             'quantita' => $quantity,
-            'prezzo' => number_format(($product->price * 1.22) + ($order->shipping_amount / $order->products->count()), 2, '.', ''),
+            'prezzo' => number_format((($product->price * 1.22) * $quantity) + ($order->shipping_amount / $order->products->count()), 2, '.', ''),
             'pagamento' => $this->getPayment($order),
             'nomeCliente' => $order->shippingAddress->name,
             'indirizzo' => $order->shippingAddress->address,
@@ -152,13 +155,14 @@ class OrderExporterService
             'numeroOrdine' => $order->code,
             'numeroItem' => (string) $index,
             'note' => '',
-            'provenienza' => $this->getSource($order),
+            'provenienza' => $this->getSource($order->source),
         ];
     }
 
-    protected function getSource($order)
+    protected function getSource($source)
     {
-        return config("gslink.source.{$order->source}", config('gslink.source_default'));
+    	$source = explode('.', $source);   	
+        return config("gslink.source.{$source[0]}", config('gslink.source_default'));
     }
 
     protected function getPayment($order)
