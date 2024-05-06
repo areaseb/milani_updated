@@ -142,7 +142,7 @@ class CsvProductExport implements FromCollection, WithHeadings
             	}
             }
 			
-			$result['quantity'] = $product->quantity;
+			$result['quantity'] = $product->quantity ?? 0;
 			
 			$result['url'] = env('APP_URL').'/prodotti/'.$product->slug.'?s='.$product->sku;
 			
@@ -206,7 +206,7 @@ class CsvProductExport implements FromCollection, WithHeadings
 		            	}
 		            }
 		            
-                    $result['quantity'] = $product->quantity;
+                    $result['quantity'] = $product->quantity ?? 0;
                     
                     $result['url'] = env('APP_URL').'/prodotti/'.$product->slug.'?s='.$product->sku;
 
