@@ -79,13 +79,14 @@
                             <ins><span class="old-price font-md ml-15">{{ format_price($product->price_with_taxes) }}</span></ins>
                             <span class="save-price font-md color3 ml-15"><span class="percentage-off d-inline-block">{{ get_sale_percentage($product->price, $product->front_sale_price) }}</span> <span class="d-inline-block">{{ __('Off') }}</span></span>
                         @endif
-                        @if($product->front_sale_price_with_taxes > 100)
+{{--                    @if($product->front_sale_price_with_taxes > 100)
                         	<div class="mt-20" style="display: flex; align-items:center;">
                         		<img src="/storage/general/klarna.png" align="middle" height="30">
                         		<small class="ml-10">Paga in <b>3 rate da {!! format_price($product->front_sale_price_with_taxes / 3) !!}</b> senza interessi.
                         		<a href="https://www.klarna.com/" target="_blank">Maggiori informazioni</a></small>
                         	</div>
                         @endif
+--}}                        
                     </div>
                 </div>
                 <div class="bt-1 border-color-1 mt-30 mb-30"></div>
@@ -192,14 +193,13 @@
                         ]) !!}
                     </div>
                     <div class="number-items-available" style="margin-bottom: 10px;">
-                        @if ($product->isOutOfStock())
-                            <span class="text-danger">{{ __('The product will arrive on') }} {{ date('d/m/Y', strtotime($product->data_arrivo)) }}</span>
+                        @if ($productVariation->isOutOfStock())
+                            <span class="text-danger">({{ __('Out Of Stock') }})</span>
                         @else
-                        	{{ __('Availability') }}: <span class="text-success">{{$product->quantity}} {{ __('products') }}</span>
+                        	{{ __('Availability') }}: <span class="text-success">{{$productVariation->quantity}} {{ __('products') }}</span>
                         @endif
                     </div>
                 @endif
-
 
             </div>
         </div>
