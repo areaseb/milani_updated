@@ -141,8 +141,8 @@ class CsvProductExport implements FromCollection, WithHeadings
             		$result['peso_con_imballo_collo_'.$n] = 0;
             	}
             }
-			
-			$result['quantity'] = $product->quantity ?? 0;
+
+			$result['quantity'] = (!is_null($product->quantity) && $product->quantity > 0) ? $product->quantity : '0';
 			
 			$result['url'] = env('APP_URL').'/prodotti/'.$product->slug.'?s='.$product->sku;
 			
@@ -157,7 +157,7 @@ class CsvProductExport implements FromCollection, WithHeadings
             	
                 foreach ($product->variations as $variation) {
                     $productAttributes = $this->getProductAttributes($variation);
-
+  
                     $result = [];
                     foreach ($this->headings() as $key => $title) {
                         if (!is_null($variation->product->{$key})) {
@@ -206,7 +206,7 @@ class CsvProductExport implements FromCollection, WithHeadings
 		            	}
 		            }
 		            
-                    $result['quantity'] = $product->quantity ?? 0;
+                    $result['quantity'] = (!is_null($variation->product->quantity) && $variation->product->quantity > 0) ? $variation->product->quantity : '0';
                     
                     $result['url'] = env('APP_URL').'/prodotti/'.$product->slug.'?s='.$product->sku;
 
