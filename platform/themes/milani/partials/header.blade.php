@@ -70,26 +70,16 @@
 		<script async type="text/javascript" src="https://cs.iubenda.com/autoblocking/2335001.js"></script>
 		<script async type="text/javascript" src="//cdn.iubenda.com/cs/iubenda_cs.js" charset="UTF-8" async></script>
 		
-		<!-- Google Tag Manager --> 
+		<!-- Google Tag Manager -->
 		<script>
 			(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 			new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
 			j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 			'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 			})(window,document,'script','dataLayer','GTM-MPBC629');
-		</script> 
-		<!-- End Google Tag Manager --> 
-		
-		<!-- Global site tag (gtag.js) - Google Analytics --> 
-		<script async src="https://www.googletagmanager.com/gtag/js?id=UA-127631815-1"></script> 
-		<script>
-		  window.dataLayer = window.dataLayer || [];
-		  function gtag(){dataLayer.push(arguments);}
-		  gtag('js', new Date());
-
-		  gtag('config', 'UA-127631815-1');
-		</script> 
-		
+		</script>
+		<!-- End Google Tag Manager -->
+				
 		<!-- Facebook Pixel Code --> 
 		<script>
 		  !function(f,b,e,v,n,t,s)
@@ -134,6 +124,11 @@
 		
     </head>
     <body @if (BaseHelper::siteLanguageDirection() == 'rtl') dir="rtl" @endif class="@if (BaseHelper::siteLanguageDirection() == 'rtl') rtl @endif header_full_true wowy-template css_scrollbar lazy_icons btnt4_style_2 zoom_tp_2 css_scrollbar template-index wowy_toolbar_true hover_img2 swatch_style_rounded swatch_list_size_small label_style_rounded wrapper_full_width header_full_true header_sticky_true hide_scrolld_true des_header_3 h_banner_true top_bar_true prs_bordered_grid_1 search_pos_canvas lazyload @if (Theme::get('bodyClass')) {{ Theme::get('bodyClass') }} @endif">
+        <!-- Google Tag Manager (noscript) -->
+			<noscript>
+				<iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MPBC629" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+			</noscript>
+		<!-- End Google Tag Manager (noscript) -->
         {!! apply_filters(THEME_FRONT_BODY, null) !!}
         <div id="alert-container"></div>
 
