@@ -26,7 +26,7 @@ class BeezupClient
 
     public function getOrders(int $pageNumber = 1, Carbon $from = null, Carbon $to = null, int $pageSize = 100)
     {
-        $from = $from ?? Carbon::now()->subDay();
+        $from = $from ?? Carbon::now()->subDays(7);
         $to = $to ?? Carbon::now();
 
         if ($to->gt(Carbon::now())) {
