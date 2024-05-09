@@ -7,6 +7,7 @@ use Botble\Ecommerce\Models\Product;
 use Botble\Payment\Enums\PaymentMethodEnum;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class OrderExporterMicheleService
 {
@@ -48,10 +49,8 @@ class OrderExporterMicheleService
     
     protected function getOrdersToExportQuery()
     {
-/*        return Order::whereHas('payment', fn ($query) => $query->where('status', 'completed'))
-            ->where('is_exported', false)
-            ->where('status', 'processing');*/
-            return Order::where('id', '>', 2459);
+        return Order::where('status', 'processing')
+            ->where('created_at', '>', Carbon::now()->subDays(14));		//whereHas('payment', fn ($query) => $query->where('status', 'completed'))
     }
 
     protected function exportOrder($order)
@@ -64,10 +63,10 @@ class OrderExporterMicheleService
     {
         return collect([
             'numeroOrdine' => $order->code,
-            'nomeCliente' => $order->shippingAddress->name,
-            'indirizzo' => $order->shippingAddress->address,
+            'nomeCliente' => '"'.$order->shippingAddress->name.'"',
+            'indirizzo' => '"'.$order->shippingAddress->address.'"',
             'cap' => (string) ($order->shippingAddress->zip_code ?? ""),
-            'citta' => $order->shippingAddress->city,
+            'citta' => '"'.$order->shippingAddress->city.'"',
             'prov' => $order->shippingAddress->state,
             'nazione' => $order->shippingAddress->country,
             'telefono' => $order->shippingAddress->phone,
@@ -114,18 +113,20 @@ if(is_null($product)){
         return [
             'sku' => $product->sku,
             'quantita' => $quantity,
-            'prezzo' => number_format((($product->price * 1.22) * $quantity) + ($order->shipping_amount / $order->products->count()), 2, '.', ''),
+            'prezzo' => number_format((($product->price * 1.22) * $quantity) + ($order->shipping_amount / $order->products->count()), 2, ',', '.'),
             'pagamento' => $this->getPayment($order),
-            'nomeCliente' => $order->shippingAddress->name,
-            'indirizzo' => $order->shippingAddress->address,
+            'nomeCliente' => '"'.$order->shippingAddress->name.'"',
+            'indirizzo' => '"'.$order->shippingAddress->address.'"',
             'cap' => (string) ($order->shippingAddress->zip_code ?? ""),
-            'citta' => $order->shippingAddress->city,
+            'citta' => '"'.$order->shippingAddress->city.'"',
             'nazione' => $order->shippingAddress->country,
             'telefono' => $order->shippingAddress->phone,
             'email' => $order->shippingAddress->email,
             'numeroOrdine' => $order->marketplace_order_id,
             'numeroItem' => (string) $index,
             'provenienza' => $order->source,
+            'data' => $order->created_at,
+            'status' => $order->status,
         ];
     }
 
@@ -151,7 +152,7 @@ if(is_null($product)){
 
     protected function exportLines()
     {
-    	$lines = 'SKU;QUANTITÀ;PREZZO;PAGAMENTO;NOME CLIENTE;INDIRIZZO;CAP;CITTÀ;Nazione;TELEFONO;EMAIL;NUMERO ORDINE;ORDER ITEMS;PROVENIENZA
+    	$lines = 'SKU;QUANTITÀ;PREZZO;PAGAMENTO;NOME CLIENTE;INDIRIZZO;CAP;CITTÀ;Nazione;TELEFONO;EMAIL;NUMERO ORDINE;ORDER ITEMS;PROVENIENZA;DATA;STATUS
 ';
     	
     	foreach($this->lines as $line){
