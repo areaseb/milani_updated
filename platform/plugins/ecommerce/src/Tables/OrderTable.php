@@ -124,7 +124,8 @@ class OrderTable extends TableAbstract
                         ->orWhereHas('user', function ($subQuery) use ($keyword) {
                             return $subQuery->where('name', 'LIKE', '%' . $keyword . '%');
                         })
-                        ->orWhere('code', 'LIKE', '%' . $keyword . '%');
+                        ->orWhere('code', 'LIKE', '%' . $keyword . '%')
+                        ->orWhere('marketplace_order_id', 'LIKE', '%' . $keyword . '%');
                 }
 
                 return $query;
