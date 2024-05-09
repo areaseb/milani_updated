@@ -28,6 +28,9 @@ class OrderAddress extends BaseModel
         'zip_code',
         'order_id',
         'type',
+        'vat',
+        'pec',
+        'sdi',
     ];
 
     public $timestamps = false;
