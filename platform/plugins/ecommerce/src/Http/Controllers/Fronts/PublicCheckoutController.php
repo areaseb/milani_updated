@@ -354,7 +354,7 @@ class PublicCheckoutController
             'billing_address' => Arr::get($sessionData, 'billing_address', []),
         ];
 
-        if (! empty($address)) {
+        if (! empty($address)) {       	
             $addressData = [
                 'name' => $address->name,
                 'phone' => $address->phone,
@@ -364,7 +364,7 @@ class PublicCheckoutController
                 'city' => $address->city,
                 'address' => $address->address,
                 'zip_code' => $address->zip_code,
-                'address_id' => $address->id,
+                'address_id' => $address->id
             ];
         } elseif ((array)$request->input('address', [])) {
             $addressData = (array)$request->input('address', []);
@@ -445,12 +445,18 @@ class PublicCheckoutController
                     $addressData,
                     Arr::get($addressData, 'order_id')
                 );
+                if(! empty($sessionData['billing_address'])){
+                	$this->createOrderAddress($sessionData['billing_address'] + ['order_id' => Arr::get($addressData, 'order_id')]);
+                }
                 if ($createdOrderAddress) {
                     $sessionData['created_order_address'] = true;
                     $sessionData['created_order_address_id'] = $createdOrderAddress->id;
                 }
             } elseif (! empty($sessionData['created_order_id'])) {
                 $this->createOrderAddress($addressData, $sessionData['created_order_id']);
+                if(! empty($sessionData['billing_address'])){
+                	$this->createOrderAddress($sessionData['billing_address'] + ['order_id' => Arr::get($addressData, 'order_id')]);
+                }
             }
         }
 
@@ -525,10 +531,27 @@ class PublicCheckoutController
 
     protected function storeOrderBillingAddress(array $data, ?int $orderId = null)
     {
-        if (isset($data['billing_address_same_as_shipping_address']) && ! $data['billing_address_same_as_shipping_address']) {
+        /*if (isset($data['billing_address_same_as_shipping_address']) && ! $data['billing_address_same_as_shipping_address']) {
             $billingAddressData = $data['billing_address'];
             $billingAddressData['order_id'] = $orderId ?: Arr::get($data, 'order_id');
             $billingAddressData['type'] = OrderAddressTypeEnum::BILLING;
+
+            $this->orderAddressRepository->createOrUpdate($billingAddressData, ['order_id' => $orderId, 'type' => OrderAddressTypeEnum::BILLING]);
+        } else {
+            $this->orderAddressRepository->deleteBy([
+                'order_id' => $orderId,
+                'type' => OrderAddressTypeEnum::BILLING,
+            ]);
+        }*/
+        
+        if (isset($data['vat'])) {
+            $billingAddressData = $data;
+            $billingAddressData['order_id'] = $orderId ?? Arr::get($data, 'order_id');
+            $billingAddressData['type'] = OrderAddressTypeEnum::BILLING;
+            
+            if(is_null($orderId)){
+            	$orderId = Arr::get($data, 'order_id');
+            }
 
             $this->orderAddressRepository->createOrUpdate($billingAddressData, ['order_id' => $orderId, 'type' => OrderAddressTypeEnum::BILLING]);
         } else {
