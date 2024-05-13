@@ -30,7 +30,7 @@
 
 <div class="row">
     @forelse ($products as $product)
-        <div class="col-lg-{{ 12 / ($layout != 'product-full-width' ? 3 : 4) }} col-md-4">
+        <div class="col-lg-3 col-md-4 col-6">	{{-- {{ 12 / ($layout != 'product-full-width' ? 3 : 4) }} --}}
             @include(Theme::getThemeNamespace() . '::views.ecommerce.includes.product-item', compact('product'))
         </div>
     @empty
