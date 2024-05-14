@@ -58,19 +58,23 @@ class BeezupClient
     
     public function updateOrder(Order $order)
     {
-/*        $response = $this->client()->post("/orders/v3/$order->marketplace_technical_code/$order->marketplace_account_id/$order->external_id/ShipOrder?userName=info@milanihome.it", [
-            'json' => [
-                'order_Shipping_FulfillmentDate' => date('Y-m-d').'T'.date('H:i:s').'Z',
-                'order_Shipping_CarrierName' => config('beezup.carriers_name')[$order->carrier] ?? config('beezup.carriers_name')[1],
-                'order_Shipping_Method' => 'express'
-            ],
-        ]);
+    	try{
+			
+	        $response = $this->client()->post("/orders/v3/$order->marketplace_technical_code/$order->marketplace_account_id/$order->external_id/ShipOrder?userName=info@milanihome.it", [
+	            'json' => [
+	                'order_Shipping_FulfillmentDate' => date('Y-m-d').'T'.date('H:i:s', mktime(date('H')-2,date('i')-1,date('s'),0,0,0)).'Z',
+	                'order_Shipping_CarrierName' => config('beezup.carriers_name')[$order->carrier] ?? config('beezup.carriers_name')[1],
+	                'order_Shipping_Method' => 'express'
+	            ],
+	        ]);
 
-        $body = json_decode($response->getBody()->getContents());
-     
-        if(isset($body->errors->code)){
-        	return false;
-        }*/
+	        $code = json_decode($response->getStatusCode(),true);
+	        \Log::info('Update order Beezup: code->'.$code);
+	        	        
+	    }
+	    catch(\GuzzleHttp\Exception\RequestException $e){
+	    	\Log::error('Error update order to Beezup: code->'.json_decode($e->getResponse()->getBody(),true)['errors'][0]['code'].' - message->'.json_decode($e->getResponse()->getBody(),true)['errors'][0]['message']);
+	    }
         
         return true;
     }
