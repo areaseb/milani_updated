@@ -123,6 +123,7 @@ if(is_null($product)){
             'telefono' => $order->shippingAddress->phone,
             'email' => $order->shippingAddress->email,
             'numeroOrdine' => $order->marketplace_order_id,
+            'idOrdine' => '#1'.str_pad($order->id, 7, '0', STR_PAD_LEFT),
             'numeroItem' => (string) $index,
             'provenienza' => $order->source,
             'data' => $order->created_at,
@@ -152,7 +153,7 @@ if(is_null($product)){
 
     protected function exportLines()
     {
-    	$lines = 'SKU;QUANTITÀ;PREZZO;PAGAMENTO;NOME CLIENTE;INDIRIZZO;CAP;CITTÀ;Nazione;TELEFONO;EMAIL;NUMERO ORDINE;ORDER ITEMS;PROVENIENZA;DATA;STATUS
+    	$lines = 'SKU;QUANTITÀ;PREZZO;PAGAMENTO;NOME CLIENTE;INDIRIZZO;CAP;CITTÀ;Nazione;TELEFONO;EMAIL;NUMERO ORDINE;ID ORDINE;ORDER ITEMS;PROVENIENZA;DATA;STATUS
 ';
     	
     	foreach($this->lines as $line){
