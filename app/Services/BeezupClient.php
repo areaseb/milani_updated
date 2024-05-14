@@ -69,7 +69,6 @@ class BeezupClient
 	        ]);
 
 	        $code = json_decode($response->getStatusCode(),true);
-	        \Log::info('Update order Beezup: code->'.$code);
 	        	        
 	    }
 	    catch(\GuzzleHttp\Exception\RequestException $e){
