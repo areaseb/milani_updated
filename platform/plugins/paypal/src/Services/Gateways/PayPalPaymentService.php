@@ -18,7 +18,7 @@ class PayPalPaymentService extends PayPalPaymentAbstract
      * @throws Exception
      */
     public function makePayment(array $data)
-    {
+    {\Log::info('Paypal: '.print_r($data, true));
         $amount = round((float)$data['amount'], $this->isSupportedDecimals() ? 2 : 0);
 
         $currency = $data['currency'];
@@ -28,7 +28,7 @@ class PayPalPaymentService extends PayPalPaymentAbstract
             'type' => PAYPAL_PAYMENT_METHOD_NAME,
             'amount' => $amount,
             'currency' => $currency,
-            'order_id' => $data['order_id'],
+            'order_id' => $data['order_id'],		//[0 => $data['orders']['items'][0]->code]
             'customer_id' => Arr::get($data, 'customer_id'),
             'customer_type' => Arr::get($data, 'customer_type'),
         ];
@@ -36,19 +36,36 @@ class PayPalPaymentService extends PayPalPaymentAbstract
         if ($cancelUrl = $data['return_url'] ?: PaymentHelper::getCancelURL()) {
             $this->setCancelUrl($cancelUrl);
         }
-
+		
+		$product_list = array();
+		foreach($data['products'] as $product){
+			$product_list[] = [
+                'name' => $product['name'],		//$data['description'],
+                'description' => $product['name'],
+                'quantity' => 1,
+                'price' => round((float)$product['price_per_order'], $this->isSupportedDecimals() ? 2 : 0),
+                'sku' => null,
+                'type' => PAYPAL_PAYMENT_METHOD_NAME,
+                'shipping' => $data['shipping_amount'],
+                'discount' => $data['discount_amount']
+            ];
+		}
+		
+		$description = 'Pagamento del tuo ordine numero #1'.str_pad($data['order_id'][0], 7, '0', STR_PAD_LEFT).' effettuato su www.milanihome.it';
+		
         return $this
             ->setReturnUrl($data['callback_url'] . '?' . http_build_query($queryParams))
             ->setCurrency($currency)
             ->setCustomer(Arr::get($data, 'address.email'))
-            ->setItem([
-                'name' => $data['description'],
+/*            ->setItem([
+                'name' => $data['products'][0]['name'],		//$data['description'],
                 'quantity' => 1,
                 'price' => $amount,
                 'sku' => null,
                 'type' => PAYPAL_PAYMENT_METHOD_NAME,
-            ])
-            ->createPayment($data['description']);
+            ])*/
+            ->setItem($product_list)
+            ->createPayment($description);
     }
 
     /**
