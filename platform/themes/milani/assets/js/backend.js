@@ -1235,13 +1235,30 @@
                             window.closeShopFilterSection();
                         }
                         // Animation scroll to filter button
+						/*
                         $('html, body').animate({
                             scrollTop: $formSearch.offset().top - $('header').height()
                         }, 500);
+						*/
                     },
                     success: function (res) {
                         if (res.error == false) {
-                            $productListing.html(res.data);
+							// Remove load more button
+							$('.pagination-area').html('')
+							$('.pagination-area').attr('class', '')
+
+							// Remove query hidden fields
+							$("input[type='hidden'][name='page']").remove();
+							$("input[type='hidden'][name='sort-by']").remove();
+							$("input[type='hidden'][name='num']").remove();
+							$("input[type='hidden'][name='q']").remove();
+
+							// If load more, append, else, replace page
+							if(res.additional.append)
+								$productListing.append(res.data);
+							else
+								$productListing.html(res.data);
+
                             if (nextHref != window.location.href) {
                                 window.history.pushState(data, res.message, nextHref);
                             }
@@ -1271,6 +1288,7 @@
             }, false);
 
             $(document).on('click', '.products-listing .pagination-page a', function (e) {
+				// TODO
                 e.preventDefault();
                 let aLink = $(e.currentTarget).attr('href');
 
@@ -1278,7 +1296,7 @@
                     aLink = window.location.protocol + aLink;
                 }
 
-                let url = new URL(aLink);
+			    let url = new URL(aLink);
                 let page = url.searchParams.get('page');
                 $productListing.find('input[name=page]').val(page)
                 $formSearch.trigger('submit');
