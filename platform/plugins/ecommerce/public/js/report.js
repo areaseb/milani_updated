@@ -730,8 +730,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_RevenueChart__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/RevenueChart */ "./platform/plugins/ecommerce/resources/assets/js/components/RevenueChart.vue");
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
+function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
 
 
 vueApp.booting(function (vue) {
@@ -739,7 +739,6 @@ vueApp.booting(function (vue) {
   vue.component('revenue-chart', _components_RevenueChart__WEBPACK_IMPORTED_MODULE_1__["default"]);
 });
 $(function () {
-  var _ranges;
   if (!window.moment || !jQuery().daterangepicker) {
     return;
   }
@@ -753,7 +752,7 @@ $(function () {
     endDate = today;
   }
   var rangesTrans = BotbleVariables.languages.reports;
-  var ranges = (_ranges = {}, _defineProperty(_ranges, rangesTrans.today, [today, today]), _defineProperty(_ranges, rangesTrans.this_week, [moment().startOf('week'), today]), _defineProperty(_ranges, rangesTrans.last_7_days, [moment().subtract(6, 'days'), today]), _defineProperty(_ranges, rangesTrans.last_30_days, [moment().subtract(29, 'days'), today]), _defineProperty(_ranges, rangesTrans.this_month, [moment().startOf('month'), endDate]), _defineProperty(_ranges, rangesTrans.this_year, [moment().startOf('year'), moment().endOf('year')]), _ranges);
+  var ranges = _defineProperty(_defineProperty(_defineProperty(_defineProperty(_defineProperty(_defineProperty({}, rangesTrans.today, [today, today]), rangesTrans.this_week, [moment().startOf('week'), today]), rangesTrans.last_7_days, [moment().subtract(6, 'days'), today]), rangesTrans.last_30_days, [moment().subtract(29, 'days'), today]), rangesTrans.this_month, [moment().startOf('month'), endDate]), rangesTrans.this_year, [moment().startOf('year'), moment().endOf('year')]);
   $dateRange.daterangepicker({
     ranges: ranges,
     alwaysShowCalendars: true,

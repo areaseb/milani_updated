@@ -151,7 +151,11 @@ if(is_null($product)){
             'barcode' => '',
             'descrizione' => '',
             'quantita' => $quantity,
+<<<<<<< HEAD
             'prezzo' => number_format((($product->price * 1.22) * $quantity) + ($order->shipping_amount / $order->products->count()) - ($order->discount_amount / $order->products->count()), 2, '.', ''),
+=======
+            'prezzo' => number_format((($product->price * 1.22) * $quantity) + ($order->shipping_amount / $order->products->count()), 2, '.', ''),
+>>>>>>> dev/load-more
             'pagamento' => $this->getPayment($order),
             'nomeCliente' => $order->shippingAddress->name,
             'indirizzo' => $order->shippingAddress->address,

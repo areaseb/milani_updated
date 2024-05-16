@@ -9,19 +9,24 @@
     $layout = ($layout && in_array($layout, array_keys(get_product_single_layouts()))) ? $layout : 'product-full-width';
 @endphp
 
-<div class="list-content-loading">
-    <div class="half-circle-spinner">
-        <div class="circle circle-1"></div>
-        <div class="circle circle-2"></div>
-    </div>
-</div>
 
-<div class="shop-product-filter">
-    <div class="totall-product">
-        <p>{!! BaseHelper::clean(__('We found :total items for you!', ['total' => '<strong class="text-brand">' . $products->total() . '</strong>'])) !!}</p>
-    </div>
-    @include(Theme::getThemeNamespace() . '::views/ecommerce/includes/sort')
-</div>
+@if(!Request::ajax() || (Request::ajax() && !Request::has('page')))
+	{{-- Hide for ajax 'load more' --}}
+	<div class="list-content-loading">
+	    <div class="half-circle-spinner">
+	        <div class="circle circle-1"></div>
+	        <div class="circle circle-2"></div>
+	    </div>
+	</div>
+
+	<div class="shop-product-filter">
+	    <div class="totall-product">
+	        <p>{!! BaseHelper::clean(__('We found :total items for you!', ['total' => '<strong class="text-brand">' . $products->total() . '</strong>'])) !!}</p>
+	    </div>
+		
+		@include(Theme::getThemeNamespace() . '::views/ecommerce/includes/sort')
+	</div>
+@endif
 
 <input type="hidden" name="page" data-value="{{ $products->currentPage() }}">
 <input type="hidden" name="sort-by" value="{{ request()->input('sort-by') }}">
@@ -41,6 +46,5 @@
 </div>
 
 @if ($products->total() > 0)
-    <br>
     {!! $products->withQueryString()->links(Theme::getThemeNamespace() . '::partials.custom-pagination') !!}
 @endif

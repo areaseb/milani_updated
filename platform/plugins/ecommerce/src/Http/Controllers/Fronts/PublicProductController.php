@@ -740,6 +740,9 @@ class PublicProductController
             $additional['category_tree'] = $categoryTreeView;
         }
 
+		// Check if append or reset products page
+		$additional['append'] = $request->has('page');
+
         return $response
             ->setData(view($view, compact('products'))->render())
             ->setAdditional($additional)

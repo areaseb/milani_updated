@@ -36,7 +36,6 @@ BPayment.initResources = function () {
         // optional — default input[name="cvc"]
         nameInput: 'input#stripe-name' // optional - defaults input[name="name"]
       },
-
       width: 350,
       // optional — default 350px
       formatting: true,
@@ -48,7 +47,6 @@ BPayment.initResources = function () {
         // optional - default 'valid\nthru'
         monthYear: 'mm/yyyy' // optional - default 'month/year'
       },
-
       // Default placeholders for rendered fields - optional
       placeholders: {
         number: '•••• •••• •••• ••••',
@@ -59,13 +57,11 @@ BPayment.initResources = function () {
       masks: {
         cardNumber: '•' // optional - mask card number
       },
-
       // if true, will log helpful messages for setting up Card
       debug: false // optional - default false
     });
   }
 };
-
 BPayment.init = function () {
   BPayment.initResources();
   $(document).on('change', '.js_payment_method', function () {
