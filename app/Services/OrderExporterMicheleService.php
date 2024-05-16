@@ -106,6 +106,9 @@ class OrderExporterMicheleService
 
     protected function generateProductRow($order, $product, $quantity, $index)
     {
+        if(is_null($order->discount_amount)){
+        	$order->discount_amount = 0;
+        }
     	
 if(is_null($product)){
 	\Log::info('errore import ordine: '. print_r($order, true));
@@ -113,7 +116,7 @@ if(is_null($product)){
         return [
             'sku' => $product->sku,
             'quantita' => $quantity,
-            'prezzo' => number_format((($product->price * 1.22) * $quantity) + ($order->shipping_amount / $order->products->count()), 2, ',', '.'),
+            'prezzo' => number_format((($product->price * 1.22) * $quantity) + ($order->shipping_amount / $order->products->count()) - ($order->discount_amount / $order->products->count()), 2, '.', ''),
             'pagamento' => $this->getPayment($order),
             'nomeCliente' => '"'.$order->shippingAddress->name.'"',
             'indirizzo' => '"'.$order->shippingAddress->address.'"',
