@@ -107,7 +107,7 @@ class OrderExporterService
         $i = 0;
         $skuSet = $orderProduct->product->sku_set;
         if (!empty($skuSet) && $skuSet !== 'tempesta') {
-            $skuSetExploded = explode(',', $skuSet);
+/*            $skuSetExploded = explode(',', $skuSet);
             collect($skuSetExploded)->each(function ($set) use (&$rows, $order, $orderProduct, &$i) {
                 $setExploded = explode(':', $set);
                 $quantity = ((int) $setExploded[1]) * $orderProduct->qty;
@@ -117,7 +117,11 @@ class OrderExporterService
                     $this->lines->push($line);
                 }
             });
-
+*/
+			$line = $this->generateProductRow($order, $orderProduct->product, $orderProduct->qty, $i++);
+            if ($line) {
+                $this->lines->push($line);
+            }
         } else {
 //\Log::info('Prodotto normale: '. print_r($orderProduct->product, true));        	
             $line = $this->generateProductRow($order, $orderProduct->product, $orderProduct->qty, $i++);
@@ -133,6 +137,11 @@ class OrderExporterService
         if (!$carrier || $carrier == 1) {
             $carrier = (int) $product->carrier;
         }
+        
+        if(is_null($order->discount_amount)){
+        	$order->discount_amount = 0;
+        }
+        
 if(is_null($product)){
 	\Log::info('errore import ordine: '. print_r($order, true));
 }
@@ -142,7 +151,7 @@ if(is_null($product)){
             'barcode' => '',
             'descrizione' => '',
             'quantita' => $quantity,
-            'prezzo' => number_format((($product->price * 1.22) * $quantity) + ($order->shipping_amount / $order->products->count()), 2, '.', ''),
+            'prezzo' => number_format((($product->price * 1.22) * $quantity) + ($order->shipping_amount / $order->products->count()) - ($order->discount_amount / $order->products->count()), 2, '.', ''),
             'pagamento' => $this->getPayment($order),
             'nomeCliente' => $order->shippingAddress->name,
             'indirizzo' => $order->shippingAddress->address,
