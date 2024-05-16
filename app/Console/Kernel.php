@@ -4,6 +4,14 @@ namespace App\Console;
 
 use App\Console\Commands\BeezupStartAutoImportCommand;
 use App\Console\Commands\ExportOrderCommand;
+use App\Console\Commands\ExportOrderMicheleCommand;
+use App\Console\Commands\StockUpdateCommand;
+use App\Console\Commands\Feeds\ExportFeedBobGCommand;
+use App\Console\Commands\Feeds\ExportFeedCommercioVirtuosoCommand;
+use App\Console\Commands\Feeds\ExportFeedGSheetCommand;
+use App\Console\Commands\Feeds\ExportFeedKijijiCommand;
+use App\Console\Commands\Feeds\ExportFeedPrezzoStopCommand;
+use App\Console\Commands\Feeds\ExportFeedSeoPortingCommand;
 use App\Jobs\BeezupImportOrdersJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -18,11 +26,21 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command(BeezupStartAutoImportCommand::class)->dailyAt('01:00');
+        $schedule->command(BeezupStartAutoImportCommand::class)->everyTwoHours();		//dailyAt('01:00');
         $schedule->job(app(BeezupImportOrdersJob::class))->everyTenMinutes();
-        // $schedule->command(ExportOrderCommand::class)->everyTenMinutes();
+        $schedule->command(ExportOrderCommand::class)->everyTenMinutes();
+        $schedule->command(ExportOrderMicheleCommand::class)->everyTenMinutes();
 
-        $schedule->command(StockUpdateCommand::class)->dailyAt('00:00');
+        $schedule->command(StockUpdateCommand::class)->everyThirtyMinutes();		//dailyAt('00:00');
+        
+        // FEEDS
+        
+        $schedule->command(ExportFeedBobGCommand::class)->hourly();
+        $schedule->command(ExportFeedCommercioVirtuosoCommand::class)->hourly();
+        $schedule->command(ExportFeedGSheetCommand::class)->hourly();
+        $schedule->command(ExportFeedKijijiCommand::class)->hourly();
+        $schedule->command(ExportFeedPrezzoStopCommand::class)->hourly();
+        $schedule->command(ExportFeedSeoPortingCommand::class)->hourly();
     }
 
     /**

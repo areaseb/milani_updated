@@ -69,7 +69,7 @@
 		            <div class="container">
 		                <div class="row align-items-center slider-animated-1">
 		                    <div class="col-lg-12 col-md-12">
-		                        <div style="background-color: rgba(255, 255, 255, .5); width: fit-content; margin-top: 10%; margin-left: 10%;" class="p-4">
+		                        <div class="p-4 bg-testo-slider">
 		                        	{!! Theme::partial('shortcodes.sliders.content', compact('slider')) !!}
 		                        </div>		                        
 		                    </div>

@@ -92,46 +92,24 @@
         </div>
 
         <div class="row">
-            @if (EcommerceHelper::isUsingInMultipleCountries())
-                <div class="col-12">
-                    <div class="form-group mb-3 @if ($errors->has('address.country')) has-error @endif">
-                        <div class="select--arrow">
-                            <select name="address[country]" class="form-control address-control-item address-control-item-required" id="address_country" data-type="country">
-                                @foreach(EcommerceHelper::getAvailableCountries() as $countryCode => $countryName)
-                                    <option value="{{ $countryCode }}" @if (old('address.country', Arr::get($sessionCheckoutData, 'country')) == $countryCode) selected @endif>{{ $countryName }}</option>
-                                @endforeach
-                            </select>
-                            <i class="fas fa-angle-down"></i>
-                        </div>
-                        {!! Form::error('address.country', $errors) !!}
-                    </div>
-                </div>
-            @else
-                <input type="hidden" name="address[country]" id="address_country" value="{{ EcommerceHelper::getFirstCountryId() }}">
-            @endif
-
-            <div class="col-sm-6 col-12">
-                <div class="form-group mb-3 @if ($errors->has('address.state')) has-error @endif">
-                    @if (EcommerceHelper::loadCountriesStatesCitiesFromPluginLocation())
-                        <div class="select--arrow">
-                            <select name="address[state]" class="form-control address-control-item address-control-item-required" id="address_state" data-type="state" data-url="{{ route('ajax.states-by-country') }}">
-                                <option value="">{{ __('Select state...') }}</option>
-                                @if (old('address.country', Arr::get($sessionCheckoutData, 'country')) || !EcommerceHelper::isUsingInMultipleCountries())
-                                    @foreach(EcommerceHelper::getAvailableStatesByCountry(old('address.country', Arr::get($sessionCheckoutData, 'country'))) as $stateId => $stateName)
-                                        <option value="{{ $stateId }}" @if (old('address.state', Arr::get($sessionCheckoutData, 'state')) == $stateId) selected @endif>{{ $stateName }}</option>
-                                    @endforeach
-                                @endif
-                            </select>
-                            <i class="fas fa-angle-down"></i>
-                        </div>
-                    @else
-                        <input id="address_state" type="text" class="form-control address-control-item address-control-item-required checkout-input" placeholder="{{ __('State') }}" name="address[state]" value="{{ old('address.state', Arr::get($sessionCheckoutData, 'state')) }}">
-                    @endif
-                    {!! Form::error('address.state', $errors) !!}
+        	
+            <div class="col-12">
+                <div class="form-group mb-3 @if ($errors->has('address.address')) has-error @endif">
+                    <input id="address_address" type="text" class="form-control address-control-item address-control-item-required checkout-input" placeholder="{{ __('Address') }}" name="address[address]" value="{{ old('address.address', Arr::get($sessionCheckoutData, 'address')) }}">
+                    {!! Form::error('address.address', $errors) !!}
                 </div>
             </div>
-
-            <div class="col-sm-6 col-12">
+            
+            @if (EcommerceHelper::isZipCodeEnabled())
+                <div class="col-sm-4 col-12">
+                    <div class="form-group mb-3 @if ($errors->has('address.zip_code')) has-error @endif">
+                        <input id="address_zip_code" type="text" class="form-control address-control-item address-control-item-required checkout-input" placeholder="{{ __('Zip code') }}" name="address[zip_code]" value="{{ old('address.zip_code', Arr::get($sessionCheckoutData, 'zip_code')) }}">
+                        {!! Form::error('address.zip_code', $errors) !!}
+                    </div>
+                </div>
+            @endif
+            
+            <div class="col-sm-4 col-12">
                 <div class="form-group  @if ($errors->has('address.city')) has-error @endif">
                     @if (EcommerceHelper::loadCountriesStatesCitiesFromPluginLocation())
                         <div class="select--arrow">
@@ -151,22 +129,46 @@
                     {!! Form::error('address.city', $errors) !!}
                 </div>
             </div>
-
-            <div class="col-12">
-                <div class="form-group mb-3 @if ($errors->has('address.address')) has-error @endif">
-                    <input id="address_address" type="text" class="form-control address-control-item address-control-item-required checkout-input" placeholder="{{ __('Address') }}" name="address[address]" value="{{ old('address.address', Arr::get($sessionCheckoutData, 'address')) }}">
-                    {!! Form::error('address.address', $errors) !!}
+            
+            <div class="col-sm-4 col-12">
+                <div class="form-group mb-3 @if ($errors->has('address.state')) has-error @endif">
+                    @if (EcommerceHelper::loadCountriesStatesCitiesFromPluginLocation())
+                        <div class="select--arrow">
+                            <select name="address[state]" class="form-control address-control-item address-control-item-required" id="address_state" data-type="state" data-url="{{ route('ajax.states-by-country') }}">
+                                <option value="">{{ __('Select state...') }}</option>
+                                @if (old('address.country', Arr::get($sessionCheckoutData, 'country')) || !EcommerceHelper::isUsingInMultipleCountries())
+                                    @foreach(EcommerceHelper::getAvailableStatesByCountry(old('address.country', Arr::get($sessionCheckoutData, 'country'))) as $stateId => $stateName)
+                                        <option value="{{ $stateId }}" @if (old('address.state', Arr::get($sessionCheckoutData, 'state')) == $stateId) selected @endif>{{ $stateName }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            <i class="fas fa-angle-down"></i>
+                        </div>
+                    @else
+                        <input id="address_state" type="text" class="form-control address-control-item address-control-item-required checkout-input" placeholder="{{ __('State') }}" name="address[state]" value="{{ old('address.state', Arr::get($sessionCheckoutData, 'state')) }}">
+                    @endif
+                    {!! Form::error('address.state', $errors) !!}
                 </div>
             </div>
-
-            @if (EcommerceHelper::isZipCodeEnabled())
+            
+            @if (EcommerceHelper::isUsingInMultipleCountries())
                 <div class="col-12">
-                    <div class="form-group mb-3 @if ($errors->has('address.zip_code')) has-error @endif">
-                        <input id="address_zip_code" type="text" class="form-control address-control-item address-control-item-required checkout-input" placeholder="{{ __('Zip code') }}" name="address[zip_code]" value="{{ old('address.zip_code', Arr::get($sessionCheckoutData, 'zip_code')) }}">
-                        {!! Form::error('address.zip_code', $errors) !!}
+                    <div class="form-group mb-3 @if ($errors->has('address.country')) has-error @endif">
+                        <div class="select--arrow">
+                            <select name="address[country]" class="form-control address-control-item address-control-item-required" id="address_country" data-type="country">
+                                @foreach(EcommerceHelper::getAvailableCountries() as $countryCode => $countryName)
+                                    <option value="{{ $countryCode }}" @if (old('address.country', Arr::get($sessionCheckoutData, 'country')) == $countryCode) selected @endif>{{ $countryName }}</option>
+                                @endforeach
+                            </select>
+                            <i class="fas fa-angle-down"></i>
+                        </div>
+                        {!! Form::error('address.country', $errors) !!}
                     </div>
                 </div>
+            @else
+                <input type="hidden" name="address[country]" id="address_country" value="{{ EcommerceHelper::getFirstCountryId() }}">
             @endif
+
         </div>
     </div>
 

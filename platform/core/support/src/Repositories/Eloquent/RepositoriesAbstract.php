@@ -248,6 +248,9 @@ abstract class RepositoriesAbstract implements RepositoryInterface
             if ($data['updated_at'] ?? false) {
                 $item->updated_at = $data['updated_at'];
             }
+            if ($data['dob'] ?? false) {
+                $item->dob = trim($data['dob']);
+            }
 
         } else {
             return false;
@@ -403,7 +406,7 @@ abstract class RepositoriesAbstract implements RepositoryInterface
             'withAvg' => [],
         ], $params);
 
-        $this->applyConditions($params['condition']);
+        $this->applyConditions($params['condition']);		
 
         $data = $this->model;
 
@@ -411,15 +414,19 @@ abstract class RepositoriesAbstract implements RepositoryInterface
             $data = $data->select($params['select']);
         }
 
-        foreach ($params['order_by'] as $column => $direction) {
-            if (! in_array(strtolower($direction), ['asc', 'desc'])) {
-                continue;
-            }
-
-            if ($direction !== null) {
-                $data = $data->orderBy($column, $direction);
-            }
-        }
+		if($params['order_by'] == 'RANDOM') {
+			$data = $data->inRandomOrder();
+		} else {
+			foreach ($params['order_by'] as $column => $direction) {			
+				if (! in_array(strtolower($direction), ['asc', 'desc'])) {
+					continue;
+				}
+	
+				if ($direction !== null) {
+					$data = $data->orderBy($column, $direction);
+				}
+			}
+		}
 
         if (! empty($params['with'])) {
             $data = $data->with($params['with']);

@@ -28,6 +28,8 @@ class GSLinkClient
         ];
         if ($forceUpdate) {
             $payload['ricaricaSeEsiste'] = true;
+        } else {
+        	 $payload['ricaricaSeEsiste'] = false;
         }
 
         try {
@@ -49,7 +51,7 @@ class GSLinkClient
                 'json' => $line->toArray()
             ]);
 
-            $body = json_decode($response->getBody()->getContents());
+            $body = json_decode($response->getBody()->getContents());           
             return (bool) $body->success;
         } catch (Exception $e) {
             return false;

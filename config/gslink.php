@@ -5,8 +5,9 @@ return [
     'key' => env('GSLINK_KEY'),
     'iv' => env('GSLINK_IV'),
     'source' => [
-        'WEB' => 1, // Mettere corrispondenza marketplace beezup con id source. WEB è il sito web
+        'WEB' => 18, // Mettere corrispondenza marketplace beezup con id source. WEB è il sito web
         'IBS' => 4, // Mettere corrispondenza marketplace beezup con id source. WEB è il sito web
+        'Amazon' => 2
     ],
     'source_default' => 1, // NON DEFINITO
 
@@ -15,6 +16,12 @@ return [
         // Mettere corrispondenza pagamento con id pagamento (compresi quelli che ritorna beezup)
         'NA' => 1, // Not available
         'CC' => 1,
+        'Other' => 7,
+        'multisafepay' => 21,
+        'paypal' => 9,
+        'bank_transfer' => 10,
+        'cod' => 11
+        
     ],
     'payment_default' => 1, // NON DEFINITO
 ];

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Carbon\Carbon;
 use GuzzleHttp\Client;
+use Botble\Ecommerce\Models\Order;
 
 class BeezupClient
 {
@@ -25,7 +26,7 @@ class BeezupClient
 
     public function getOrders(int $pageNumber = 1, Carbon $from = null, Carbon $to = null, int $pageSize = 100)
     {
-        $from = $from ?? Carbon::now()->subDay();
+        $from = $from ?? Carbon::now()->subDays(7);
         $to = $to ?? Carbon::now();
 
         if ($to->gt(Carbon::now())) {
@@ -40,7 +41,10 @@ class BeezupClient
                 'beginPeriodUtcDate' => $from->toIso8601ZuluString(),
                 'endPeriodUtcDate' => $to->toIso8601ZuluString(),
                 'pageSize' => $pageSize,
-                'pageNumber' => $pageNumber
+                'pageNumber' => $pageNumber,
+                'beezUPOrderStatuses' => [
+                	"InProgress"
+                ]
             ],
         ]);
 
@@ -51,8 +55,34 @@ class BeezupClient
             'hasMoreResults' => $pageNumber < (int) $body->paginationResult->pageCount,
         ];
     }
+    
+    public function updateOrder(Order $order)
+    {
+    	if($order->source != 'WEB'){
+    		
+	    	try{
+				
+		        $response = $this->client()->post("/orders/v3/$order->marketplace_technical_code/$order->marketplace_account_id/$order->external_id/ShipOrder?userName=info@milanihome.it", [
+		            'json' => [
+		                'order_Shipping_FulfillmentDate' => date('Y-m-d').'T'.date('H:i:s', mktime(date('H')-2,date('i')-1,date('s'),0,0,0)).'Z',
+		                'order_Shipping_CarrierName' => config('beezup.carriers_name')[$order->carrier] ?? config('beezup.carriers_name')[1],
+		                'order_Shipping_Method' => 'express'
+		            ],
+		        ]);
 
-    protected function client()
+		        $code = json_decode($response->getStatusCode(),true);
+		        \Log::info('Update order Beezup: code->'.$code);
+		        	        
+		    }
+		    catch(\GuzzleHttp\Exception\RequestException $e){
+		    	\Log::error('Error update order to Beezup: code->'.json_decode($e->getResponse()->getBody(),true)['errors'][0]['code'].' - message->'.json_decode($e->getResponse()->getBody(),true)['errors'][0]['message']);
+		    }
+		}
+        
+        return true;
+    }
+
+    public function client()	//protected
     {
         return new Client([
             'base_uri' => self::API_ENDPOINT,

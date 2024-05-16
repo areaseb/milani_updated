@@ -29,14 +29,14 @@ class StockUpdaterService
     public function updateTempesta()
     {
         $products = Product::where('sku_set', 'tempesta')->get();
-        if (!$products->isEmpty()) {
+        if (!$products) {
             return;
         }
 
         foreach ($products as $product) {
-            $product->quantity = 0;
+            $product->quantity = 99;
             $product->save();
-        };
+        }
     }
 
     protected function updateProductStock($record)
@@ -66,6 +66,7 @@ class StockUpdaterService
             ->get();
 
         foreach ($products as $product) {
+        	
             $skuSet = $product->sku_set;
             $skuSetExploded = explode(',', $skuSet); // WI806915-TAUP:1,WI806917-TAUP:4
 
@@ -94,10 +95,12 @@ class StockUpdaterService
                 if ($productQuantity === -1 || $minQuantity < $productQuantity) {
                     $productQuantity = $minQuantity;
                 }
+               
             }
 
             $product->quantity = $productQuantity > 0 ? $productQuantity : 0;
             $product->save();
+          
         }
     }
 }

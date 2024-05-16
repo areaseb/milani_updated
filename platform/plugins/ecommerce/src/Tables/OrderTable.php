@@ -52,20 +52,43 @@ class OrderTable extends TableAbstract
             ->editColumn('status', function ($item) {
                 return BaseHelper::clean($item->status->toHtml());
             })
-            ->editColumn('payment_status', function ($item) {
+/*            ->editColumn('payment_status', function ($item) {
                 return $item->payment->status->label() ? BaseHelper::clean(
                     $item->payment->status->toHtml()
                 ) : '&mdash;';
-            })
+            })*/
             ->editColumn('payment_method', function ($item) {
                 return BaseHelper::clean($item->payment->payment_channel->label() ?: '&mdash;');
             })
             ->editColumn('amount', function ($item) {
                 return format_price($item->amount);
             })
-            ->editColumn('shipping_amount', function ($item) {
-                return format_price($item->shipping_amount);
+            ->editColumn('products', function ($item) {
+                return $item->products->count();
+            })            
+            ->editColumn('marketplace_order_id', function ($item) {
+                return $item->marketplace_order_id;
             })
+            ->editColumn('total_volume', function ($item) {
+            	$cubatura = 0;
+            	foreach($item->products as $product){
+            		$cubatura += $product->product->cubatura;
+            	}
+                return $cubatura;
+            })
+            ->editColumn('total_weight', function ($item) {
+                $weight = 0;
+            	foreach($item->products as $product){
+            		$weight += $product->product->weight;
+            	}
+                return $weight;
+            })
+            ->editColumn('address', function ($item) {
+                return $item->address->address.'<br>'.$item->address->zip_code.' '.$item->address->city.'<br>Tel. '.$item->address->phone;
+            })
+/*            ->editColumn('shipping_amount', function ($item) {
+                return format_price($item->shipping_amount);
+            })*/
             ->editColumn('user_id', function ($item) {
                 return BaseHelper::clean($item->user->name ?: $item->address->name);
             })
@@ -81,11 +104,11 @@ class OrderTable extends TableAbstract
                 };
             });
 
-        if (EcommerceHelper::isTaxEnabled()) {
+/*        if (EcommerceHelper::isTaxEnabled()) {
             $data = $data->editColumn('tax_amount', function ($item) {
                 return format_price($item->tax_amount);
             });
-        }
+        }*/
 
         $data = $data
             ->addColumn('operations', function ($item) {
@@ -101,7 +124,8 @@ class OrderTable extends TableAbstract
                         ->orWhereHas('user', function ($subQuery) use ($keyword) {
                             return $subQuery->where('name', 'LIKE', '%' . $keyword . '%');
                         })
-                        ->orWhere('code', 'LIKE', '%' . $keyword . '%');
+                        ->orWhere('code', 'LIKE', '%' . $keyword . '%')
+                        ->orWhere('marketplace_order_id', 'LIKE', '%' . $keyword . '%');
                 }
 
                 return $query;
@@ -116,6 +140,7 @@ class OrderTable extends TableAbstract
             ->with(['user', 'payment'])
             ->select([
                 'id',
+                'marketplace_order_id',
                 'source',
                 'status',
                 'user_id',
@@ -139,46 +164,66 @@ class OrderTable extends TableAbstract
                 'width' => '20px',
                 'class' => 'text-start',
             ],
+            'marketplace_order_id' => [
+                'title' => 'Ordine marketplace',
+                'class' => 'text-start',
+            ], 
             'source' => [
                 'title' => trans('core/base::tables.source'),
                 'class' => 'text-start',
-            ],
-            'user_id' => [
-                'title' => trans('plugins/ecommerce::order.customer_label'),
-                'class' => 'text-start',
+            ],            
+            'products' => [
+                'title' => 'Prodotti',		//trans('core/base::tables.products'),
+                'class' => 'text-center',
             ],
             'amount' => [
-                'title' => trans('plugins/ecommerce::order.amount'),
+                'title' => trans('plugins/ecommerce::payment.amount'),
                 'class' => 'text-center',
             ],
         ];
 
-        if (EcommerceHelper::isTaxEnabled()) {
+/*        if (EcommerceHelper::isTaxEnabled()) {
             $columns['tax_amount'] = [
                 'title' => trans('plugins/ecommerce::order.tax_amount'),
                 'class' => 'text-center',
             ];
-        }
+        }*/
 
         $columns += [
-            'shipping_amount' => [
+/*            'shipping_amount' => [
                 'title' => trans('plugins/ecommerce::order.shipping_amount'),
                 'class' => 'text-center',
-            ],
-            'carrier' => [
-                'title' => trans('core/base::tables.carrier'),
-                'class' => 'text-center',
-            ],
+            ],*/
             'payment_method' => [
                 'name' => 'payment_id',
                 'title' => trans('plugins/ecommerce::order.payment_method'),
                 'class' => 'text-start',
+            ],  
+            'carrier' => [
+                'title' => trans('core/base::tables.carrier'),
+                'class' => 'text-center',
+            ],          
+            'user_id' => [
+                'title' => trans('plugins/ecommerce::order.customer_label'),
+                'class' => 'text-start',
+            ],       
+            'address' => [
+                'title' => trans('plugins/ecommerce::order.address'),
+                'class' => 'text-start',
+            ],    
+            'total_weight' => [
+                'title' => 'Peso tot.',		//trans('plugins/ecommerce::order.weight'),
+                'class' => 'text-center',
+            ],    
+            'total_volume' => [
+                'title' => 'Volume tot.',		//trans('plugins/ecommerce::order.volume'),
+                'class' => 'text-center',
             ],
-            'payment_status' => [
+/*            'payment_status' => [
                 'name' => 'payment_id',
                 'title' => trans('plugins/ecommerce::order.payment_status_label'),
                 'class' => 'text-center',
-            ],
+            ],*/
             'status' => [
                 'title' => trans('core/base::tables.status'),
                 'class' => 'text-center',

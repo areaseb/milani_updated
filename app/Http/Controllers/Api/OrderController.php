@@ -36,6 +36,8 @@ class OrderController extends Controller
             'user_id'     => 0,
             'created_at'  => now(),
         ]);
+        
+        $order->update(['status' => 'completed']);
 
         return response()->json(['message' => 'Tracking updated']);
     }

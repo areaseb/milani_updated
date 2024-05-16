@@ -79,13 +79,14 @@
                             <ins><span class="old-price font-md ml-15">{{ format_price($product->price_with_taxes) }}</span></ins>
                             <span class="save-price font-md color3 ml-15"><span class="percentage-off d-inline-block">{{ get_sale_percentage($product->price, $product->front_sale_price) }}</span> <span class="d-inline-block">{{ __('Off') }}</span></span>
                         @endif
-                        @if($product->front_sale_price_with_taxes > 100)
+{{--                    @if($product->front_sale_price_with_taxes > 100)
                         	<div class="mt-20" style="display: flex; align-items:center;">
                         		<img src="/storage/general/klarna.png" align="middle" height="30">
                         		<small class="ml-10">Paga in <b>3 rate da {!! format_price($product->front_sale_price_with_taxes / 3) !!}</b> senza interessi.
                         		<a href="https://www.klarna.com/" target="_blank">Maggiori informazioni</a></small>
                         	</div>
                         @endif
+--}}                        
                     </div>
                 </div>
                 <div class="bt-1 border-color-1 mt-30 mb-30"></div>
@@ -139,7 +140,7 @@
 
                             <div class="add-to-cart-actions">
                                 @if (EcommerceHelper::isCartEnabled())
-                                    <button type="submit" class="button button-add-to-cart hover-up @if ($product->isOutOfStock()) btn-disabled @endif" type="submit" @if ($product->isOutOfStock()) disabled @endif aria-label="{{ __('Add to cart') }}" title="{{ __('Add to cart') }}"><i class="far fa-shopping-bag" style="font-size: 27px"></i><span>{{ __('Aggiungi al carrello') }}</span></button> <!-- <img alt="cart" src="{{URL::asset('/storage/general/icon-cart-white.png')}}" width="22"> {{ __('Add to cart') }} -->
+                                    <button type="submit" class="button button-add-to-cart hover-up @if ($product->isOutOfStock()) btn-disabled @endif" type="submit" @if ($product->isOutOfStock()) disabled @endif aria-label="{{ __('Add to cart') }}" title="{{ __('Add to cart') }}"><i class="far fa-shopping-bag" style="font-size: 27px"></i><span>{{ __('Add to cart') }}</span></button> <!-- <img alt="cart" src="{{URL::asset('/storage/general/icon-cart-white.png')}}" width="22"> {{ __('Add to cart') }} -->
                                     {{-- @if (EcommerceHelper::isQuickBuyButtonEnabled())
                                         <div class="col-md-3 col-xs-3 mt-10 text-center">
                                             <button class="button button-buy-now @if ($product->isOutOfStock()) btn-disabled @endif" type="submit" name="checkout" @if ($product->isOutOfStock()) disabled @endif aria-label="{{ __('Buy Now') }}" title="{{ __('Buy Now') }}"><i class="far fa-euro-sign" style="font-size: 27px"></i></button>	<!-- <img alt="cart" src="{{URL::asset('/storage/general/euro.png')}}" width="22"> {{ __('Buy Now') }} -->
@@ -180,7 +181,8 @@
                         </li>
                     @endif
 --}}
-                    <li><span class="d-inline-block">{{ __('Availability') }}:</span> <span class="in-stock text-success ml-5">{!! BaseHelper::clean($product->stock_status_html) !!}</span></li>
+                    {{-- <li><span class="d-inline-block">{{ __('Availability') }}:</span> <span class="in-stock text-success ml-5">{!! BaseHelper::clean($product->stock_status_html) !!}</span></li> --}}
+                    <li><span class="d-inline-block">{{ __('Sent in') }}</span><span class="in-stock text-success ml-5"> @if($product->sku_set == 'tempesta') 10/15 @else 4/5 @endif {{ __('working days') }}</span></li>
                 </ul>
 
                 @if ($product->variations()->count() > 0 || $product->is_variation)
@@ -190,13 +192,14 @@
                             'view'     => Theme::getThemeNamespace() . '::views.ecommerce.attributes.swatches-renderer'
                         ]) !!}
                     </div>
-                    <div class="number-items-available" style="@if (!$product->isOutOfStock()) display: none; @endif margin-bottom: 10px;">
-                        @if ($product->isOutOfStock())
-                            <span class="text-danger">Il prodotto è in arrivo il {{ date('d/m/Y', strtotime($product->data_arrivo)) }}</span>
+                    <div class="number-items-available" style="margin-bottom: 10px;">
+                        @if ($productVariation->isOutOfStock())
+                            <span class="text-danger">({{ __('Out Of Stock') }})</span>
+                        @else
+                        	{{ __('Availability') }}: <span class="text-success">{{$productVariation->quantity}} {{ __('products') }}</span>
                         @endif
                     </div>
                 @endif
-
 
             </div>
         </div>

@@ -4,12 +4,17 @@
 	$url = explode('/',Illuminate\Support\Facades\URL::current());
 	if(isset($url[4])){
     	$currenturl = $url[4];
-    	$product = \Botble\Slug\Models\Slug::where('key', $currenturl)->first()->reference_id;
+    	$product = \Botble\Slug\Models\Slug::where('key', $currenturl)->first();
+    	if($product){
+    		$product = $product->reference_id;
+    	}
    	}
 	
-	for($i = 1; $i <= 5; $i++){
-		$bullets[] = \Botble\Ecommerce\Models\Product::where('id', $product)->pluck('bullet_'.$i);
-	}
+	if($product){
+		for($i = 1; $i <= 5; $i++){
+			$bullets[] = \Botble\Ecommerce\Models\Product::where('id', $product)->pluck('bullet_'.$i);
+		}
+	}	
 @endphp
 
 <div class="mt-20">

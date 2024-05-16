@@ -60,6 +60,7 @@ class BeezupImportOrdersJob implements ShouldQueue
     protected function importOrders(Collection $orders)
     {
         $orders->each(function ($order) {
+        	//\Log::info('Ordine: '.print_r($order, true));
             try {
                 $this->importOrder($order);
             } catch (BeezupCustomerNotValidException $e) {
@@ -113,6 +114,9 @@ class BeezupImportOrdersJob implements ShouldQueue
         $order = new Order();
         $order->source = $data->order_MarketPlaceChannel ?? '_';
         $order->external_id = $data->beezUPOrderId;
+        $order->marketplace_order_id = $data->order_MarketplaceOrderId;
+        $order->marketplace_technical_code = $data->marketplaceTechnicalCode;
+        $order->marketplace_account_id = $data->accountId;
         $order->user_id = $customer->id;
         $order->amount = (float) $data->order_TotalPrice;
         $order->tax_amount = 0;
@@ -123,7 +127,7 @@ class BeezupImportOrdersJob implements ShouldQueue
         $order->is_finished = true;
         $order->completed_at = Carbon::parse($data->order_PurchaseUtcDate)->format('Y-m-d H:i:s');
         $order->is_exported = false;
-        $order->status = 'processing';
+        $order->status = 'pending';
         $order->carrier = $this->carriers[$data->marketplaceBusinessCode] ?? '_';
 
         $order->save();
@@ -131,7 +135,11 @@ class BeezupImportOrdersJob implements ShouldQueue
         $this->createOrderAddress($order, $data);
         $this->createOrderProducts($order, $data);
         $this->createOrderHistory($order);
-        $this->createOrderPayment($order, $data);
+        $payment_id = $this->createOrderPayment($order, $data);
+//\Log::info('Payment id: '.$payment_id);        
+        $order->payment_id = $payment_id;
+        $order->save();
+//\Log::info('Order con payment: '.print_r($order, true));        
     }
 
     protected function createOrderAddress($order, $data)
@@ -141,14 +149,31 @@ class BeezupImportOrdersJob implements ShouldQueue
         $address->phone = $data->order_Shipping_Phone ?? '';
         $address->country = $data->order_Shipping_AddressCountryIsoCodeAlpha2;
         $address->city = $data->order_Shipping_AddressCity;
-        $address->address = $data->order_Shipping_AddressLine1;
+        $address->address = isset($data->order_Shipping_AddressLine2) ? $data->order_Shipping_AddressLine1 . ' ' . $data->order_Shipping_AddressLine2 : $data->order_Shipping_AddressLine1;
         $address->zip_code = $data->order_Shipping_AddressPostalCode;
+        $address->state = $data->order_Shipping_AddressStateOrRegion ?? $this->getProvince($data->order_Shipping_AddressPostalCode);
         $address->order_id = $order->id;
+        $address->email = $data->order_Buyer_Email ?? null;
         $address->type = 'shipping_address';
 
         $address->save();
     }
-
+	
+	protected function getProvince($cap)
+	{
+		$curlSES = curl_init(); 
+	
+		curl_setopt($curlSES,CURLOPT_URL,"https://www.gerriquez.com/comuni/ws.php?datidacap=$cap");
+		curl_setopt($curlSES,CURLOPT_RETURNTRANSFER,true);
+		curl_setopt($curlSES,CURLOPT_HEADER, false); 
+		
+		$result = json_decode(curl_exec($curlSES));
+		
+		curl_close($curlSES);
+		
+		return $result[0]->Provincia;
+	}
+	
     protected function createOrderProducts($order, $data)
     {
         collect($data->orderItems)->each (fn ($item) => $this->createOrderProduct($order, $item));
@@ -158,7 +183,7 @@ class BeezupImportOrdersJob implements ShouldQueue
     protected function createOrderProduct($order, $item)
     {
         $product = $this->getProductBySku($item->orderItem_MerchantImportedProductId);
-
+//\Log::info('Prodotto: '.print_r($product, true).' - Item: '.print_r($item, true));
         $orderProduct = new OrderProduct();
         $orderProduct->order_id = $order->id;
         $orderProduct->qty = (int) $item->orderItem_Quantity;
@@ -166,10 +191,10 @@ class BeezupImportOrdersJob implements ShouldQueue
         $orderProduct->tax_amount = 0;
         $orderProduct->options = [];
         $orderProduct->product_options = null;
-        $orderProduct->product_id = $product?->id;
+        $orderProduct->product_id = $product->id ?? null;
         $orderProduct->product_name = $item->orderItem_Title;
         $orderProduct->product_image = null;
-        $orderProduct->weight = $product?->weight;
+        $orderProduct->weight = $product->weight ?? 0;
         $orderProduct->restock_quantity = 0;
         $orderProduct->product_type = 'physical';
 
@@ -205,6 +230,8 @@ class BeezupImportOrdersJob implements ShouldQueue
         $payment->status = 'completed';
 
         $payment->save();
+        
+        return $payment->id;
     }
 
     protected function sendBeezupCustomerNotValidNotification($data)

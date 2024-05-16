@@ -74,7 +74,7 @@ class CommercioVirtuosoFeedExporter
         return [
             'Unique Id' => $product->sku,
             'Variant Qty' => $product->quantity,
-            'Variant Price' => number_format($price, 2, '.', '')
+            'Variant Price' => number_format($price * 1.22, 2, '.', '')
         ];
     }
 }

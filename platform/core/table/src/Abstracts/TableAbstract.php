@@ -27,6 +27,7 @@ use RvMedia;
 use Symfony\Component\HttpFoundation\Response;
 use Yajra\DataTables\DataTables;
 use Yajra\DataTables\Services\DataTable;
+use App\Services\BeezupClient;
 
 abstract class TableAbstract extends DataTable
 {
@@ -708,12 +709,23 @@ abstract class TableAbstract extends DataTable
         if (! in_array($inputKey, array_keys($this->getFilters()))) {
             return false;
         }
-
+		
+		$client = new BeezupClient;
+		
         foreach ($ids as $id) {
             $item = $this->repository->findOrFail($id);
+            
             if ($item) {
+            	
+                if($inputKey == 'status' && $inputValue == 'processing' && get_class($item) == 'Botble\Ecommerce\Models\Order'){
+	            	if($client->updateOrder($item) == false){
+	            		return false;
+	            	}
+	            }
+	            
                 $this->saveBulkChangeItem($item, $inputKey, $inputValue);
                 event(new UpdatedContentEvent($this->repository->getModel(), request(), $item));
+                
             }
         }
 

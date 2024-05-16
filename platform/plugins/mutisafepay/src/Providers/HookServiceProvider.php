@@ -62,6 +62,7 @@ class HookServiceProvider extends ServiceProvider
         add_filter(PAYMENT_FILTER_PAYMENT_INFO_DETAIL, function ($data, $payment) {
             if ($payment->payment_channel == MULTISAFEPAY_PAYMENT_METHOD_NAME) {
                 $paymentDetail = (new MultiSafepayPaymentService())->getPaymentDetails($payment->charge_id);
+  
                 $data = view('plugins/multisafepay::detail', ['payment' => $paymentDetail])->render();
             }
 

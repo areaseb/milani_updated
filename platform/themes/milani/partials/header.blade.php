@@ -15,11 +15,20 @@
         	<meta name="robots" content="noindex, nofollow">
         @endif
 
-        <link rel="preconnect" href="https://fonts.googleapis.com">
+        {{-- <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family={{ urlencode(theme_option('font_text', 'Poppins')) }}:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+        --}}
+		{{--
+		<link rel="preload" href="https://fonts.googleapis.com" as="style" onload="this.onload=null;this.rel='stylesheet'">
+		<noscript><link rel="stylesheet" href="https://fonts.googleapis.com"></noscript>
+		<link rel="preload" href="https://fonts.gstatic.com" as="style" onload="this.onload=null;this.rel='stylesheet'" crossorigin>
+		<noscript><link rel="stylesheet" href="https://fonts.gstatic.com" crossorigin></noscript>
+		--}}
+		<link rel="preload" href="https://fonts.googleapis.com/css2?family={{ urlencode(theme_option('font_text', 'Poppins')) }}:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+		<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ urlencode(theme_option('font_text', 'Poppins')) }}:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"></noscript>
 
-        <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.6/dist/cdn.min.js"></script>
+        <script async src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.6/dist/cdn.min.js"></script>
 
         <style>
             :root {
@@ -53,8 +62,73 @@
             }
             $headerStyle = ($headerStyle && in_array($headerStyle, array_keys(get_layout_header_styles()))) ? $headerStyle : '';
         @endphp
+        
+        <script async type="text/javascript">
+			var _iub = _iub || [];
+			_iub.csConfiguration = {"askConsentAtCookiePolicyUpdate":true,"floatingPreferencesButtonDisplay":"bottom-left","perPurposeConsent":true,"siteId":2335001,"whitelabel":false,"cookiePolicyId":64090603,"lang":"it", "banner":{ "acceptButtonDisplay":true,"backgroundOverlay":true,"closeButtonRejects":true,"customizeButtonDisplay":true,"explicitWithdrawal":true,"listPurposes":true,"position":"bottom","showTitle":false }};
+		</script>
+		<script async type="text/javascript" src="https://cs.iubenda.com/autoblocking/2335001.js"></script>
+		<script async type="text/javascript" src="//cdn.iubenda.com/cs/iubenda_cs.js" charset="UTF-8" async></script>
+		
+		<!-- Google Tag Manager -->
+		<script>
+			(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+			new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+			j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+			'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+			})(window,document,'script','dataLayer','GTM-MPBC629');
+		</script>
+		<!-- End Google Tag Manager -->
+				
+		<!-- Facebook Pixel Code --> 
+		<script>
+		  !function(f,b,e,v,n,t,s)
+		  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+		  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+		  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+		  n.queue=[];t=b.createElement(e);t.async=!0;
+		  t.src=v;s=b.getElementsByTagName(e)[0];
+		  s.parentNode.insertBefore(t,s)}(window, document,'script',
+		  'https://connect.facebook.net/en_US/fbevents.js');
+		  fbq('init', '119730032289920');
+		  fbq('track', 'PageView');
+		</script> 
+		<noscript> 
+			<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=119730032289920&amp;ev=PageView&amp;noscript=1"> 
+		</noscript> 
+		<!-- End Facebook Pixel Code -->
+		
+		<!-- Start of milanihomehelp Zendesk Widget script --> 
+  		<script async id="ze-snippet" src="https://static.zdassets.com/ekr/snippet.js?key=8a656522-7db5-4312-b6da-15a333614096"></script> 
+  		<!-- End of milanihomehelp Zendesk Widget script --> 
+  		
+  		<!-- Pinterest Tag --> 
+		<script>
+			!function(e){if(!window.pintrk){window.pintrk = function () {
+			window.pintrk.queue.push(Array.prototype.slice.call(arguments))};var
+			n=window.pintrk;n.queue=[],n.version="3.0";var
+			t=document.createElement("script");t.async=!0,t.src=e;var
+			r=document.getElementsByTagName("script")[0];
+			r.parentNode.insertBefore(t,r)}}("https://s.pinimg.com/ct/core.js");
+			pintrk('load', '2613038424263', {em: '<user_email_address>'});
+			pintrk('page');
+		</script> 
+		<noscript> 
+		   <img height="1" width="1" style="display:none;" alt="" src="https://ct.pinterest.com/v3/?event=init&amp;tid=2613038424263&amp;pd[em]=<hashed_email_address>&amp;noscript=1"> 
+		</noscript> 
+		<!-- end Pinterest Tag --> 
+		
+		<!-- TrustBox script -->
+		<script async type="text/javascript" src="//widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js"></script>
+		<!-- End TrustBox script -->
+		
     </head>
     <body @if (BaseHelper::siteLanguageDirection() == 'rtl') dir="rtl" @endif class="@if (BaseHelper::siteLanguageDirection() == 'rtl') rtl @endif header_full_true wowy-template css_scrollbar lazy_icons btnt4_style_2 zoom_tp_2 css_scrollbar template-index wowy_toolbar_true hover_img2 swatch_style_rounded swatch_list_size_small label_style_rounded wrapper_full_width header_full_true header_sticky_true hide_scrolld_true des_header_3 h_banner_true top_bar_true prs_bordered_grid_1 search_pos_canvas lazyload @if (Theme::get('bodyClass')) {{ Theme::get('bodyClass') }} @endif">
+        <!-- Google Tag Manager (noscript) -->
+			<noscript>
+				<iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MPBC629" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+			</noscript>
+		<!-- End Google Tag Manager (noscript) -->
         {!! apply_filters(THEME_FRONT_BODY, null) !!}
         <div id="alert-container"></div>
 

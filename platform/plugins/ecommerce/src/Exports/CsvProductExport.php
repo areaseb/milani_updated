@@ -62,6 +62,8 @@ class CsvProductExport implements FromCollection, WithHeadings
             ->select(['*'])
             ->where('is_variation', 0)
             ->with($with)
+// cancellare
+//->where('name', 'like', 'RYAN%')            
             ->chunk(400, function ($products) {
                 $this->results = $this->results->concat(collect($this->productResults($products)));
             });
@@ -75,6 +77,7 @@ class CsvProductExport implements FromCollection, WithHeadings
     {
         $results = [];
         foreach ($products as $product) {
+        	
             $productAttributes = [];
             if (!$product->is_variation) {
                 $productAttributes = $product->productAttributeSets->pluck('title')->all();
@@ -116,7 +119,11 @@ class CsvProductExport implements FromCollection, WithHeadings
                 }
             }
 
-            $result['product_attributes'] = implode(',', $productAttributes);
+            //$result['product_attributes'] = implode(',', $productAttributes);                 
+            foreach($productAttributes as $pA){
+            	$key = str_replace(' ', '_', strtolower($pA));
+            	$result[$key] = '';
+            }      
             $result['import_type'] = 'product';
             $result['stock_status'] = $product->stock_status->getValue();
             $result['tags'] = $product->tags->pluck('name')->implode(',');
@@ -128,18 +135,29 @@ class CsvProductExport implements FromCollection, WithHeadings
             if ($this->isMarketplaceActive) {
                 $result['vendor'] = $product->store_id ? $product->store->name : null;
             }
+            
+            for($n = 1; $n <= 5; $n++){
+            	if($result['peso_con_imballo_collo_'.$n] == '' || is_null($result['peso_con_imballo_collo_'.$n])){
+            		$result['peso_con_imballo_collo_'.$n] = 0;
+            	}
+            }
 
+			$result['quantity'] = (!is_null($product->quantity) && $product->quantity > 0) ? $product->quantity : '0';
+			
+			$result['url'] = env('APP_URL').'/prodotti/'.$product->slug.'?s='.$product->sku;
+			
             // Let's fix the key
             $result['brand'] = $result['brand']->name ?? null;
             $result['tax'] = $result['tax']->percentage ?? null;
-
+	
             $results[] = $result;
             $parentResult = $result;
 
             if ($product->variations->count()) {
+            	
                 foreach ($product->variations as $variation) {
                     $productAttributes = $this->getProductAttributes($variation);
-
+  
                     $result = [];
                     foreach ($this->headings() as $key => $title) {
                         if (!is_null($variation->product->{$key})) {
@@ -162,7 +180,15 @@ class CsvProductExport implements FromCollection, WithHeadings
                         }
                     }
 
-                    $result['product_attributes'] = implode(',', $productAttributes);
+                    //$result['product_attributes'] = implode(',', $productAttributes);
+                    foreach($productAttributes as $pA){
+		            	if($pA){
+		            		list($key, $value) = explode(':', $pA);
+		            		$key = str_replace(' ', '_', strtolower($key));
+		            		$result[$key] = $value;
+		            	}		            	
+		            }
+  
                     $result['import_type'] = 'variation';
                     $result['stock_status'] = $variation->product->stock_status->getValue();
 
@@ -173,6 +199,16 @@ class CsvProductExport implements FromCollection, WithHeadings
                     if ($this->isMarketplaceActive) {
                         $result['vendor'] = '';
                     }
+                    
+                    for($n = 1; $n <= 5; $n++){
+		            	if($result['peso_con_imballo_collo_'.$n] == '' || is_null($result['peso_con_imballo_collo_'.$n])){
+		            		$result['peso_con_imballo_collo_'.$n] = 0;
+		            	}
+		            }
+		            
+                    $result['quantity'] = (!is_null($variation->product->quantity) && $variation->product->quantity > 0) ? $variation->product->quantity : '0';
+                    
+                    $result['url'] = env('APP_URL').'/prodotti/'.$product->slug.'?s='.$product->sku;
 
                     // Let's fix the key
                     $result['brand'] = $result['brand']->name ?? null;
@@ -250,7 +286,31 @@ class CsvProductExport implements FromCollection, WithHeadings
             'image_8' => 'Image 8',
             'image_9' => 'Image 9',
             'price' => 'Price',
+            'colore_1' => 'Colore 1',
+            'colore_2' => 'Colore 2',
+            'forma' => 'Forma',
+            'tipologia' => 'Tipologia',
+            'stile' => 'Stile',
+            'impiego' => 'Impiego',
+            'materiale_1' => 'Materiale 1',
+            'materiale_2' => 'Materiale 2',
+            'materiale_3' => 'Materiale 3',
+            'sedute' => 'Sedute',
+            'dimensioni_disp.' => 'Dimensioni Disp.',
+            'sfoderabile' => 'Sfoderabile',
+            'portata_massima' => 'Portata massima',
+/*            'product_attributes' => 'Product attributes',
             'product_attributes' => 'Product attributes',
+            'product_attributes' => 'Product attributes',
+            'product_attributes' => 'Product attributes',
+            'product_attributes' => 'Product attributes',
+            'product_attributes' => 'Product attributes',
+            'product_attributes' => 'Product attributes',
+            'product_attributes' => 'Product attributes',
+            'product_attributes' => 'Product attributes',
+            'product_attributes' => 'Product attributes',
+            'product_attributes' => 'Product attributes',
+            'product_attributes' => 'Product attributes',*/
             'import_type' => 'Import type',
             'is_variation_default' => 'Is variation default?',
             'stock_status' => 'Stock status',
@@ -300,6 +360,7 @@ class CsvProductExport implements FromCollection, WithHeadings
             'assemblato' => 'Assemblato',
             'kit_e_istruzioni_incluse_si_intendono_anche_pile' => 'Kit E Istruzioni Incluse (Si Intendono Anche Pile)',
             'sku_set' => 'sku_set',
+            'url' => 'URL',
         ];
 
         if ($this->enabledDigital) {
