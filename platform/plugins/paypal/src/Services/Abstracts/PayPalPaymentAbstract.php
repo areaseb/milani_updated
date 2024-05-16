@@ -179,16 +179,17 @@ abstract class PayPalPaymentAbstract
         }
 
         foreach ($itemData as $data) {
-            $amount = $data['price'] * $data['quantity'];
+        \Log::info('Paypal item: '.print_r($data, true));	
+            $amount = $data['price'] * ($data['quantity'] ?? $data['qty']);
 
             $item = [
                 'name' => $data['name'],
-                'sku' => $data['sku'],
+                'sku' => $data['sku'] ?? null,
                 'unit_amount' => [
                     'currency_code' => $this->paymentCurrency,
-                    'value' => $amount,
+                    'value' => $data['price'],		//$amount,
                 ],
-                'quantity' => $data['quantity'],
+                'quantity' => $data['quantity'] ?? $data['qty'],
             ];
 
             if ($description = Arr::get($data, 'description')) {
@@ -208,8 +209,25 @@ abstract class PayPalPaymentAbstract
 
             $this->itemList[] = $item;
             $this->totalAmount += $amount;
+            
+            if(isset($data['shipping'])){
+            	$shipping = $data['shipping'];
+            }
+            
+            if(isset($data['discount'])){
+            	$discount = $data['discount'];
+            }
+            
         }
-
+		
+		if(isset($shipping)){
+			$this->totalAmount += $shipping;
+		}	
+		
+		if(isset($discount)){
+			$this->totalAmount -= $discount;
+		}		
+		
         // issue https://developer.paypal.com/docs/api/orders/v2/#error-DECIMAL_PRECISION
         $this->totalAmount = round((float)$this->totalAmount, $this->isSupportedDecimals() ? 2 : 0);
 
@@ -316,7 +334,7 @@ abstract class PayPalPaymentAbstract
      * @throws Exception
      */
     public function createPayment($transactionDescription)
-    {
+    {	\Log::info('Paypal description '. $transactionDescription);
         $this->transactionDescription = $transactionDescription;
 
         $orderRequest = new OrdersCreateRequest();
