@@ -1,20 +1,34 @@
 @php
 	// $bullets = \Botble\Ecommerce\Models\ProductAttributeSet::where('title', 'Bullet')->pluck('id')->toArray();
 	$bullets = array();
-	$url = explode('/',Illuminate\Support\Facades\URL::current());
-	if(isset($url[4])){
-    	$currenturl = $url[4];
-    	$product = \Botble\Slug\Models\Slug::where('key', $currenturl)->first();
-    	if($product){
-    		$product = $product->reference_id;
-    	}
-   	}
 	
-	if($product){
-		for($i = 1; $i <= 5; $i++){
-			$bullets[] = \Botble\Ecommerce\Models\Product::where('id', $product)->pluck('bullet_'.$i);
+	if(isset($_GET['s'])){
+		$product = \Botble\Ecommerce\Models\Product::where('sku', $_GET['s'])->first();
+		if($product){
+			$bullets[] = $product->bullet_1;
+			$bullets[] = $product->bullet_2;
+			$bullets[] = $product->bullet_3;
+			$bullets[] = $product->bullet_4;
+			$bullets[] = $product->bullet_5;
 		}
-	}	
+	} else {
+		$url = explode('/',Illuminate\Support\Facades\URL::current());
+		if(isset($url[4])){
+	    	$currenturl = $url[4];
+	    	$product_slug = \Botble\Slug\Models\Slug::where('key', $currenturl)->first();
+	    	if($product_slug){
+	    		$product = \Botble\Ecommerce\Models\Product::where('id', $product_slug->reference_id)->first();
+	    	}
+	   	}
+		
+		if($product){
+			$bullets[] = $product->bullet_1;
+			$bullets[] = $product->bullet_2;
+			$bullets[] = $product->bullet_3;
+			$bullets[] = $product->bullet_4;
+			$bullets[] = $product->bullet_5;
+		}	
+	}
 @endphp
 
 <div class="mt-20">
@@ -26,8 +40,8 @@
     	<ul style="list-style-type: disc; padding-left: calc(var(--bs-gutter-x)/ 2);" class="ps-list--categories_">
             @if(!is_null($bullets))
                 @foreach($bullets as $bullet)
-                    @if($bullet[0])
-                    	<li>{!! nl2br($bullet[0]) !!}</li>
+                    @if($bullet)
+                    	<li>{!! nl2br($bullet) !!}</li>
                     @endif
                 @endforeach
             @endif

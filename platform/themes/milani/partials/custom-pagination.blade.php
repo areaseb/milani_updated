@@ -6,7 +6,7 @@
     <nav aria-label="Page navigation example">
         <ul class="pagination justify-content-center">
 			<li class="page-item active"><a class="next page-link" href="{{ $paginator->nextPageUrl() }}&attach=true" rel="next">
-				Load More
+				{{ __('Load more') }}
 			</a></li>
         </ul>
     </nav>
