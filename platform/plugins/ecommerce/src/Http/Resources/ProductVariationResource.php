@@ -109,6 +109,14 @@ class ProductVariationResource extends JsonResource
             'wide' => $this->wide,
             'length' => $this->length,
 
+			'bullets' => [
+				$this->bullet_1,
+				$this->bullet_2,
+				$this->bullet_3,
+				$this->bullet_4,
+				$this->bullet_5,
+			],
+
             'attributes' => $attributes,
 
             'details' => $details,

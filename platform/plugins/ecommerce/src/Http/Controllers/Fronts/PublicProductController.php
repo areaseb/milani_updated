@@ -485,6 +485,12 @@ class PublicProductController
                     'ec_products.weight',
                     'ec_products.wide',
                     'ec_products.length',
+
+					'ec_products.bullet_1',
+                    'ec_products.bullet_2',
+					'ec_products.bullet_3',
+					'ec_products.bullet_4',
+					'ec_products.bullet_5',
                 ],
                 'take' => 1,
             ]);
@@ -554,6 +560,12 @@ class PublicProductController
                     'ec_products.weight',
                     'ec_products.wide',
                     'ec_products.length',
+
+					'ec_products.bullet_1',
+                    'ec_products.bullet_2',
+					'ec_products.bullet_3',
+					'ec_products.bullet_4',
+					'ec_products.bullet_5',
                 ],
                 'take' => 1,
             ]);

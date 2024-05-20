@@ -214,6 +214,14 @@ var __webpack_exports__ = {};
               $(this).hide();
             }
           });
+
+          // Set bullets
+          var $bulletsList = $('.ps-list--categories_');
+          var bulletsHtml = '';
+          res.data.bullets.forEach(function (el) {
+            bulletsHtml += '<li>' + el + '</li>';
+          });
+          $bulletsList.html(bulletsHtml);
           var $attributesTable = $('#attributes-table table tbody');
           $attributesTable.html('');
           if (res.data.attributes && res.data.attributes.length) {
