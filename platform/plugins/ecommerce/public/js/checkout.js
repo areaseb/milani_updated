@@ -19298,8 +19298,11 @@ var MainCheckout = /*#__PURE__*/function () {
       var loadShippingFeeAtTheFirstTime = function loadShippingFeeAtTheFirstTime() {
         var shippingMethod = $(document).find('input[name=shipping_method]:checked').first();
         if (!shippingMethod.length) {
-          shippingMethod = $(document).find('input[name=shipping_method]').first();
-          shippingMethod.prop('checked', 'checked');
+          // Dont force shippping method
+          /*
+                      shippingMethod = $(document).find('input[name=shipping_method]').first();
+                      shippingMethod.prop('checked', 'checked');
+          */
         }
         if (shippingMethod.length) {
           disablePaymentMethodsForm();
@@ -19364,8 +19367,11 @@ var MainCheckout = /*#__PURE__*/function () {
         loadShippingFeeAtTheSecondTime();
       });
       $(document).on('change', 'input[name=shipping_method]', function (event) {
-        // Fixed: set shipping_option value based on shipping_method change:
         var $this = $(event.currentTarget);
+        if (!$this.prop('checked')) {
+          // Get default shipping method
+          $this = $('input[name=shipping-method-base]');
+        }
         $('input[name=shipping_option]').val($this.data('option'));
         disablePaymentMethodsForm();
         $('.mobile-total').text('...');

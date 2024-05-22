@@ -250,7 +250,8 @@
 					const $bulletsList = $('.ps-list--categories_');
                     let bulletsHtml = '';
 					res.data.bullets.forEach(el => {
-						bulletsHtml += '<li>' + el + '</li>';
+						if(el)
+							bulletsHtml += '<li>' + el + '</li>';
 					})
 					$bulletsList.html(bulletsHtml);
 
@@ -1272,6 +1273,7 @@
                             }
                             checkHasAnyFilter(formData);
                         } else {
+							console.log(res.message)
                             showError(res.message || 'Opp!');
                         }
                     },

@@ -219,7 +219,7 @@ var __webpack_exports__ = {};
           var $bulletsList = $('.ps-list--categories_');
           var bulletsHtml = '';
           res.data.bullets.forEach(function (el) {
-            bulletsHtml += '<li>' + el + '</li>';
+            if (el) bulletsHtml += '<li>' + el + '</li>';
           });
           $bulletsList.html(bulletsHtml);
           var $attributesTable = $('#attributes-table table tbody');
@@ -1105,6 +1105,7 @@ var __webpack_exports__ = {};
               }
               checkHasAnyFilter(formData);
             } else {
+              console.log(res.message);
               showError(res.message || 'Opp!');
             }
           },

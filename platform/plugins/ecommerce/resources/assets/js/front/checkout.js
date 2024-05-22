@@ -203,8 +203,11 @@ class MainCheckout {
         let loadShippingFeeAtTheFirstTime = () => {
             let shippingMethod = $(document).find('input[name=shipping_method]:checked').first();
             if (!shippingMethod.length) {
+				// Dont force shippping method
+				/*
                 shippingMethod = $(document).find('input[name=shipping_method]').first();
                 shippingMethod.prop('checked', 'checked');
+				*/
             }
 
             if (shippingMethod.length) {
@@ -288,8 +291,12 @@ class MainCheckout {
         });
 
         $(document).on('change', 'input[name=shipping_method]', event => {
-            // Fixed: set shipping_option value based on shipping_method change:
-            const $this = $(event.currentTarget);
+            let $this = $(event.currentTarget);
+			if(!$this.prop('checked')) {
+				// Get default shipping method
+				$this = $('input[name=shipping-method-base]');
+			}
+
             $('input[name=shipping_option]').val($this.data('option'));
 
             disablePaymentMethodsForm();

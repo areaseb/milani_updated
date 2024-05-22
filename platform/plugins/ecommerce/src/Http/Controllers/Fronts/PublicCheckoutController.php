@@ -243,6 +243,18 @@ class PublicCheckoutController
             }
         }
 
+		// Add default shipping amount
+		$base_shipping_option_id = 4;
+
+		if(isset($shipping) && $sessionCheckoutData['shipping_option'] != $base_shipping_option_id) {
+			$base_shipping_cost = 0;
+
+			if(isset($shipping['default']) && isset($shipping['default'][$base_shipping_option_id]) && isset($shipping['default'][$base_shipping_option_id]['price']))
+				$base_shipping_cost = $shipping['default'][$base_shipping_option_id]['price'];
+
+			$shippingAmount += $base_shipping_cost;
+		}
+
         $data = compact(
             'token',
             'shipping',
