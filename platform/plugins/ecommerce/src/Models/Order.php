@@ -158,7 +158,7 @@ class Order extends BaseModel
         if ($this->shipment && in_array(
             $this->shipment->status,
             [ShippingStatusEnum::PICKED, ShippingStatusEnum::DELIVERED, ShippingStatusEnum::AUDITED]
-        )) {
+        ) || $this->status != 'pending') {
             return false;
         }
 

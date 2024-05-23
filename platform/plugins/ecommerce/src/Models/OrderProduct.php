@@ -42,12 +42,12 @@ class OrderProduct extends BaseModel
 
     public function getAmountFormatAttribute(): string
     {
-        return format_price($this->price);
+        return format_price($this->price * 1.22);
     }
 
     public function getTotalFormatAttribute(): string
     {
-        return format_price($this->price * $this->qty);
+        return format_price(($this->price * 1.22) * $this->qty);
     }
 
     public function productFiles(): HasMany

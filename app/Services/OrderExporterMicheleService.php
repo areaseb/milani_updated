@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Botble\Ecommerce\Models\Order;
 use Botble\Ecommerce\Models\Product;
+use Botble\Ecommerce\Models\OrderProduct;
 use Botble\Payment\Enums\PaymentMethodEnum;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
@@ -110,13 +111,25 @@ class OrderExporterMicheleService
         	$order->discount_amount = 0;
         }
     	
+        $order_product = OrderProduct::where('order_id', $order->id)->where('product_id', $product->id)->first();
+        
+        if($order_product){
+        	if($order->source == 'WEB'){
+        		$prod_price = $order_product->price * 1.22;
+        	} else {
+        		$prod_price = $order_product->price;
+        	} 
+        } else {
+        	$prod_price = $product->price * 1.22;
+        }
+        
 if(is_null($product)){
 	\Log::info('errore import ordine: '. print_r($order, true));
 }
         return [
             'sku' => $product->sku,
             'quantita' => $quantity,
-            'prezzo' => number_format((($product->price * 1.22) * $quantity) + ($order->shipping_amount / $order->products->count()) - ($order->discount_amount / $order->products->count()), 2, '.', ''),
+            'prezzo' => number_format(($prod_price * $quantity) + ($order->shipping_amount / $order->products->count()) - ($order->discount_amount / $order->products->count()), 2, '.', ''),
             'pagamento' => $this->getPayment($order),
             'nomeCliente' => '"'.$order->shippingAddress->name.'"',
             'indirizzo' => '"'.$order->shippingAddress->address.'"',
