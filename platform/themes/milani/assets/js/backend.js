@@ -246,6 +246,15 @@
                         }
                     })
 
+					// Set bullets
+					const $bulletsList = $('.ps-list--categories_');
+                    let bulletsHtml = '';
+					res.data.bullets.forEach(el => {
+						if(el)
+							bulletsHtml += '<li>' + el + '</li>';
+					})
+					$bulletsList.html(bulletsHtml);
+
                     const $attributesTable = $('#attributes-table table tbody');
                     $attributesTable.html('');
 
@@ -1264,6 +1273,7 @@
                             }
                             checkHasAnyFilter(formData);
                         } else {
+							console.log(res.message)
                             showError(res.message || 'Opp!');
                         }
                     },

@@ -1,1 +1,181 @@
-$((function(){function e(e){var r="";return $.each(e,(function(e,a){r+=a+"<br />"})),r}var r,a,t;$.rating&&$("#rating").rating({size:"xs"}),r=[],a=function(e){for(var a=new ClipboardEvent("").clipboardData||new DataTransfer,o=0,n=r;o<n.length;o++){var i=n[o];a.items.add(i)}e.files=a.files,t(e)},t=function(e){var r=$(".ecommerce-image-upload__text"),a=$(e).data("max-files"),t=e.files.length;a?(t>=a?r.closest(".ecommerce-image-upload__uploader-container").addClass("d-none"):r.closest(".ecommerce-image-upload__uploader-container").removeClass("d-none"),r.text(t+"/"+a)):r.text(t);var o=$(".ecommerce-image-viewer__list"),n=$("#ecommerce-review-image-template").html();if(o.addClass("is-loading"),o.find(".ecommerce-image-viewer__item").remove(),t){for(var i=t-1;i>=0;i--)o.prepend(n.replace("__id__",i));for(var c=function(r){var a=new FileReader;a.onload=function(e){o.find(".ecommerce-image-viewer__item[data-id="+r+"]").find("img").attr("src",e.target.result)},a.readAsDataURL(e.files[r])},s=t-1;s>=0;s--)c(s)}o.removeClass("is-loading")},$(document).on("change",".ecommerce-form-review-product input[type=file]",(function(e){e.preventDefault();var t=this,o=$(t),n=o.data("max-size");Object.keys(t.files).map((function(e){if(n&&t.files[e].size/1024>n){var a=o.data("max-size-message").replace("__attribute__",t.files[e].name).replace("__max__",n);MartApp.showError(a)}else r.push(t.files[e])}));var i=r.length,c=o.data("max-files");c&&i>c&&r.splice(i-c-1,i-c),a(t)})),$(document).on("click",".ecommerce-form-review-product .ecommerce-image-viewer__icon-remove",(function(e){e.preventDefault();var t=$(e.currentTarget).closest(".ecommerce-image-viewer__item").data("id");r.splice(t,1);var o=$(".ecommerce-form-review-product input[type=file]")[0];a(o)})),$(document).on("submit",".ecommerce-form-review-product",(function(r){r.preventDefault(),r.stopPropagation();var a=$(r.currentTarget),t=a.find("button[type=submit]"),o=a.find("input[name=product_id]").val();$.ajax({type:"POST",cache:!1,url:a.prop("action"),data:new FormData(a[0]),contentType:!1,processData:!1,beforeSend:function(){t.prop("disabled",!0).addClass("loading"),a.find(".alert-message").removeClass("alert-success").addClass("d-none alert-warning")},success:function(e){e.error?a.find(".alert-message").html(e.message).removeClass("d-none"):(a.find("textarea").val(""),$(".ecommerce-product-item[data-id="+o+"]").find(".ecommerce-product-star").addClass("text-primary h5").html(e.message),$("#product-review-modal").length?$("#product-review-modal").modal("hide"):a.find(".alert-message").removeClass("alert-warning d-none").addClass("alert-success").html(e.message))},error:function(r){var t=function(r){var a="";return void 0===r.errors||Array.isArray(r.errors)?void 0!==r.responseJSON?void 0!==r.responseJSON.errors?422===r.status&&(a=e(r.responseJSON.errors)):void 0!==r.responseJSON.message?a=r.responseJSON.message:$.each(r.responseJSON,(function(e,r){$.each(r,(function(e,r){a+=r+"<br />"}))})):a=r.statusText:a=e(r.errors),a}(r);a.find(".alert-message").html(t).removeClass("d-none")},complete:function(){t.prop("disabled",!1).removeClass("loading")}})})),$(document).on("click",".ecommerce-product-star .ecommerce-icon",(function(e){var r=$(e.currentTarget),a=r.closest(".ecommerce-product-item"),t=$("#product-review-modal"),o=t.find("form");t.find(".ecommerce-product-image").attr("src",a.find(".ecommerce-product-image").attr("src")),t.find(".ecommerce-product-name").text(a.find(".ecommerce-product-name").text()),o.find("input[name=star][value="+r.data("star")+"]").prop("checked",!0).trigger("change"),o.find("input[name=product_id]").val(a.data("id")),t.modal("show")})),$(document).on("hidden.bs.modal","#product-review-modal",(function(e){var r=$(e.currentTarget);r.find(".ecommerce-produt-image").attr("src",""),r.find(".ecommerce-produt-name").text(""),r.find("input[name=product_id]").val("")}))}));
+/******/ (() => { // webpackBootstrap
+var __webpack_exports__ = {};
+/*!******************************************************************!*\
+  !*** ./platform/plugins/ecommerce/resources/assets/js/review.js ***!
+  \******************************************************************/
+$(function () {
+  if ($.rating) {
+    $('#rating').rating({
+      'size': 'xs'
+    });
+  }
+  function handleError(data) {
+    var messages = '';
+    if (typeof data.errors !== 'undefined' && !Array.isArray(data.errors)) {
+      messages = handleValidationError(data.errors);
+    } else {
+      if (typeof data.responseJSON !== 'undefined') {
+        if (typeof data.responseJSON.errors !== 'undefined') {
+          if (data.status === 422) {
+            messages = handleValidationError(data.responseJSON.errors);
+          }
+        } else if (typeof data.responseJSON.message !== 'undefined') {
+          messages = data.responseJSON.message;
+        } else {
+          $.each(data.responseJSON, function (index, el) {
+            $.each(el, function (key, item) {
+              messages += item + '<br />';
+            });
+          });
+        }
+      } else {
+        messages = data.statusText;
+      }
+    }
+    return messages;
+  }
+  function handleValidationError(errors) {
+    var message = '';
+    $.each(errors, function (index, item) {
+      message += item + '<br />';
+    });
+    return message;
+  }
+  function submitReviewProduct() {
+    var imagesReviewBuffer = [];
+    var setImagesFormReview = function setImagesFormReview(input) {
+      var dT = new ClipboardEvent('').clipboardData ||
+      // Firefox < 62 workaround exploiting https://bugzilla.mozilla.org/show_bug.cgi?id=1422655
+      new DataTransfer(); // specs compliant (as of March 2018 only Chrome)
+      for (var _i = 0, _imagesReviewBuffer = imagesReviewBuffer; _i < _imagesReviewBuffer.length; _i++) {
+        var file = _imagesReviewBuffer[_i];
+        dT.items.add(file);
+      }
+      input.files = dT.files;
+      loadPreviewImage(input);
+    };
+    var loadPreviewImage = function loadPreviewImage(input) {
+      var $uploadText = $('.ecommerce-image-upload__text');
+      var maxFiles = $(input).data('max-files');
+      var filesAmount = input.files.length;
+      if (maxFiles) {
+        if (filesAmount >= maxFiles) {
+          $uploadText.closest('.ecommerce-image-upload__uploader-container').addClass('d-none');
+        } else {
+          $uploadText.closest('.ecommerce-image-upload__uploader-container').removeClass('d-none');
+        }
+        $uploadText.text(filesAmount + '/' + maxFiles);
+      } else {
+        $uploadText.text(filesAmount);
+      }
+      var viewerList = $('.ecommerce-image-viewer__list');
+      var $template = $('#ecommerce-review-image-template').html();
+      viewerList.addClass('is-loading');
+      viewerList.find('.ecommerce-image-viewer__item').remove();
+      if (filesAmount) {
+        for (var i = filesAmount - 1; i >= 0; i--) {
+          viewerList.prepend($template.replace('__id__', i));
+        }
+        var _loop = function _loop(j) {
+          var reader = new FileReader();
+          reader.onload = function (event) {
+            viewerList.find('.ecommerce-image-viewer__item[data-id=' + j + ']').find('img').attr('src', event.target.result);
+          };
+          reader.readAsDataURL(input.files[j]);
+        };
+        for (var j = filesAmount - 1; j >= 0; j--) {
+          _loop(j);
+        }
+      }
+      viewerList.removeClass('is-loading');
+    };
+    $(document).on('change', '.ecommerce-form-review-product input[type=file]', function (event) {
+      event.preventDefault();
+      var input = this;
+      var $input = $(input);
+      var maxSize = $input.data('max-size');
+      Object.keys(input.files).map(function (i) {
+        if (maxSize && input.files[i].size / 1024 > maxSize) {
+          var message = $input.data('max-size-message').replace('__attribute__', input.files[i].name).replace('__max__', maxSize);
+          MartApp.showError(message);
+        } else {
+          imagesReviewBuffer.push(input.files[i]);
+        }
+      });
+      var filesAmount = imagesReviewBuffer.length;
+      var maxFiles = $input.data('max-files');
+      if (maxFiles && filesAmount > maxFiles) {
+        imagesReviewBuffer.splice(filesAmount - maxFiles - 1, filesAmount - maxFiles);
+      }
+      setImagesFormReview(input);
+    });
+    $(document).on('click', '.ecommerce-form-review-product .ecommerce-image-viewer__icon-remove', function (event) {
+      event.preventDefault();
+      var $this = $(event.currentTarget);
+      var id = $this.closest('.ecommerce-image-viewer__item').data('id');
+      imagesReviewBuffer.splice(id, 1);
+      var input = $('.ecommerce-form-review-product input[type=file]')[0];
+      setImagesFormReview(input);
+    });
+    $(document).on('submit', '.ecommerce-form-review-product', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var $this = $(e.currentTarget);
+      var $button = $this.find('button[type=submit]');
+      var productId = $this.find('input[name=product_id]').val();
+      $.ajax({
+        type: 'POST',
+        cache: false,
+        url: $this.prop('action'),
+        data: new FormData($this[0]),
+        contentType: false,
+        processData: false,
+        beforeSend: function beforeSend() {
+          $button.prop('disabled', true).addClass('loading');
+          $this.find('.alert-message').removeClass('alert-success').addClass('d-none alert-warning');
+        },
+        success: function success(res) {
+          if (!res.error) {
+            $this.find('textarea').val('');
+            var $item = $('.ecommerce-product-item[data-id=' + productId + ']');
+            $item.find('.ecommerce-product-star').addClass('text-primary h5').html(res.message);
+            if ($('#product-review-modal').length) {
+              $('#product-review-modal').modal('hide');
+            } else {
+              $this.find('.alert-message').removeClass('alert-warning d-none').addClass('alert-success').html(res.message);
+            }
+          } else {
+            $this.find('.alert-message').html(res.message).removeClass('d-none');
+          }
+        },
+        error: function error(res) {
+          var messages = handleError(res);
+          $this.find('.alert-message').html(messages).removeClass('d-none');
+        },
+        complete: function complete() {
+          $button.prop('disabled', false).removeClass('loading');
+        }
+      });
+    });
+    $(document).on('click', '.ecommerce-product-star .ecommerce-icon', function (e) {
+      var $this = $(e.currentTarget);
+      var $product = $this.closest('.ecommerce-product-item');
+      var $modal = $('#product-review-modal');
+      var $form = $modal.find('form');
+      $modal.find('.ecommerce-product-image').attr('src', $product.find('.ecommerce-product-image').attr('src'));
+      $modal.find('.ecommerce-product-name').text($product.find('.ecommerce-product-name').text());
+      $form.find('input[name=star][value=' + $this.data('star') + ']').prop('checked', true).trigger('change');
+      $form.find('input[name=product_id]').val($product.data('id'));
+      $modal.modal('show');
+    });
+    $(document).on('hidden.bs.modal', '#product-review-modal', function (e) {
+      var $this = $(e.currentTarget);
+      $this.find('.ecommerce-produt-image').attr('src', '');
+      $this.find('.ecommerce-produt-name').text('');
+      $this.find('input[name=product_id]').val('');
+    });
+  }
+  submitReviewProduct();
+});
+/******/ })()
+;

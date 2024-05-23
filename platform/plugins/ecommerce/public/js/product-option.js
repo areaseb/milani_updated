@@ -1,1 +1,195 @@
-(()=>{"use strict";function e(t){return e="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e},e(t)}$(document).ready((function(){var t=window.productOptions,o=t.productOptionLang,n=t.coreBaseLang,a=t.currentProductOption,i=t.options,r={productOptions:a,init:function(){this.eventListeners(),this.generateProductOption(),this.sortable()},sortable:function(){$(".option-value-sortable tbody").sortable({stop:function(){$(".option-value-sortable tbody").sortable("toArray",{attribute:"data-index"}).map((function(e,t){$('.option-row[data-index="'+e+'"]').find(".option-value-order").val(t)}))}}),$(".accordion-product-option").sortable({stop:function(){$(".accordion-product-option").sortable("toArray",{attribute:"data-index"}).map((function(e,t){$('.accordion-item[data-index="'+e+'"]').find(".option-order").val(t)}))}})},generateProductOption:function(){var e=this,t="";$("#accordion-product-option").html(""),this.productOptions.map((function(o,n){t+=e.generateOptionTemplate(o,n)})),$("#accordion-product-option").append(t),this.sortable()},eventListeners:function(){var e=this;$(".product-option-form-wrap").on("click",".add-from-global-option",(function(){var t=$("#global-option").val();return-1!=t?e.addFromGlobalOption(t):toastr.error(o.please_select_option),!1})).on("click",".remove-option",(function(){var t=$(this).data("index");e.productOptions.splice(t,1),$(this).parents(".accordion-item").remove()})).on("keyup",".option-name",(function(){var t=$(this).parents(".accordion-item").data("product-option-index"),o=$(this).val();$(this).parents(".accordion-item").find(".accordion-button").text(o),e.productOptions[t].name=o})).on("change",".option-type",(function(){var t=$(this).parents(".accordion-item").data("product-option-index");e.productOptions[t].option_type=$(this).val(),e.generateProductOption()})).on("change",".option-required",(function(){var t=$(this).parents(".accordion-item").data("product-option-index");e.productOptions[t].required=$(this).is(":checked")})).on("click",".add-new-row",(function(){e.addNewRow($(this))})).on("click",".remove-row",(function(){$(this).parent().parent().remove()})).on("click",".add-new-option",(function(){var t={name:"",values:[{affect_price:0,affect_type:0}],option_type:"N/A",required:!1};e.productOptions.push(t);var o=e.generateOptionTemplate(t,e.productOptions.length-1);$("#accordion-product-option").append(o),e.sortable()}))},addNewRow:function(e){var t=e.parent().find("table tbody"),o=e.parents(".accordion-item").data("product-option-index"),n=t.find("tr").last().clone(),a="options["+o+"][values]["+t.find("tr").length+"][option_value]",i="options["+o+"][values]["+t.find("tr").length+"][affect_price]",r="options["+o+"][values]["+t.find("tr").length+"][affect_type]";n.find(".option-label").prop("name",a).val(""),n.find(".affect_price").prop("name",i).val(0),n.find(".affect_type").prop("name",r).val(0),n.find(".option-value-order").val(t.find("tr").length),n.attr("data-index",t.find("tr").length),t.append(n)},addFromGlobalOption:function(e){var t=this;axios.get(window.productOptions.routes.ajax_option_info+"?id="+e).then((function(e){var o=e.data.data;t.productOptions.push({id:o.id,name:o.name,option_type:o.option_type,option_value:o.option_value,values:o.values,required:o.required}),t.generateProductOption()}))},generateOptionTemplate:function(e,t){var a=this.generateFieldOptions(e),i=void 0!==e.id?e.id:0,r=void 0!==e.order&&9999!=e.order?e.order:t,p=$("#template-option").html(),c=e.required?"checked":"",_=this.generateOptionValues(e.values,e.option_type,t);return p.replace(/__index__/g,t).replace(/__order__/g,r).replace(/__id__/g,i).replace(/__optionName__/g,"#"+(parseInt(t)+1)+" "+e.name).replace(/__nameLabel__/g,n.name).replace(/__option_name__/g,e.name).replace(/__namePlaceHolder__/g,n.name_placeholder).replace(/__optionTypeLabel__/g,o.option_type).replace(/__optionTypeOption__/g,a).replace(/__checked__/g,c).replace(/__requiredLabel__/g,o.required).replace(/__optionValueSortable__/g,_)},generateFieldOptions:function(t){var o="";return $.each(i,(function(n,a){if("object"==e(a))o+='<optgroup label="'+n+'">',$.each(a,(function(e,n){var a=t.option_type===e?"selected":"";o+="<option "+a+' value="'+e+'">'+n+"</option>"})),o+="</optgroup>";else{var i=t.option_type===n?"selected":"";o+="<option "+i+' value="'+n+'">'+a+"</option>"}})),o},generateOptionValues:function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:"",n=arguments.length>2?arguments[2]:void 0,a=o.label,i=o.price,r=o.price_type,p="",c="",_=t.split("\\");if(""!==(_=_[_.length-1])&&void 0!==t&&"N/A"!==t)if("Field"===_){p=$("#template-option-values-of-field").html();var l=0===e[0].affect_type?"selected":"",d=1===e[0].affect_type?"selected":"";c+=p.replace(/__priceLabel__/g,i).replace(/__priceTypeLabel__/g,r).replace(/__id__/g,e[0].id).replace(/__index__/g,n).replace(/__affectPrice__/g,e[0].affect_price).replace(/__affectPriceLabel__/g,o.affect_price_label).replace(/__selectedFixed__/g,l).replace(/__fixedLang__/g,o.fixed).replace(/__selectedPercent__/g,d).replace(/__percentLang__/g,o.percent)}else{if(e.length>0){var u=$("#template-option-type-array").html(),s="",f=u.replace(/__priceLabel__/g,i).replace(/__priceTypeLabel__/g,r).replace(/__index__/g,n).replace(/__label__/g,a);$.each(e,(function(e,t){var a=$("#template-option-type-value").html(),i=void 0===t.order?t.order:e,r=0===t.affect_type?"selected":"",p=1===t.affect_type?"selected":"";s+=a.replace(/__key__/g,e).replace(/__id__/g,t.id).replace(/__order__/g,i).replace(/__index__/g,n).replace(/__labelPlaceholder__/g,o.label_placeholder).replace(/__affectPriceLabel__/g,o.affect_price_label).replace(/__selectedFixed__/g,r).replace(/__fixedLang__/g,o.fixed).replace(/__selectedPercent__/g,p).replace(/__option_value_input__/g,t.option_value?t.option_value:"").replace(/__affectPrice__/g,t.affect_price).replace(/__percentLang__/g,o.percent)})),c+=f.replace(/__optionValue__/g,s)}c+='<button type="button" class="btn btn-info mt-3 add-new-row" id="add-new-row">'.concat(o.add_new_row,"</button>")}return c}};r.init()}))})();
+/******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+var __webpack_exports__ = {};
+/*!**************************************************************************!*\
+  !*** ./platform/plugins/ecommerce/resources/assets/js/product-option.js ***!
+  \**************************************************************************/
+
+
+function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
+$(document).ready(function () {
+  var _window$productOption = window.productOptions,
+    productOptionLang = _window$productOption.productOptionLang,
+    coreBaseLang = _window$productOption.coreBaseLang,
+    currentProductOption = _window$productOption.currentProductOption,
+    options = _window$productOption.options;
+  var productOptionForm = {
+    productOptions: currentProductOption,
+    init: function init() {
+      this.eventListeners();
+      this.generateProductOption();
+      this.sortable();
+    },
+    sortable: function sortable() {
+      $('.option-value-sortable tbody').sortable({
+        stop: function stop() {
+          var idsInOrder = $('.option-value-sortable tbody').sortable('toArray', {
+            attribute: 'data-index'
+          });
+          idsInOrder.map(function (id, index) {
+            $('.option-row[data-index="' + id + '"]').find('.option-value-order').val(index);
+          });
+        }
+      });
+      $('.accordion-product-option').sortable({
+        stop: function stop() {
+          var idsInOrder = $('.accordion-product-option').sortable('toArray', {
+            attribute: 'data-index'
+          });
+          idsInOrder.map(function (id, index) {
+            $('.accordion-item[data-index="' + id + '"]').find('.option-order').val(index);
+          });
+        }
+      });
+    },
+    generateProductOption: function generateProductOption() {
+      var self = this;
+      var html = '';
+      $('#accordion-product-option').html('');
+      this.productOptions.map(function (item, index) {
+        html += self.generateOptionTemplate(item, index);
+      });
+      $('#accordion-product-option').append(html);
+      this.sortable();
+    },
+    eventListeners: function eventListeners() {
+      var self = this;
+      $('.product-option-form-wrap').on('click', '.add-from-global-option', function () {
+        var selectedOption = $('#global-option').val();
+        if (selectedOption != -1) {
+          self.addFromGlobalOption(selectedOption);
+        } else {
+          toastr.error(productOptionLang.please_select_option);
+        }
+        return false;
+      }).on('click', '.remove-option', function () {
+        var index = $(this).data('index');
+        self.productOptions.splice(index, 1);
+        $(this).parents('.accordion-item').remove();
+      }).on('keyup', '.option-name', function () {
+        var index = $(this).parents('.accordion-item').data('product-option-index');
+        var name = $(this).val();
+        $(this).parents('.accordion-item').find('.accordion-button').text(name);
+        self.productOptions[index].name = name;
+      }).on('change', '.option-type', function () {
+        var index = $(this).parents('.accordion-item').data('product-option-index');
+        self.productOptions[index].option_type = $(this).val();
+        self.generateProductOption();
+      }).on('change', '.option-required', function () {
+        var index = $(this).parents('.accordion-item').data('product-option-index');
+        self.productOptions[index].required = $(this).is(':checked');
+      }).on('click', '.add-new-row', function () {
+        self.addNewRow($(this));
+      }).on('click', '.remove-row', function () {
+        $(this).parent().parent().remove();
+      }).on('click', '.add-new-option', function () {
+        var option = {
+          name: '',
+          values: [{
+            affect_price: 0,
+            affect_type: 0
+          }],
+          option_type: 'N/A',
+          required: false
+        };
+        self.productOptions.push(option);
+        var html = self.generateOptionTemplate(option, self.productOptions.length - 1);
+        $('#accordion-product-option').append(html);
+        self.sortable();
+      });
+    },
+    addNewRow: function addNewRow(element) {
+      var table = element.parent().find('table tbody');
+      var index = element.parents('.accordion-item').data('product-option-index');
+      var tr = table.find('tr').last().clone();
+      var labelName = 'options[' + index + '][values][' + table.find('tr').length + '][option_value]',
+        affectName = 'options[' + index + '][values][' + table.find('tr').length + '][affect_price]',
+        affectTypeName = 'options[' + index + '][values][' + table.find('tr').length + '][affect_type]';
+      tr.find('.option-label').prop('name', labelName).val('');
+      tr.find('.affect_price').prop('name', affectName).val(0);
+      tr.find('.affect_type').prop('name', affectTypeName).val(0);
+      tr.find('.option-value-order').val(table.find('tr').length);
+      tr.attr('data-index', table.find('tr').length);
+      table.append(tr);
+    },
+    addFromGlobalOption: function addFromGlobalOption(optionId) {
+      var self = this;
+      axios.get(window.productOptions.routes.ajax_option_info + '?id=' + optionId).then(function (res) {
+        var option = res.data.data;
+        self.productOptions.push({
+          id: option.id,
+          name: option.name,
+          option_type: option.option_type,
+          option_value: option.option_value,
+          values: option.values,
+          required: option.required
+        });
+        self.generateProductOption();
+      });
+    },
+    generateOptionTemplate: function generateOptionTemplate(option, index) {
+      var options = this.generateFieldOptions(option);
+      var id = typeof option.id !== 'undefined' ? option.id : 0;
+      var order = typeof option.order !== 'undefined' && option.order != 9999 ? option.order : index;
+      var template = $('#template-option').html();
+      var checked = option.required ? 'checked' : '';
+      var values = this.generateOptionValues(option.values, option.option_type, index);
+      return template.replace(/__index__/g, index).replace(/__order__/g, order).replace(/__id__/g, id).replace(/__optionName__/g, '#' + (parseInt(index) + 1) + ' ' + option.name).replace(/__nameLabel__/g, coreBaseLang.name).replace(/__option_name__/g, option.name).replace(/__namePlaceHolder__/g, coreBaseLang.name_placeholder).replace(/__optionTypeLabel__/g, productOptionLang.option_type).replace(/__optionTypeOption__/g, options).replace(/__checked__/g, checked).replace(/__requiredLabel__/g, productOptionLang.required).replace(/__optionValueSortable__/g, values);
+    },
+    generateFieldOptions: function generateFieldOptions(option) {
+      var html = '';
+      $.each(options, function (key, value) {
+        if (_typeof(value) == 'object') {
+          html += '<optgroup label="' + key + '">';
+          $.each(value, function (option_key, option_value) {
+            var option_checked = option.option_type === option_key ? 'selected' : '';
+            html += '<option ' + option_checked + ' value="' + option_key + '">' + option_value + '</option>';
+          });
+          html += '</optgroup>';
+        } else {
+          var option_checked = option.option_type === key ? 'selected' : '';
+          html += '<option ' + option_checked + ' value="' + key + '">' + value + '</option>';
+        }
+      });
+      return html;
+    },
+    generateOptionValues: function generateOptionValues(values) {
+      var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+      var index = arguments.length > 2 ? arguments[2] : undefined;
+      var label = productOptionLang.label,
+        price = productOptionLang.price,
+        priceType = productOptionLang.price_type,
+        template = '',
+        html = '';
+      var optionType = type.split("\\");
+      optionType = optionType[optionType.length - 1];
+      if (optionType !== '' && typeof type !== 'undefined' && type !== 'N/A') {
+        if (optionType === 'Field') {
+          template = $('#template-option-values-of-field').html();
+          var selectedFixed = values[0].affect_type === 0 ? 'selected' : '';
+          var selectedPercent = values[0].affect_type === 1 ? 'selected' : '';
+          html += template.replace(/__priceLabel__/g, price).replace(/__priceTypeLabel__/g, priceType).replace(/__id__/g, values[0].id).replace(/__index__/g, index).replace(/__affectPrice__/g, values[0].affect_price).replace(/__affectPriceLabel__/g, productOptionLang.affect_price_label).replace(/__selectedFixed__/g, selectedFixed).replace(/__fixedLang__/g, productOptionLang.fixed).replace(/__selectedPercent__/g, selectedPercent).replace(/__percentLang__/g, productOptionLang.percent);
+        } else {
+          if (values.length > 0) {
+            var _template = $('#template-option-type-array').html();
+            var valuesResult = '';
+            var tmp = _template.replace(/__priceLabel__/g, price).replace(/__priceTypeLabel__/g, priceType).replace(/__index__/g, index).replace(/__label__/g, label);
+            $.each(values, function (key, value) {
+              var valueTemplate = $('#template-option-type-value').html();
+              var order = typeof value.order === 'undefined' ? value.order : key;
+              var selectedFixed = value.affect_type === 0 ? 'selected' : '';
+              var selectedPercent = value.affect_type === 1 ? 'selected' : '';
+              valuesResult += valueTemplate.replace(/__key__/g, key).replace(/__id__/g, value.id).replace(/__order__/g, order).replace(/__index__/g, index).replace(/__labelPlaceholder__/g, productOptionLang.label_placeholder).replace(/__affectPriceLabel__/g, productOptionLang.affect_price_label).replace(/__selectedFixed__/g, selectedFixed).replace(/__fixedLang__/g, productOptionLang.fixed).replace(/__selectedPercent__/g, selectedPercent).replace(/__option_value_input__/g, value.option_value ? value.option_value : '').replace(/__affectPrice__/g, value.affect_price).replace(/__percentLang__/g, productOptionLang.percent);
+            });
+            html += tmp.replace(/__optionValue__/g, valuesResult);
+          }
+          html += "<button type=\"button\" class=\"btn btn-info mt-3 add-new-row\" id=\"add-new-row\">".concat(productOptionLang.add_new_row, "</button>");
+        }
+      }
+      return html;
+    }
+  };
+  productOptionForm.init();
+});
+/******/ })()
+;

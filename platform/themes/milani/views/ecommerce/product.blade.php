@@ -185,9 +185,9 @@
                     <li><span class="d-inline-block">{{ __('Sent in') }}</span><span class="in-stock text-success ml-5"> @if($product->sku_set == 'tempesta') 10/15 @else 4/5 @endif {{ __('working days') }}</span></li>
                 </ul>
 
-                @if ($product->variations()->count() > 0 || $product->is_variation)
+                @if ($product->variations()->count() > 0 || $product->is_variation)		
                     <div class="pr_switch_wrap product-meta mt-30">
-                        {!! render_product_swatches($product, [
+                        {!! render_product_swatches($product->original_product, [
                             'selected' => $selectedAttrs,
                             'view'     => Theme::getThemeNamespace() . '::views.ecommerce.attributes.swatches-renderer'
                         ]) !!}
