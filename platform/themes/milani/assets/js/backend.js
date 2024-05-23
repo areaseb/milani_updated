@@ -120,7 +120,7 @@
                         buttonSubmit.prop('disabled', true).addClass('btn-disabled');
                         $('.number-items-available').html('<span class="text-danger">(' + res.data.error_message + ')</span>').show();
                     } else if (res.data.success_message) {
-                        $('.number-items-available').html('<span class="text-success">(' + res.data.success_message + ')</span>').show();
+                        $('.number-items-available').html(res.data.success_message).show();
                     } else {
                         $('.number-items-available').html('').hide();
                     }

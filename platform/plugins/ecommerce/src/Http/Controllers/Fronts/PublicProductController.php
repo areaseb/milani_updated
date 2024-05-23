@@ -527,9 +527,9 @@ class PublicProductController
             } elseif ($product->quantity) {
                 if (EcommerceHelper::showNumberOfProductsInProductSingle()) {
                     if ($product->quantity != 1) {
-                        $product->successMessage = __(':number products available', ['number' => $product->quantity]);
+                        $product->successMessage = __('Availability') . ': <span class="text-success">' . __(':number products available', ['number' => $product->quantity]) . '</span>';
                     } else {
-                        $product->successMessage = __(':number product available', ['number' => $product->quantity]);
+						$product->successMessage = __('Availability') . ': <span class="text-success">' . __(':number product available', ['number' => $product->quantity]) . '</span>';
                     }
                 } else {
                     $product->successMessage = __('In stock');

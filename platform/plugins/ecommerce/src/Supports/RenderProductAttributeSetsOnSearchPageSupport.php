@@ -6,6 +6,7 @@ use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Ecommerce\Models\Product;
 use Botble\Ecommerce\Models\ProductAttribute;
 use Botble\Ecommerce\Models\ProductCategory;
+use Botble\Ecommerce\Models\Tax;
 use Botble\Ecommerce\Repositories\Eloquent\ProductAttributeSetRepository;
 use Botble\Ecommerce\Repositories\Interfaces\ProductAttributeSetInterface;
 use Carbon\Carbon;
@@ -63,8 +64,43 @@ class RenderProductAttributeSetsOnSearchPageSupport
     }
 
     public function getMaxPrice()
-    {
+    {				
         $categories = Request::get('categories');
+
+        if (!$categories) {
+            return (int) theme_option('max_filter_price', 100000) * get_current_exchange_rate();
+        }
+
+		// Get subcategories only
+		$subcategories = ProductCategory::whereIn('id', $categories)->doesntHave('children')->pluck('id')->toArray();
+
+		// Get products	
+		$products_ids = DB::table('ec_product_category_product')->whereIn('category_id', $subcategories)->pluck('product_id')->toArray();
+
+		// Get variations
+		$products_ids = array_merge($products_ids, DB::table('ec_product_variations')->whereIn('configurable_product_id', $products_ids)->pluck('product_id')->toArray());
+
+		$products_ids = array_unique($products_ids);
+
+		$products = Product::whereIn('id', $products_ids);
+
+		$values = [
+			(clone $products)->where('sale_type', 0)->where('sale_price', '!=', 0)->max('sale_price'),			
+
+			(clone $products)->where('sale_type', 0)->where('sale_price', 0)->max('price'),
+
+			(clone $products)->where('sale_type', 1)->max('price'),
+		];
+
+		$max_price = max($values) * (1 + Tax::first()->percentage / 100);
+
+		return (int) (ceil((float) $max_price));
+	}
+
+	public function bk_getMaxPrice()
+    {				
+        $categories = Request::get('categories');
+
         if (!$categories) {
             return (int) theme_option('max_filter_price', 100000) * get_current_exchange_rate();
         }
@@ -126,6 +162,7 @@ class RenderProductAttributeSetsOnSearchPageSupport
 
         return (int) (ceil((float) $maxPrice));
     }
+
 
     protected function getValidCategories()
     {
