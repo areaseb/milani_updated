@@ -25,7 +25,7 @@ class CheckoutRequest extends Request
 
         $products = Cart::instance('cart')->products();
         if (EcommerceHelper::isAvailableShipping($products)) {
-            $rules['shipping_method'] = 'required|' . Rule::in(ShippingMethodEnum::values());
+            //$rules['shipping_method'] = 'required|' . Rule::in(ShippingMethodEnum::values());
             $rules['address.address_id'] = 'required_without:address.name';
             if (! $this->has('address.address_id') || $this->input('address.address_id') === 'new') {
                 $rules = array_merge($rules, EcommerceHelper::getCustomerAddressValidationRules('address.'));

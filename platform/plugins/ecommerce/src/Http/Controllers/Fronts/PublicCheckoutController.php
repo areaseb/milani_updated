@@ -243,7 +243,7 @@ class PublicCheckoutController
             }
         }
 
-		// Add default shipping amount
+		// Add default shipping amountBookmarks: Toggle
 		$base_shipping_option_id = 4;
 
 		if(isset($shipping) && $sessionCheckoutData['shipping_option'] != $base_shipping_option_id) {
@@ -631,7 +631,12 @@ class PublicCheckoutController
         HandleRemoveCouponService $removeCouponService,
         HandleApplyPromotionsService $handleApplyPromotionsService
     ) {
-        if (! EcommerceHelper::isCartEnabled()) {
+		if(!$request->shipping_method) {
+			$request->shipping_method = 'default';
+			$request->shipping_option = 4;
+		}
+
+		if (! EcommerceHelper::isCartEnabled()) {
             abort(404);
         }
 
@@ -722,10 +727,31 @@ class PublicCheckoutController
             }
 
             $shippingAmount = Arr::get($shippingMethod, 'price', 0);
-
+			
             if (get_shipping_setting('free_ship', $shippingMethodInput)) {
                 $shippingAmount = 0;
             }
+
+			
+			$base_shipping_option_id = 4;
+
+			if($request->input('shipping_option') != $base_shipping_option_id) {
+				$base_shipping_cost = 0;
+
+				$shipment_data = $shippingFeeService->execute(
+					$shippingData,
+					$shippingMethodInput,
+					$base_shipping_option_id
+				);
+
+				$shipping = Arr::first($shipment_data);
+
+				if($shipping) {
+					$base_shipping_cost = $shipping['price'];
+				}
+	
+				$shippingAmount += $base_shipping_cost;
+			}
         }
 
         if (session()->has('applied_coupon_code')) {
