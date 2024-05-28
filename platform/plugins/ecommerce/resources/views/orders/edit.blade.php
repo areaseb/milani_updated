@@ -99,12 +99,18 @@
                                                         @if ($product->sku)
                                                             ({{ trans('plugins/ecommerce::order.sku') }}:
                                                             <strong>{{ $product->sku }}</strong>)
-                                                        @endif
+                                                        @endif														
+
                                                         @if ($product->is_variation)
                                                             <p class="mb-0">
                                                                 <small>{{ $product->variation_attributes }}</small>
                                                             </p>
                                                         @endif
+                                                    @endif
+													@if ($orderProduct->external_sku)
+														&nbsp;
+                                                        (External {{ trans('plugins/ecommerce::order.sku') }}:
+                                                        <strong>{{ $orderProduct->external_sku }}</strong>)
                                                     @endif
                                                     @if (!empty($orderProduct->product_options) && is_array($orderProduct->product_options))
                                                         {!! render_product_options_info($orderProduct->product_options, $product, true) !!}
