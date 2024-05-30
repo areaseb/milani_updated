@@ -182,38 +182,40 @@ class BeezupImportOrdersJob implements ShouldQueue
 
     protected function createOrderProduct($order, $item)
     {
-        $product = $this->getProductBySku($item->orderItem_MerchantImportedProductId);
-
-		//\Log::info('Prodotto: '.print_r($product, true).' - Item: '.print_r($item, true));
-		$orderProduct = new OrderProduct();
-		$orderProduct->order_id = $order->id;
-		$orderProduct->qty = (int) $item->orderItem_Quantity;
-		$orderProduct->price = (float) $item->orderItem_ItemPrice;
-		$orderProduct->tax_amount = 0;
-		$orderProduct->options = [];
-		$orderProduct->product_options = null;
-		$orderProduct->product_name = $item->orderItem_Title;
-		$orderProduct->product_image = null;
-		$orderProduct->restock_quantity = 0;
-		$orderProduct->product_type = 'physical';	
+        $product = $this->getProductBySku($item->orderItem_MerchantImportedProductId, $item->orderItem_MerchantProductId);
 
 		if($product) {
+			//\Log::info('Prodotto: '.print_r($product, true).' - Item: '.print_r($item, true));
+			$orderProduct = new OrderProduct();
+			$orderProduct->order_id = $order->id;
+			$orderProduct->qty = (int) $item->orderItem_Quantity;
+			$orderProduct->price = (float) $item->orderItem_ItemPrice;
+			$orderProduct->tax_amount = 0;
+			$orderProduct->options = [];
+			$orderProduct->product_options = null;
+			$orderProduct->product_name = $item->orderItem_Title;
+			$orderProduct->product_image = null;
+			$orderProduct->restock_quantity = 0;
+			$orderProduct->product_type = 'physical';	
 			$orderProduct->product_id = $product->id ?? null;
 			$orderProduct->weight = $product->weight ?? 0;
-		} else {
-			// Add amazon related product not available in ecommerce
-			$orderProduct->product_id = null;
-			$orderProduct->weight = 0;
-			$orderProduct->external_sku = $item->orderItem_MerchantProductId;
+			// $orderProduct->external_sku = $item->orderItem_MerchantProductId;
+	        $orderProduct->save();
 		}
-
-        $orderProduct->save();
     }
 
-    protected function getProductBySku($sku)
+    protected function getProductBySku($sku, $external_sku = false)
     {
-        return Product::where('sku', $sku)->first();
-    }
+		$product = Product::where('sku', $sku)->first();
+
+		if($product)
+			return $product;
+
+		if(!$external_sku)
+			return false;
+
+		return Product::whereRaw('FIND_IN_SET(?, attaccati_amz)', [$external_sku])->first();
+	}
 
     protected function createOrderHistory($order)
     {

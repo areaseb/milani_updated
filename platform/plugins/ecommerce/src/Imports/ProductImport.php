@@ -954,6 +954,8 @@ class ProductImport implements
      */
     public function mapLocalization(array $row): array
     {
+		// Products amz
+		$row['cont_legno'] = (Arr::get($row, 'cont_legno') == 'Sì') ? 1 : 0;
 
         $row['stock_status'] = (string)Arr::get($row, 'stock_status');
         if (!in_array($row['stock_status'], StockStatusEnum::values())) {

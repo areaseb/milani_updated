@@ -23,7 +23,6 @@ class OrderProduct extends BaseModel
         'product_options',
         'restock_quantity',
         'product_type',
-		'external_sku',
     ];
 
     protected $casts = [
