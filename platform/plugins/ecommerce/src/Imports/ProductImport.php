@@ -463,7 +463,10 @@ class ProductImport implements
 
         $addedAttributes = $this->request->input('product_attributes', []);
 
+		/*
         $result = $this->productVariationRepository->getVariationByAttributesOrCreate($product->id, $addedAttributes);
+		$variation = $result['variation'];
+		*/
 
         // if (!$result['created']) {
         //     if (method_exists($this, 'onFailure')) {
@@ -479,7 +482,18 @@ class ProductImport implements
         //     return null;
         // }
 
-        $variation = $result['variation'];
+		// Search product by sku
+		$variation = Product::where(['sku' => $product->sku, 'is_variation' => 1])->first();
+
+		if(!$variation) {
+			$variation = $product->replicate();
+			$variation->is_variation = 1;
+			$variation->save();
+
+			if ($addedAttributes) {
+				$variation->productAttributeSets()->sync($addedAttributes);
+			}
+		}
 
         $version = array_merge($variation->toArray(), $this->request->toArray());
         $version['variation_default_id'] = $default ? $version['id'] : null;
