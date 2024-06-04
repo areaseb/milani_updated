@@ -37,6 +37,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\SkipsErrors;
@@ -278,10 +279,14 @@ class ProductImport implements
             // and the default variation which is
             // the same as parent product
             $product = $this->storeProduct();
-            return $this->storeVariant($product, true);
 
+            return $this->storeVariant($product, true);
         } else if (in_array($importType, ['variations', 'all']) && $row['import_type'] == 'variation') {
+            // Get main product from sku_parentela
+            $product = Product::where('sku', $row['sku_parentela'])->where('is_variation', 0)->first();
+            /*
             $product = $this->getProduct($name, $slug);
+            */
 
             return $this->storeVariant($product);
         }
@@ -446,7 +451,7 @@ class ProductImport implements
      * @return ProductVariation|null
      */
     public function storeVariant($product, $default = false): ?ProductVariation
-    {
+    {        
         if (!$product) {
             if (method_exists($this, 'onFailure')) {
                 $failures[] = new Failure(
@@ -483,17 +488,36 @@ class ProductImport implements
         // }
 
 		// Search product by sku
-		$variation = Product::where(['sku' => $product->sku, 'is_variation' => 1])->first();
+        if($default) {
+            $variation_product = Product::where(['sku' => $product->sku, 'is_variation' => 1])->first();
+        } else {
+            $variation_product = Product::where(['sku' => $this->request->input('sku')])->first();
+        }
 
-		if(!$variation) {
-			$variation = $product->replicate();
-			$variation->is_variation = 1;
-			$variation->save();
+		if(!$variation_product) {
+			$variation_product = $product->replicate();
+
+            if(!$default)
+                $variation_product->sku = $this->request->input('sku');            
+
+			$variation_product->is_variation = 1;
+			$variation_product->save();
 
 			if ($addedAttributes) {
-				$variation->productAttributeSets()->sync($addedAttributes);
+				$variation_product->productAttributeSets()->sync($addedAttributes);
 			}
 		}
+
+        // $variation = StoreVariant
+        $variation = ProductVariation::where('product_id', $variation_product->id)->first();
+
+        if(!$variation) {
+            $variation = ProductVariation::create([
+                'product_id' => $variation_product->id,
+                'configurable_product_id' => $product->id,
+                'is_default' => $default,
+            ]);
+        }
 
         $version = array_merge($variation->toArray(), $this->request->toArray());
         $version['variation_default_id'] = $default ? $version['id'] : null;
