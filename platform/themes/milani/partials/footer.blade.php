@@ -80,7 +80,7 @@
     {!! Theme::place('footer') !!}
 
     @if (session()->has('success_msg') || session()->has('error_msg') || (isset($errors) && $errors->count() > 0) || isset($error_msg))
-            <script async type="text/javascript">
+            <script type="text/javascript">
                 $(document).ready(function () {
                     @if (session()->has('success_msg'))
                     window.showAlert('alert-success', '{{ session('success_msg') }}');

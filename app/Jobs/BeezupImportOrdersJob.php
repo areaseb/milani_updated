@@ -139,7 +139,8 @@ class BeezupImportOrdersJob implements ShouldQueue
 //\Log::info('Payment id: '.$payment_id);        
         $order->payment_id = $payment_id;
         $order->save();
-//\Log::info('Order con payment: '.print_r($order, true));        
+//\Log::info('Order con payment: '.print_r($order, true));  
+//\Log::info('Order data: '.print_r($data, true));      
     }
 
     protected function createOrderAddress($order, $data)

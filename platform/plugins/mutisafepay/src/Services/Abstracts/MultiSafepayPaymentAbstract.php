@@ -313,11 +313,13 @@ abstract class MultiSafepayPaymentAbstract
                 ->addCity($orderAddress->city)
                 ->addState($orderAddress->state)
                 ->addCountry(new Country($orderAddress->country));
-
+			
+			$mail_pagamento = $orderAddress->email ?? 'info@milanihome.it';
+			
             $customer = (new CustomerDetails())
                 ->addFirstName($orderAddress->name)
                 ->addAddress($address)
-                ->addEmailAddress(new EmailAddress($orderAddress->email))
+                ->addEmailAddress(new EmailAddress($mail_pagamento))
                 // ->addPhoneNumber(new PhoneNumber($orderAddress->phone))
                 ->addLocale(LanguageFacade::getCurrentLocaleCode());
 
