@@ -93,6 +93,20 @@ class Product extends BaseModel
         'sku_parent',
         'carrier',
         'data_arrivo',
+
+		// Amazon new columns
+		'parentela',
+		'sku_parentela',
+		'parentela_amz',
+		'sku_parentela_amz',
+		'tipo_relazione_amz',
+		'tema_relazione_amz',
+		'attaccati_amz',
+		'cont_legno',
+		'cod_fsc',
+		'alt_seduta',
+		'n_cassetti',
+		'n_ripiani',
     ];
 
     /**

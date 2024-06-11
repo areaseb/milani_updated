@@ -361,6 +361,20 @@ class CsvProductExport implements FromCollection, WithHeadings
             'kit_e_istruzioni_incluse_si_intendono_anche_pile' => 'Kit E Istruzioni Incluse (Si Intendono Anche Pile)',
             'sku_set' => 'sku_set',
             'url' => 'URL',
+
+			// amz columns
+			'parentela' => 'PARENTELA',
+			'sku_parentela' => 'SKU_PARENTELA',
+			'parentela_amz' => 'PARENTELA_AMZ',
+			'sku_parentela_amz' => 'SKU_PARENTELA_AMZ',
+			'tipo_relazione_amz' => 'TIPO RELAZIONE_AMZ',
+			'tema_relazione_amz' => 'TEMA RELAZIONE AMZ',
+			'attaccati_amz' => 'ATTACCATI AMZ',
+			'cont_legno' => 'CONT_LEGNO',
+			'cod_fsc' => 'COD_FSC',
+			'alt_seduta' => 'ALT_SEDUTA',
+			'n_cassetti' => 'N_CASSETTI',
+			'n_ripiani' => 'N_RIPIANI',
         ];
 
         if ($this->enabledDigital) {

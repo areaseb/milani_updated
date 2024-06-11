@@ -99,7 +99,8 @@
                                                         @if ($product->sku)
                                                             ({{ trans('plugins/ecommerce::order.sku') }}:
                                                             <strong>{{ $product->sku }}</strong>)
-                                                        @endif
+                                                        @endif														
+
                                                         @if ($product->is_variation)
                                                             <p class="mb-0">
                                                                 <small>{{ $product->variation_attributes }}</small>
