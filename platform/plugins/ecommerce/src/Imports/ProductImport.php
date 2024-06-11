@@ -675,6 +675,7 @@ class ProductImport implements
         $row['status'] = (string) $row['status'];
         $row['is_featured'] = (boolean) $row['is_featured'];
         $row['price'] = (float) $row['price'];
+        $row['is_variation'] = $row['import_type'] == 'product' ? 0 : 1;
         $row['is_variation_default'] = false;
         $row['stock_status'] = (string) $row['stock_status'];
         $row['with_storehouse_management'] = true; //(boolean) $row['with_storehouse_management'];

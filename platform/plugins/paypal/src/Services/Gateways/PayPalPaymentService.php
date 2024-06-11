@@ -42,28 +42,34 @@ class PayPalPaymentService extends PayPalPaymentAbstract
 			$product_list[] = [
                 'name' => $product['name'],		//$data['description'],
                 'description' => $product['name'],
+                /*
                 'quantity' => 1,
                 'price' => round((float)$product['price_per_order'], $this->isSupportedDecimals() ? 2 : 0),
-                'sku' => null,
+                */
+                'quantity' => $product['qty'],
+                'price' => round((float)$product['price'], $this->isSupportedDecimals() ? 2 : 0),
+
+                'sku' => $product['sku'],
                 'type' => PAYPAL_PAYMENT_METHOD_NAME,
+
+                /*
                 'shipping' => $data['shipping_amount'],
                 'discount' => $data['discount_amount']
+                */
             ];
 		}
 		
 		$description = 'Pagamento del tuo ordine numero #1'.str_pad($data['order_id'][0], 7, '0', STR_PAD_LEFT).' effettuato su www.milanihome.it';
+
+        $custom = $description . "(E-mail: " . Arr::get($data, 'address.email') . ')';
 		
         return $this
             ->setReturnUrl($data['callback_url'] . '?' . http_build_query($queryParams))
             ->setCurrency($currency)
-            ->setCustomer(Arr::get($data, 'address.email'))
-/*            ->setItem([
-                'name' => $data['products'][0]['name'],		//$data['description'],
-                'quantity' => 1,
-                'price' => $amount,
-                'sku' => null,
-                'type' => PAYPAL_PAYMENT_METHOD_NAME,
-            ])*/
+            ->setShippingAmount($data['shipping_amount'])
+            ->setTaxAmount($data['tax_amount'])
+            ->setDiscountAmount($data['discount_amount'])
+            ->setCustomer($custom)
             ->setItem($product_list)
             ->createPayment($description);
     }

@@ -556,6 +556,7 @@ class HookServiceProvider extends ServiceProvider
                             'price' => $product->price,
                             'price_per_order' => $product->price * $product->qty + $order->tax_amount / $order->products->count() - $order->discount_amount / $order->products->count(),
                             'qty' => $product->qty,
+                            'sku' => $product->product->sku,
                         ];
                     }
                 }

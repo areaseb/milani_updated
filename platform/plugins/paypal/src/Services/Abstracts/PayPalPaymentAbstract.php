@@ -24,9 +24,24 @@ abstract class PayPalPaymentAbstract
     protected $itemList;
 
     /**
+     * @var array
+     */
+    protected $shippingAmount;
+
+    /**
+     * @var array
+     */
+    protected $taxAmount;
+
+    /**
      * @var string
      */
     protected $paymentCurrency;
+
+    /**
+     * @var string
+     */
+    protected $discountAmount;
 
     /**
      * @var int
@@ -167,6 +182,39 @@ abstract class PayPalPaymentAbstract
     }
 
     /**
+     * @param string $taxAmount
+     * @return self
+     */
+    public function setTaxAmount($taxAmount)
+    {
+        $this->taxAmount = $taxAmount;
+
+        return $this;
+    }
+
+    /**
+     * @param string $shippingAmount
+     * @return self
+     */
+    public function setShippingAmount($shippingAmount)
+    {
+        $this->shippingAmount = $shippingAmount;
+
+        return $this;
+    }
+
+    /**
+     * @param string $discountAmount
+     * @return self
+     */
+    public function setDiscountAmount($discountAmount)
+    {
+        $this->discountAmount = $discountAmount;
+
+        return $this;
+    }
+
+    /**
      * Add item to list
      *
      * @param array $itemData Array item data
@@ -179,7 +227,7 @@ abstract class PayPalPaymentAbstract
         }
 
         foreach ($itemData as $data) {
-        \Log::info('Paypal item: '.print_r($data, true));	
+            \Log::info('Paypal item: '.print_r($data, true));	
             $amount = $data['price'] * ($data['quantity'] ?? $data['qty']);
 
             $item = [
@@ -220,13 +268,15 @@ abstract class PayPalPaymentAbstract
             
         }
 		
+        /*
 		if(isset($shipping)){
 			$this->totalAmount += $shipping;
 		}	
 		
 		if(isset($discount)){
 			$this->totalAmount -= $discount;
-		}		
+		}
+        */		
 		
         // issue https://developer.paypal.com/docs/api/orders/v2/#error-DECIMAL_PRECISION
         $this->totalAmount = round((float)$this->totalAmount, $this->isSupportedDecimals() ? 2 : 0);
@@ -306,6 +356,20 @@ abstract class PayPalPaymentAbstract
      */
     protected function buildRequestBody()
     {
+        // Fix items to 2 decimals
+        $items = $this->itemList;
+        foreach($items as $key=>$item) {
+            $amount = $item['unit_amount']['value'];
+            $items[$key]['unit_amount']['value'] = number_format($amount, 2);
+        }
+
+        $items_total = round((float)$this->totalAmount, 2);
+        $shipping_amount = round((float)$this->shippingAmount, 2);
+        $tax_amount = round((float)$this->taxAmount, 2);
+        $discount_amount = round((float)$this->discountAmount, 2);
+
+        $this->totalAmount += round((float)$shipping_amount + $tax_amount - $discount_amount, 2);
+
         return [
             'intent' => 'CAPTURE',
             'application_context' => [
@@ -320,7 +384,26 @@ abstract class PayPalPaymentAbstract
                     'amount' => [
                         'currency_code' => $this->paymentCurrency,
                         'value' => (string)$this->totalAmount,
+                        'breakdown' => [
+                            'item_total' => [
+                                'currency_code' => $this->paymentCurrency,
+                                'value' => (string) number_format($items_total, 2), //(string) number_format($this->totalAmount, 2),
+                            ],
+                            'shipping' => [
+                                'currency_code' => $this->paymentCurrency,
+                                'value' => $shipping_amount,
+                            ],                            
+                            'tax_total' => [
+                                'currency_code' => $this->paymentCurrency,
+                                'value' => (string) number_format($tax_amount, 2),
+                            ],
+                            'discount' => [
+                                'currency_code' => $this->paymentCurrency,
+                                'value' => (string) number_format($discount_amount, 2),
+                            ],
+                        ]
                     ],
+                    'items' => $items,
                 ],
             ],
         ];
@@ -334,7 +417,7 @@ abstract class PayPalPaymentAbstract
      * @throws Exception
      */
     public function createPayment($transactionDescription)
-    {	\Log::info('Paypal description '. $transactionDescription);
+    {
         $this->transactionDescription = $transactionDescription;
 
         $orderRequest = new OrdersCreateRequest();

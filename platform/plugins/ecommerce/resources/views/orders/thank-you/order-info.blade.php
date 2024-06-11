@@ -73,7 +73,7 @@
                         @endif
                     </div>
                     <div class="col-lg-4 col-md-4 col-4 float-end text-end">
-                        <p>{{ format_price($orderProduct->price) }}</p>
+                        <p>{{ format_price($orderProduct->price + $orderProduct->tax_amount) }}</p>
                     </div>
                 </div> <!--  /item -->
                 @endif
