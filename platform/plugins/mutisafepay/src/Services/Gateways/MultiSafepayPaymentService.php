@@ -7,6 +7,7 @@ use Botble\Payment\Supports\PaymentHelper;
 use Botble\MultiSafepay\Services\Abstracts\MultiSafepayPaymentAbstract;
 use Exception;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 
 class MultiSafepayPaymentService extends MultiSafepayPaymentAbstract
 {
@@ -62,7 +63,8 @@ class MultiSafepayPaymentService extends MultiSafepayPaymentAbstract
     {
         $status = PaymentStatusEnum::COMPLETED;
 
-        $chargeId = session('multisafepay_payment_id');
+        //$chargeId = session('multisafepay_payment_id');
+        $chargeId = $data['transactionid'];
 
         $orderIds = (array)Arr::get($data, 'order_id', []);
 
@@ -77,8 +79,10 @@ class MultiSafepayPaymentService extends MultiSafepayPaymentAbstract
             'status' => $status,
         ]);
 
+        // Update order status
         session()->forget('multisafepay_payment_id');
 
-        return $chargeId;
+        //return $chargeId;
+        return response('Success', 200)->header('Content-Type', 'text/plain');
     }
 }
