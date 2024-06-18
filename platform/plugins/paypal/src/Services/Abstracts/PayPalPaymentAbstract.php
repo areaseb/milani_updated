@@ -360,7 +360,7 @@ abstract class PayPalPaymentAbstract
         $items = $this->itemList;
         foreach($items as $key=>$item) {
             $amount = $item['unit_amount']['value'];
-            $items[$key]['unit_amount']['value'] = number_format($amount, 2);
+            $items[$key]['unit_amount']['value'] = number_format($amount, 2, '.' , '');
         }
 
         $items_total = round((float)$this->totalAmount, 2);
@@ -387,7 +387,7 @@ abstract class PayPalPaymentAbstract
                         'breakdown' => [
                             'item_total' => [
                                 'currency_code' => $this->paymentCurrency,
-                                'value' => (string) number_format($items_total, 2), //(string) number_format($this->totalAmount, 2),
+                                'value' => (string) number_format($items_total, 2, '.' , ''), //(string) number_format($this->totalAmount, 2),
                             ],
                             'shipping' => [
                                 'currency_code' => $this->paymentCurrency,
@@ -395,11 +395,11 @@ abstract class PayPalPaymentAbstract
                             ],                            
                             'tax_total' => [
                                 'currency_code' => $this->paymentCurrency,
-                                'value' => (string) number_format($tax_amount, 2),
+                                'value' => (string) number_format($tax_amount, 2, '.' , ''),
                             ],
                             'discount' => [
                                 'currency_code' => $this->paymentCurrency,
-                                'value' => (string) number_format($discount_amount, 2),
+                                'value' => (string) number_format($discount_amount, 2, '.' , ''),
                             ],
                         ]
                     ],

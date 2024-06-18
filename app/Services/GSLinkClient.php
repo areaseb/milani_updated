@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class GSLinkClient
@@ -38,8 +39,11 @@ class GSLinkClient
             ]);
 
             $body = json_decode($response->getBody()->getContents());
+            Log::info(print_r($body, true));
+
             return (bool) $body->success;
         } catch (Exception $e) {
+            Log::info(print_r($e, true));
             return false;
         }
     }

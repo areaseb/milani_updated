@@ -7,6 +7,7 @@ use Botble\Ecommerce\Models\Product;
 use Botble\Ecommerce\Models\OrderProduct;
 use Botble\Payment\Enums\PaymentMethodEnum;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class OrderExporterService
 {
@@ -83,8 +84,44 @@ class OrderExporterService
 
     protected function exportOrder($order)
     {
-        $order->products->each(fn ($product) => $this->exportProduct($order, $product));
-        $this->orderIds->push($order->id);
+        $send_no_products_orders = false;
+
+        if($order->products()->exists()) {
+            $order->products->each(fn ($product) => $this->exportProduct($order, $product));
+            $this->orderIds->push($order->id);
+        } else {
+            if($send_no_products_orders) {
+                // Insert empty line
+                $carrier = (int) $order->carrier;
+                if (!$carrier)
+                    $carrier = 1;
+
+                $line = [
+                    'sku' => 'EXTERNAL',
+                    'spedizioniere' => $carrier,
+                    'barcode' => '',
+                    'descrizione' => '',
+                    'quantita' => 1,
+                    'prezzo' => number_format($order->amount, 2, '.', ''),
+                    'pagamento' => $this->getPayment($order),
+                    'nomeCliente' => $order->shippingAddress->name,
+                    'indirizzo' => $order->shippingAddress->address,
+                    'cap' => (string) ($order->shippingAddress->zip_code ?? ""),
+                    'citta' => $order->shippingAddress->city,
+                    'prov' => $order->shippingAddress->state,
+                    'nazione' => $order->shippingAddress->country,
+                    'telefono' => $order->shippingAddress->phone,
+                    'email' => $order->shippingAddress->email,
+                    'numeroOrdine' => $order->code,
+                    'numeroItem' => '1',
+                    'note' => '',
+                    'provenienza' => $this->getSource($order->source),
+                ];
+
+                $this->lines->push($line);
+                $this->orderIds->push($order->id);
+            }
+        }
     }
 
     protected function exportCustomer($order)

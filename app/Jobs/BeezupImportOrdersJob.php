@@ -22,6 +22,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class BeezupImportOrdersJob implements ShouldQueue
@@ -50,17 +51,78 @@ class BeezupImportOrdersJob implements ShouldQueue
      */
     public function handle()
     {
+        $debug = false;
+
         $page = 1;
         do {
-            $result = $this->client->getOrders($page++);
-            $this->importOrders($result->orders);
+            if($debug) {
+                $result = $this->client->getOrders($page++, Carbon::now()->subDays(3));
+                $add_payment = true;
+                $add_products = false;
+                $add_address = false;
+
+                foreach($result->orders as $order) {
+                    $orders_to_fix = [
+                        '8D61A57C5A670000c6b5af180b15cba9b7a950a49a00799',
+                    ];
+
+                    if(in_array($order->beezUPOrderId, $orders_to_fix)) {
+                        // Find order in DB
+                        $db_order = Order::where('external_id', $order->beezUPOrderId)->first();
+
+                        if($add_address) {
+                            Log::info(print_r($order, true));
+                            $this->createOrderAddress($db_order, $order);
+                        }
+
+                        if($add_payment) {
+                            $payment_id = $this->createOrderPayment($db_order, $order);
+                            $db_order->payment_id = $payment_id;
+                            $db_order->save();
+                        }
+
+                        if($add_products) {
+                            $this->createOrderProducts($db_order, $order);                    
+                        }
+                    }
+
+                    /*
+                    if ($this->doesOrderExists($order->beezUPOrderId)) {
+                        Log::info('order exists: '.print_r($order->beezUPOrderId, true));
+                        // Find order
+                        $db_order = Order::where('external_id', $order->beezUPOrderId)->first();
+
+                        if($db_order) {
+                            // Search for products
+                            $products = OrderProduct::where('order_id', $db_order->id)->get();
+
+                            if($products) {
+
+                            } else {
+                                Log::info('order HAS NO PRODUCTS: '.print_r($order->beezUPOrderId, true));
+                            }
+                        } else {
+                            Log::info('DB ORDER NOT FOUND  '.print_r($order->beezUPOrderId, true));    
+                        }
+                    } else {
+                        Log::info('order DOES NOT exists: '.print_r($order->beezUPOrderId, true));
+                    }
+                    */
+                }
+
+            } else {          
+                //$result = $this->client->getOrders($page++);
+                $result = $this->client->getOrders($page++);                
+
+                $this->importOrders($result->orders);
+            }
         } while ($result->hasMoreResults);
     }
 
     protected function importOrders(Collection $orders)
     {
         $orders->each(function ($order) {
-        	//\Log::info('Ordine: '.print_r($order, true));
+        	\Log::info('Ordine: '.print_r($order, true));
             try {
                 $this->importOrder($order);
             } catch (BeezupCustomerNotValidException $e) {
@@ -73,7 +135,10 @@ class BeezupImportOrdersJob implements ShouldQueue
     {
         // If the order exist, discard it
         if ($this->doesOrderExists($data->beezUPOrderId)) {
+            Log::info('order exists: ' . $data->beezUPOrderId);
             return;
+        } else {
+            Log::info('order DOES NOT exists: ' . $data->beezUPOrderId);    
         }
 
         $customer = $this->getOrCreateCustomer($data);
@@ -111,8 +176,18 @@ class BeezupImportOrdersJob implements ShouldQueue
 
     protected function createOrder($data, $customer)
     {
+    	if($data->order_MarketPlaceChannel){
+    		if($data->order_MarketPlaceChannel == '005'){
+    			$source = 'Leroy Merlin';
+    		} else {
+    			$source = $data->order_MarketPlaceChannel;
+    		}
+    	} else {
+    		$source = '_';
+    	}
+    	
         $order = new Order();
-        $order->source = $data->order_MarketPlaceChannel ?? '_';
+        $order->source = $source;
         $order->external_id = $data->beezUPOrderId;
         $order->marketplace_order_id = $data->order_MarketplaceOrderId;
         $order->marketplace_technical_code = $data->marketplaceTechnicalCode;
@@ -132,8 +207,8 @@ class BeezupImportOrdersJob implements ShouldQueue
 
         $order->save();
 
-        $this->createOrderAddress($order, $data);
         $this->createOrderProducts($order, $data);
+        $this->createOrderAddress($order, $data);
         $this->createOrderHistory($order);
         $payment_id = $this->createOrderPayment($order, $data);
 //\Log::info('Payment id: '.$payment_id);        
@@ -146,7 +221,13 @@ class BeezupImportOrdersJob implements ShouldQueue
     protected function createOrderAddress($order, $data)
     {
         $address = new OrderAddress();
-        $address->name = $data->order_Shipping_AddressName ?? (($data->order_Shipping_FirstName ?? '') . ' ' . ($data->order_Shipping_LastName ?? ''));
+        $name = ($data->order_Shipping_FirstName ?? '') . ' ' . ($data->order_Shipping_LastName ?? '');
+
+        if($name == ' ')
+            $name = $data->order_Shipping_AddressName;
+
+        $address->name = $name;
+        //$address->name = $data->order_Shipping_AddressName ?? (($data->order_Shipping_FirstName ?? '') . ' ' . ($data->order_Shipping_LastName ?? ''));
         $address->phone = $data->order_Shipping_Phone ?? '';
         $address->country = $data->order_Shipping_AddressCountryIsoCodeAlpha2;
         $address->city = $data->order_Shipping_AddressCity;
@@ -156,7 +237,6 @@ class BeezupImportOrdersJob implements ShouldQueue
         $address->order_id = $order->id;
         $address->email = $data->order_Buyer_Email ?? null;
         $address->type = 'shipping_address';
-
         $address->save();
     }
 	
@@ -171,38 +251,50 @@ class BeezupImportOrdersJob implements ShouldQueue
 		$result = json_decode(curl_exec($curlSES));
 		
 		curl_close($curlSES);
-		
-		return $result[0]->Provincia;
+        
+		if($result && is_array($result))
+		    return $result[0]->Provincia;
+        else
+            return 'Roma';
 	}
 	
     protected function createOrderProducts($order, $data)
     {
+        Log::info('DATA PRODUCT ORDER: ' . print_r($order, true));
+        Log::info('DATA PRODUCT: ' . print_r($data, true));
         collect($data->orderItems)->each (fn ($item) => $this->createOrderProduct($order, $item));
 
     }
 
     protected function createOrderProduct($order, $item)
     {
+        Log::info('DATA PRODUCT ITEM ORDER: ' . print_r($order, true));
+        Log::info('DATA PRODUCT ITEM: ' . print_r($item, true));
+        $orderProduct = new OrderProduct();
+        $orderProduct->order_id = $order->id;
+        $orderProduct->qty = (int) $item->orderItem_Quantity;
+        $orderProduct->price = (float) $item->orderItem_ItemPrice;
+        $orderProduct->tax_amount = 0;
+        $orderProduct->options = [];
+        $orderProduct->product_options = null;
+        $orderProduct->product_name = $item->orderItem_Title;
+        $orderProduct->product_image = null;
+        $orderProduct->restock_quantity = 0;
+        $orderProduct->product_type = 'physical';
+        $orderProduct->product_id = null;
+		$orderProduct->weight = 0;	
+        
+
         $product = $this->getProductBySku($item->orderItem_MerchantImportedProductId, $item->orderItem_MerchantProductId);
 
 		if($product) {
-			//\Log::info('Prodotto: '.print_r($product, true).' - Item: '.print_r($item, true));
-			$orderProduct = new OrderProduct();
-			$orderProduct->order_id = $order->id;
-			$orderProduct->qty = (int) $item->orderItem_Quantity;
-			$orderProduct->price = (float) $item->orderItem_ItemPrice;
-			$orderProduct->tax_amount = 0;
-			$orderProduct->options = [];
-			$orderProduct->product_options = null;
-			$orderProduct->product_name = $item->orderItem_Title;
-			$orderProduct->product_image = null;
-			$orderProduct->restock_quantity = 0;
-			$orderProduct->product_type = 'physical';	
 			$orderProduct->product_id = $product->id ?? null;
 			$orderProduct->weight = $product->weight ?? 0;
+		} else {
 			// $orderProduct->external_sku = $item->orderItem_MerchantProductId;
-	        $orderProduct->save();
-		}
+        }
+
+        $orderProduct->save();
     }
 
     protected function getProductBySku($sku, $external_sku = false)
@@ -215,7 +307,7 @@ class BeezupImportOrdersJob implements ShouldQueue
 		if(!$external_sku)
 			return false;
 
-		return Product::whereRaw('FIND_IN_SET(?, attaccati_amz)', [$external_sku])->first();
+		return Product::where('attaccati_amz', 'like', '%' . $external_sku . '%')->where('is_variation', 1)->first();
 	}
 
     protected function createOrderHistory($order)

@@ -31,7 +31,7 @@ class Kernel extends ConsoleKernel
         $schedule->command(ExportOrderCommand::class)->everyTenMinutes();
         $schedule->command(ExportOrderMicheleCommand::class)->everyTenMinutes();
 
-        $schedule->command(StockUpdateCommand::class)->cron('0 7,13,18 * * *');			//everyThirtyMinutes();		//dailyAt('00:00');
+        $schedule->command(StockUpdateCommand::class)->cron('30 * * * 1-5');			//7,13,18  //everyThirtyMinutes();		//dailyAt('00:00');
         
         // FEEDS
         

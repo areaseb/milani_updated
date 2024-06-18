@@ -43,7 +43,17 @@ class BeezupClient
                 'pageSize' => $pageSize,
                 'pageNumber' => $pageNumber,
                 'beezUPOrderStatuses' => [
-                	"InProgress"
+                	"InProgress",
+
+                    /*
+                    "None",
+                    "InProgress",
+                    "Done",
+                    "Failed",
+                    "AlreadyInProgress",
+                    "Aborted",
+                    "Suspended",
+                    */
                 ]
             ],
         ]);
