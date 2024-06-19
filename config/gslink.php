@@ -7,7 +7,12 @@ return [
     'source' => [
         'WEB' => 18, // Mettere corrispondenza marketplace beezup con id source. WEB è il sito web
         'IBS' => 4, // Mettere corrispondenza marketplace beezup con id source. WEB è il sito web
-        'Amazon' => 2
+        'Amazon' => 2,
+        'LeroyMerlin' => 12,
+        'MaisonDuMonde' => 14,
+        'ManoMano' => 6,
+        'Ebay' => 17,
+        'E-Price' => 9
     ],
     'source_default' => 1, // NON DEFINITO
 

@@ -23,6 +23,12 @@ abstract class PayPalPaymentAbstract
      */
     protected $itemList;
 
+
+    /**
+     * @var string
+     */
+    protected $orderId;
+
     /**
      * @var array
      */
@@ -177,6 +183,26 @@ abstract class PayPalPaymentAbstract
     public function setCustomer($customer)
     {
         $this->customer = $customer;
+
+        return $this;
+    }
+
+    /**
+     *
+     * @return string
+     */
+    public function getOrderId()
+    {
+        return $this->orderId;
+    }
+
+    /**
+     * @param string $customer
+     * @return self
+     */
+    public function setOrderId($orderId)
+    {
+        $this->orderId = $orderId;
 
         return $this;
     }
@@ -381,6 +407,7 @@ abstract class PayPalPaymentAbstract
                 0 => [
                     'description' => $this->transactionDescription,
                     'custom_id' => $this->customer,
+                    'invoice_id' => $this->orderId,
                     'amount' => [
                         'currency_code' => $this->paymentCurrency,
                         'value' => (string)$this->totalAmount,

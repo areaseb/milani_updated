@@ -76,6 +76,22 @@ class CsvProductExport implements FromCollection, WithHeadings
     public function productResults(Collection $products): array
     {
         $results = [];
+
+        $variation_exclusive_columns = [
+            'parentela',
+			'sku_parentela',
+			'parentela_amz',
+			'sku_parentela_amz',
+			'tipo_relazione_amz',
+			'tema_relazione_amz',
+			'attaccati_amz',
+			'cont_legno',
+			'cod_fsc',
+			'alt_seduta',
+			'n_cassetti',
+			'n_ripiani',
+        ];
+
         foreach ($products as $product) {
         	
             $productAttributes = [];
@@ -160,7 +176,7 @@ class CsvProductExport implements FromCollection, WithHeadings
   
                     $result = [];
                     foreach ($this->headings() as $key => $title) {
-                        if (!is_null($variation->product->{$key})) {
+                        if (!is_null($variation->product->{$key}) || in_array($key, $variation_exclusive_columns)) {
                             $result[$key] = $variation->product->{$key};
                         } else {
                             $result[$key] = $parentResult[$key];

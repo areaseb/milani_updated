@@ -61,7 +61,9 @@ class PayPalPaymentService extends PayPalPaymentAbstract
 		
 		$description = 'Pagamento del tuo ordine numero #1'.str_pad($data['order_id'][0], 7, '0', STR_PAD_LEFT).' effettuato su www.milanihome.it';
 
-        $custom = $description . "(E-mail: " . Arr::get($data, 'address.email') . ')';
+        $custom = $description . " (E-mail: " . Arr::get($data, 'address.email') . ')';
+
+        $order_id = '1'.str_pad($data['order_id'][0], 7, '0', STR_PAD_LEFT);
 		
         return $this
             ->setReturnUrl($data['callback_url'] . '?' . http_build_query($queryParams))
@@ -70,6 +72,7 @@ class PayPalPaymentService extends PayPalPaymentAbstract
             ->setTaxAmount($data['tax_amount'])
             ->setDiscountAmount($data['discount_amount'])
             ->setCustomer($custom)
+            ->setOrderId($order_id)
             ->setItem($product_list)
             ->createPayment($description);
     }

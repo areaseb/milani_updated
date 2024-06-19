@@ -122,7 +122,7 @@ class BeezupImportOrdersJob implements ShouldQueue
     protected function importOrders(Collection $orders)
     {
         $orders->each(function ($order) {
-        	\Log::info('Ordine: '.print_r($order, true));
+//        	\Log::info('Ordine: '.print_r($order, true));
             try {
                 $this->importOrder($order);
             } catch (BeezupCustomerNotValidException $e) {
@@ -178,7 +178,7 @@ class BeezupImportOrdersJob implements ShouldQueue
     {
     	if($data->order_MarketPlaceChannel){
     		if($data->order_MarketPlaceChannel == '005'){
-    			$source = 'Leroy Merlin';
+    			$source = 'LeroyMerlin.it';
     		} else {
     			$source = $data->order_MarketPlaceChannel;
     		}
@@ -260,16 +260,11 @@ class BeezupImportOrdersJob implements ShouldQueue
 	
     protected function createOrderProducts($order, $data)
     {
-        Log::info('DATA PRODUCT ORDER: ' . print_r($order, true));
-        Log::info('DATA PRODUCT: ' . print_r($data, true));
         collect($data->orderItems)->each (fn ($item) => $this->createOrderProduct($order, $item));
-
     }
 
     protected function createOrderProduct($order, $item)
     {
-        Log::info('DATA PRODUCT ITEM ORDER: ' . print_r($order, true));
-        Log::info('DATA PRODUCT ITEM: ' . print_r($item, true));
         $orderProduct = new OrderProduct();
         $orderProduct->order_id = $order->id;
         $orderProduct->qty = (int) $item->orderItem_Quantity;
@@ -290,6 +285,16 @@ class BeezupImportOrdersJob implements ShouldQueue
 		if($product) {
 			$orderProduct->product_id = $product->id ?? null;
 			$orderProduct->weight = $product->weight ?? 0;
+
+            // Add image
+            $image = null;
+            if($product->image) {
+                $image = $product->image;
+            } else if($product->images && is_array($product->images)) {
+                $image = $product->images[0];
+            }
+
+            $orderProduct->product_image = $image;
 		} else {
 			// $orderProduct->external_sku = $item->orderItem_MerchantProductId;
         }
