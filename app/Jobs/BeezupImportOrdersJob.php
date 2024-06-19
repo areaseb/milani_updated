@@ -334,7 +334,7 @@ class BeezupImportOrdersJob implements ShouldQueue
 
         $payment->order_id = $order->id;
         $payment->payment_channel = PaymentMethodEnum::EXTERNAL; $order->order_PaymentMethod;
-        $payment->external_payment_channel = $data->order_PaymentMethod ?? 'NA';
+        $payment->external_payment_channel = $data->order_PaymentMethod ?? 'Other';
         $payment->amount = $data->order_TotalPrice;
         $payment->status = 'completed';
 

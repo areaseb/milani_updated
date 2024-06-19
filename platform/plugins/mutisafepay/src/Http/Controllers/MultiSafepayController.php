@@ -3,6 +3,7 @@
 namespace Botble\MultiSafepay\Http\Controllers;
 
 use Botble\Base\Http\Responses\BaseHttpResponse;
+use Botble\Ecommerce\Models\Order;
 use Botble\MultiSafepay\Http\Requests\MultiSafepayPaymentCallbackRequest;
 use Botble\MultiSafepay\Services\Gateways\MultiSafepayPaymentService;
 use Botble\Payment\Models\Payment;
@@ -53,6 +54,15 @@ class MultiSafepayController extends Controller
             if($payment) {
                 $payment->status = $status;
                 $payment->save();
+
+                // Update flag is_finished
+                if($status == 'completed') {
+                    $order = Order::find($payment->order_id);
+                    if($order) {
+                        $order->is_finished = true;
+                        $order->save();
+                    }
+                }
             }
         }
         

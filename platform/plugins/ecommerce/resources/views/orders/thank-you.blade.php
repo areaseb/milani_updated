@@ -34,3 +34,43 @@
         </div>
     </div>
 @stop
+
+@push('footer')
+<script>
+    @php
+        $tp_name = $order->address->name;
+        $tp_email = $order->address->email;
+        $tp_order_code = $order->code;
+        $tp_skus = [];
+        $tp_products = [];
+
+        foreach($order->products as $product) {
+            $tp_skus[] = $product->product->sku;
+
+            $tp_products[] = [
+                'sku' => $product->product->sku,
+                'productUrl' => $product->product->is_variation ? ($product->product->parentProduct[0]->url . '?s=' . $product->product->sku) : $product->product->url,
+                'imageUrl' => asset('storage/' . $product->product_image),
+                'name' => $product->product_name,
+            ];
+        }
+
+        $trustpilot_script = false;
+    @endphp
+
+    @if($trustpilot_script)
+        document.addEventListener('DOMContentLoaded', function() {
+            const trustpilot_invitation = {
+                recipientEmail: {!! json_encode($tp_email) !!},
+                recipientName: {!! json_encode($tp_name) !!},
+                referenceId: {!! json_encode($tp_order_code) !!},
+                source: 'InvitationScript',
+                productSkus: {!! json_encode($tp_skus) !!},
+                products: {!! json_encode($tp_products) !!}
+            };
+
+            tp('createInvitation', trustpilot_invitation);
+        });
+    @endif
+</script>    
+@endpush
