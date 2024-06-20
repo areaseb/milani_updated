@@ -996,6 +996,19 @@ class ProductImport implements
 		// Products amz
 		$row['cont_legno'] = (Arr::get($row, 'cont_legno') == 'Sì') ? 1 : 0;
 
+        // Fill default fields for _parent
+        $fill_parent_nulls = [
+            'parentela_amz' => 'Parent',
+            'tema_relazione_amz' => 'SizeName-ColorName',
+        ];
+
+        if(strstr($row['sku'], '_PARENT')) {
+            foreach($fill_parent_nulls as $key=>$value) {
+                if($row[$key] == null)
+                    $row[$key] = $value;
+            }
+        }
+
         $row['stock_status'] = (string)Arr::get($row, 'stock_status');
         if (!in_array($row['stock_status'], StockStatusEnum::values())) {
             $row['stock_status'] = StockStatusEnum::IN_STOCK;

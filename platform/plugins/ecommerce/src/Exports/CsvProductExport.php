@@ -92,8 +92,12 @@ class CsvProductExport implements FromCollection, WithHeadings
 			'n_ripiani',
         ];
 
-        foreach ($products as $product) {
-        	
+        $fill_parent_nulls = [
+            'parentela_amz' => 'Parent',
+            'tema_relazione_amz' => 'SizeName-ColorName',
+        ];
+
+        foreach ($products as $product) {        	
             $productAttributes = [];
             if (!$product->is_variation) {
                 $productAttributes = $product->productAttributeSets->pluck('title')->all();
@@ -165,7 +169,15 @@ class CsvProductExport implements FromCollection, WithHeadings
             // Let's fix the key
             $result['brand'] = $result['brand']->name ?? null;
             $result['tax'] = $result['tax']->percentage ?? null;
-	
+            
+            // Fill default fields for _parent
+            if(strstr($result['sku'], '_PARENT')) {
+                foreach($fill_parent_nulls as $key=>$value) {
+                    if($result[$key] == null || $result[$key] == '')
+                        $result[$key] = $value;
+                }
+            }
+
             $results[] = $result;
             $parentResult = $result;
 
@@ -230,6 +242,14 @@ class CsvProductExport implements FromCollection, WithHeadings
                     $result['brand'] = $result['brand']->name ?? null;
                     $result['tax'] = $result['tax']->percentage ?? null;
                     $result['tags'] = $result['tags']->pluck('name')->implode(',');
+
+                    // Fill default fields for _parent
+                    if(strstr($result['sku'], '_PARENT')) {
+                        foreach($fill_parent_nulls as $key=>$value) {
+                            if($result[$key] == null || $result[$key] == '')
+                                $result[$key] = $value;
+                        }
+                    }
 
                     $results[] = $result;
                 }
