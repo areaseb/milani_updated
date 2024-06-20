@@ -32,6 +32,8 @@ class BeezupImportOrdersJob implements ShouldQueue
     protected $client;
 
     protected $carriers;
+    
+    protected $sources;
 
     /**
      * Create a new job instance.
@@ -42,6 +44,7 @@ class BeezupImportOrdersJob implements ShouldQueue
     {
         $this->client = $client;
         $this->carriers = config('beezup.carriers');
+        $this->sources = config('beezup.sources');
     }
 
     /**
@@ -122,7 +125,7 @@ class BeezupImportOrdersJob implements ShouldQueue
     protected function importOrders(Collection $orders)
     {
         $orders->each(function ($order) {
-//        	\Log::info('Ordine: '.print_r($order, true));
+        	\Log::info('Ordine: '.print_r($order, true));
             try {
                 $this->importOrder($order);
             } catch (BeezupCustomerNotValidException $e) {
@@ -176,18 +179,9 @@ class BeezupImportOrdersJob implements ShouldQueue
 
     protected function createOrder($data, $customer)
     {
-    	if($data->order_MarketPlaceChannel){
-    		if($data->order_MarketPlaceChannel == '005'){
-    			$source = 'LeroyMerlin.it';
-    		} else {
-    			$source = $data->order_MarketPlaceChannel;
-    		}
-    	} else {
-    		$source = '_';
-    	}
     	
         $order = new Order();
-        $order->source = $source;
+        $order->source = $this->sources[$data->marketplaceBusinessCode] ?? '_';
         $order->external_id = $data->beezUPOrderId;
         $order->marketplace_order_id = $data->order_MarketplaceOrderId;
         $order->marketplace_technical_code = $data->marketplaceTechnicalCode;
