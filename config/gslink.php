@@ -20,7 +20,7 @@ return [
         // Mettere corrispondenza pagamento con id pagamento (compresi quelli che ritorna beezup)
         // Mettere corrispondenza pagamento con id pagamento (compresi quelli che ritorna beezup)
         'NA' => 1, // Not available
-        'CC' => 1,
+        'CC' => 7,
         'Other' => 7,
         'multisafepay' => 21,
         'paypal' => 9,

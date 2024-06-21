@@ -187,6 +187,8 @@ class ProductImport implements
      */
     protected ProductImageRetrievalService $productImageRetrievalService;
 
+    protected $updateQty = false;
+
     /**
      * @param ProductInterface $productRepository
      * @param ProductCategoryInterface $productCategoryRepository
@@ -583,7 +585,10 @@ class ProductImport implements
             'stock_status',
             StockStatusEnum::IN_STOCK
         );
-        $productRelatedToVariation->quantity = Arr::get($version, 'quantity', $product->quantity);
+
+        if($this->updateQty)
+            $productRelatedToVariation->quantity = Arr::get($version, 'quantity', $product->quantity);
+
         $productRelatedToVariation->allow_checkout_when_out_of_stock = Arr::get(
             $version,
             'allow_checkout_when_out_of_stock',
@@ -679,7 +684,10 @@ class ProductImport implements
         $row['is_variation_default'] = false;
         $row['stock_status'] = (string) $row['stock_status'];
         $row['with_storehouse_management'] = true; //(boolean) $row['with_storehouse_management'];
-        $row['quantity'] = (int) $row['quantity'];
+
+        if($this->updateQty)
+            $row['quantity'] = (int) $row['quantity'];
+
         $row['allow_checkout_when_out_of_stock'] = (boolean) $row['allow_checkout_when_out_of_stock'];
         $row['sale_price'] = (float) $row['sale_price'];
         $row['weight'] = (float) $row['weight'];
@@ -1073,6 +1081,9 @@ class ProductImport implements
             $row['quantity'] = null;
             $row['allow_checkout_when_out_of_stock'] = false;
         }
+
+        if(!$this->updateQty)
+            $row['quantity'] = null;
 
         $attributeSets = [];
         foreach (Arr::get($row, 'product_attributes') as $key => $value) {

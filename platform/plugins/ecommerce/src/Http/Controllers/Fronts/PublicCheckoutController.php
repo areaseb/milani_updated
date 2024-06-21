@@ -1100,7 +1100,9 @@ class PublicCheckoutController
 
     protected function createOrderFromData(array $data, ?Order $order): Order|null|false
     {
+        // Default values
         $data['is_finished'] = false;
+        $data['carrier'] = 3;
 
         if ($order) {
             $order->fill($data);
