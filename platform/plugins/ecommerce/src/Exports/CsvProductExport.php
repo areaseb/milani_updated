@@ -176,6 +176,8 @@ class CsvProductExport implements FromCollection, WithHeadings
                     if($result[$key] == null || $result[$key] == '')
                         $result[$key] = $value;
                 }
+
+                $result['sku_parentela_amz'] = null;
             }
 
             $results[] = $result;
@@ -249,6 +251,8 @@ class CsvProductExport implements FromCollection, WithHeadings
                             if($result[$key] == null || $result[$key] == '')
                                 $result[$key] = $value;
                         }
+
+                        $result['sku_parentela_amz'] = null;
                     }
 
                     $results[] = $result;
