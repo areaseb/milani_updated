@@ -31,7 +31,8 @@ class StockUpdateCommand extends Command
     {
         // Let's download the CSV
         $content = $this->downloadStockFile();
-        $stockUpdaterService->update($content);
+
+        $stockUpdaterService->update($content);        
 
         $stockUpdaterService->updateTempesta();
 

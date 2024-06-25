@@ -22,6 +22,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -236,6 +237,24 @@ class BeezupImportOrdersJob implements ShouldQueue
 	
 	protected function getProvince($cap)
 	{
+        $auth_key = env('ZIP_API_AUTH_KEY', '4cQ2_iD1e8@!9DE');//'4cQ2_iD1e8@!9DE';
+        $api_url = 'https://api.rider-crm.it/api/zip/province';
+
+        $data = [
+            'zip' => $cap,
+        ];
+
+        $response = Http::withHeaders([
+            'Authorization' => $auth_key,
+        ])->post($api_url, $data);
+
+        if ($response->successful()) {
+            return $response->json()['data']['province'];
+        } else {
+            return 'Roma';
+        }
+
+        /*
 		$curlSES = curl_init(); 
 	
 		curl_setopt($curlSES,CURLOPT_URL,"https://www.gerriquez.com/comuni/ws.php?datidacap=$cap");
@@ -250,6 +269,7 @@ class BeezupImportOrdersJob implements ShouldQueue
 		    return $result[0]->Provincia;
         else
             return 'Roma';
+        */
 	}
 	
     protected function createOrderProducts($order, $data)
