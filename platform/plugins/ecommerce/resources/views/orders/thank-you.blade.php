@@ -55,7 +55,7 @@
             ];
         }
 
-        $trustpilot_script = false;
+        $trustpilot_script = true;
     @endphp
 
     @if($trustpilot_script)

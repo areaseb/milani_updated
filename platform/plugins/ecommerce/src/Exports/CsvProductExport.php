@@ -109,6 +109,10 @@ class CsvProductExport implements FromCollection, WithHeadings
                     continue;
                 }
 
+                if($key == 'cont_legno') {
+                    $result[$key] = ($product->{$key} == 1) ? 'Sì' : 'No';
+                }
+
                 $result[$key] = $product->{$key};
             }
 
@@ -190,8 +194,15 @@ class CsvProductExport implements FromCollection, WithHeadings
   
                     $result = [];
                     foreach ($this->headings() as $key => $title) {
-                        if (!is_null($variation->product->{$key}) || in_array($key, $variation_exclusive_columns)) {
-                            $result[$key] = $variation->product->{$key};
+                        if ($key == 'sku') {
+                            $result[$key] = (String)$variation->product->sku;
+                        } else if (!is_null($variation->product->{$key}) || in_array($key, $variation_exclusive_columns)) {
+
+                            if($key == 'cont_legno') {
+                                $result[$key] = ($variation->product->{$key} == 1 || $variation->product->{$key} == 'Sì') ? 'Sì' : 'No';
+                            } else {
+                                $result[$key] = $variation->product->{$key};
+                            }
                         } else {
                             $result[$key] = $parentResult[$key];
                         }

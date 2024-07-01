@@ -37,7 +37,7 @@ class Kernel extends ConsoleKernel
         
         $schedule->command(ExportFeedBobGCommand::class)->hourly();
         $schedule->command(ExportFeedCommercioVirtuosoCommand::class)->hourly();
-        $schedule->command(ExportFeedGSheetCommand::class)->hourly();
+        $schedule->command(ExportFeedGSheetCommand::class)->everyThirtyMinutes();
         $schedule->command(ExportFeedKijijiCommand::class)->hourly();
         $schedule->command(ExportFeedPrezzoStopCommand::class)->hourly();
         $schedule->command(ExportFeedSeoPortingCommand::class)->hourly();

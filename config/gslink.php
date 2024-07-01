@@ -25,8 +25,10 @@ return [
         'multisafepay' => 21,
         'paypal' => 9,
         'bank_transfer' => 10,
-        'cod' => 11
+        'cod' => 11,
+        '14' => 7,
+        '1' => 7,
         
     ],
-    'payment_default' => 1, // NON DEFINITO
+    'payment_default' => 7, //	1, // NON DEFINITO
 ];

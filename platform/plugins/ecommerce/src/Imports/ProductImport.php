@@ -273,9 +273,6 @@ class ProductImport implements
     {
         $importType = $this->getImportType();
 
-        $name = $this->request->input('name');
-        $slug = $this->request->input('slug');
-
         if (in_array($importType, ['products', 'all']) && $row['import_type'] == 'product') {
             // Here we need to import the product
             // and the default variation which is
@@ -519,6 +516,10 @@ class ProductImport implements
                 'configurable_product_id' => $product->id,
                 'is_default' => $default,
             ]);
+        }
+
+        if($variation->configurable_product_id != $product->id) {
+            $variation->update(['configurable_product_id' => $product->id]);
         }
 
         $version = array_merge($variation->toArray(), $this->request->toArray());
