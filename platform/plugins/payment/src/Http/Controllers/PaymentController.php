@@ -37,7 +37,7 @@ class PaymentController extends Controller
         try {
             $payment = $this->paymentRepository->findOrFail($id);
 
-            $this->paymentRepository->delete($payment);
+            //$this->paymentRepository->delete($payment);
 
             event(new DeletedContentEvent(PAYMENT_MODULE_SCREEN_NAME, $request, $payment));
 
@@ -60,7 +60,7 @@ class PaymentController extends Controller
 
         foreach ($ids as $id) {
             $payment = $this->paymentRepository->findOrFail($id);
-            $this->paymentRepository->delete($payment);
+            //$this->paymentRepository->delete($payment);
             event(new DeletedContentEvent(PAYMENT_MODULE_SCREEN_NAME, $request, $payment));
         }
 

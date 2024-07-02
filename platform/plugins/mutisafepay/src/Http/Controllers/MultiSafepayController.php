@@ -45,8 +45,14 @@ class MultiSafepayController extends Controller
     ) {
         $data = $request->input();
 
+        Log::info('MULTISAFEPAY NOTIFICATION');
+        Log::info(json_encode($data));
+
         $transaction_id = $data['order_id'];
         $status = $data['financial_status'];
+
+        Log::info('transaction ID: ' . $transaction_id);
+        Log::info('status' . $status);
 
         if($status) {
             $payment = Payment::where('charge_id', $transaction_id)->first();
@@ -63,6 +69,8 @@ class MultiSafepayController extends Controller
                         $order->save();
                     }
                 }
+            } else {
+                Log::info('*** MULTISAFEPAY NOTIFICATION WITHOUT PAYMENT ***');
             }
         }
         

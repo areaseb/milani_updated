@@ -87,7 +87,9 @@ class OrderExporterService
         $send_no_products_orders = false;
 
         if($order->products()->exists()) {
-            $order->products->each(fn ($product) => $this->exportProduct($order, $product));
+            $order->products->each(function ($product, $index) use ($order) {
+                $this->exportProduct($order, $product, $index);
+            });
             $this->orderIds->push($order->id);
         } else {
             if($send_no_products_orders) {
@@ -140,29 +142,29 @@ class OrderExporterService
         ]);
     }
 
-    protected function exportProduct($order, $orderProduct)
+    protected function exportProduct($order, $orderProduct, $index = 0)
     {
-        $i = 0;
         $skuSet = $orderProduct->product->sku_set;
         if (!empty($skuSet) && $skuSet !== 'tempesta') {
-/*            $skuSetExploded = explode(',', $skuSet);
+            /*            
+            $skuSetExploded = explode(',', $skuSet);
             collect($skuSetExploded)->each(function ($set) use (&$rows, $order, $orderProduct, &$i) {
                 $setExploded = explode(':', $set);
                 $quantity = ((int) $setExploded[1]) * $orderProduct->qty;
-//\Log::info('Set: '. print_r($setExploded[0], true) . ' - Check prodotto: ' . print_r($this->getProductByCodiceCosma($setExploded[0]), true));
+                //\Log::info('Set: '. print_r($setExploded[0], true) . ' - Check prodotto: ' . print_r($this->getProductByCodiceCosma($setExploded[0]), true));
                 $line = $this->generateProductRow($order, $this->getProductByCodiceCosma($setExploded[0]), $quantity, $i++);
                 if ($line) {
                     $this->lines->push($line);
                 }
             });
-*/
-			$line = $this->generateProductRow($order, $orderProduct->product, $orderProduct->qty, $i++);
+            */
+			$line = $this->generateProductRow($order, $orderProduct->product, $orderProduct->qty, $index);
             if ($line) {
                 $this->lines->push($line);
             }
         } else {
-//\Log::info('Prodotto normale: '. print_r($orderProduct->product, true));        	
-            $line = $this->generateProductRow($order, $orderProduct->product, $orderProduct->qty, $i++);
+            //\Log::info('Prodotto normale: '. print_r($orderProduct->product, true));        	
+            $line = $this->generateProductRow($order, $orderProduct->product, $orderProduct->qty, $index);
             if ($line) {
                 $this->lines->push($line);
             }
@@ -175,7 +177,7 @@ class OrderExporterService
         if (!$carrier || $carrier == 1) {
             $carrier = (int) $product->carrier;
         }
-        
+
         if(is_null($order->discount_amount)){
         	$order->discount_amount = 0;
         }
@@ -192,9 +194,9 @@ class OrderExporterService
         	$prod_price = $product->price * 1.22;
         }
         
-if(is_null($product)){
-	\Log::info('errore import ordine: '. print_r($order, true));
-}
+        if(is_null($product)){
+            \Log::info('errore import ordine: '. print_r($order, true));
+        }
         return [
             'sku' => $product->sku,
             'spedizioniere' => $carrier,
@@ -209,6 +211,7 @@ if(is_null($product)){
             'citta' => $order->shippingAddress->city,
             'prov' => $order->shippingAddress->state,
             'nazione' => $order->shippingAddress->country,
+            // OK
             'telefono' => $order->shippingAddress->phone,
             'email' => $order->shippingAddress->email,
             'numeroOrdine' => $order->code,

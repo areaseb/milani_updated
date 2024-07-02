@@ -13,6 +13,7 @@ return [
         'LEROYMERLIN_ITA' => 3,
         'MONECHELLE' => 3,
         'MAISONDUMONDE_ITA' => 3,
+        'EBAY-ITA' => 3,
     ],
     'carriers_name' => [
         1 => 'Non definito',
@@ -24,6 +25,7 @@ return [
         'LEROYMERLIN_ITA' => 'LeroyMerlin.it',
         'MONECHELLE' => 'ManoMano.it',
         'MAISONDUMONDE_ITA' => 'MaisonDuMonde.it',
+        'EBAY-ITA' => 'Ebay.it'
     ],
     'notification_email' => env('BEEZUP_NOTIFICATION_EMAIL', ''),
 ];

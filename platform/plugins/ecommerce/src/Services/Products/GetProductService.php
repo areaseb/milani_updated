@@ -143,6 +143,10 @@ class GetProductService
                 }
 
                 break;
+            default: // date_desc
+                $orderBy = [
+                    'ec_products.created_at' => 'desc',
+                ];
         }
 
         if (! empty($conditions)) {

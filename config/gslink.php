@@ -28,6 +28,7 @@ return [
         'cod' => 11,
         '14' => 7,
         '1' => 7,
+        'CreditCard' => 7,
         
     ],
     'payment_default' => 7, //	1, // NON DEFINITO

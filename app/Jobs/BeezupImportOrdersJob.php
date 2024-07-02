@@ -60,22 +60,56 @@ class BeezupImportOrdersJob implements ShouldQueue
         $page = 1;
         do {
             if($debug) {
-                $result = $this->client->getOrders($page++, Carbon::now()->subDays(3));
-                $add_payment = true;
+                $result = $this->client->getOrders($page++, Carbon::now()->subDays(5));
+                $add_payment = false;
                 $add_products = false;
                 $add_address = false;
+                $fix_customer = true;
 
                 foreach($result->orders as $order) {
-                    $orders_to_fix = [
-                        '8D61A57C5A670000c6b5af180b15cba9b7a950a49a00799',
+                    $find_by_bezzup_id = true;
+                    $find_by_marketplace_id = false;
+
+                    $ids_to_find = [
+                        '8D61A57C5A6700002690ab800795754aa6793b978764492',
+                        '8D61A57C5A67000975f13ced7355ca3ad7d2f980d2ebb99',
+                        '8D61A57C5A67000b415ceeb727f586892d284caf6ae6d18',
+                        '8D61A57C5A670008093f54c02845330868d5017af51441d',
+                        '8D61A57C5A67000b3eee14ed17a57299678fc4217bbf69b',
+                        '8D61A57C5A67000d2cabce854425696a280db668001d7e0',
+                        '8D61A57C5A67000f742a413988f5a2db40086fdf73b4042',
+                        '8D61A57C5A67000b7c72e0a1a8b5ebebe7c28000e34f9ec',
+                        '8D61A57C5A6700074d8fb09a70450e38bb1d0dfa7d06e8e',
+                        '8D61A57C5A67000c79aa1789eb657f9bb4fa944d7a283fd',
+                        '8D61A57C5A670000d2192bdea75590881fbce38fe325242',
                     ];
 
-                    if(in_array($order->beezUPOrderId, $orders_to_fix)) {
+                    $found = false;
+
+                    if($find_by_bezzup_id) {
+                        $found = in_array($order->beezUPOrderId, $ids_to_find);
+                    }
+                    /*
+                    else if($find_by_marketplace_id) {
+                        if(strstr($order->order_MarketplaceOrderId, $ids_to_find))
+                            $found = true;
+                    }
+                    */
+                    
+                    if($found) {
                         // Find order in DB
-                        $db_order = Order::where('external_id', $order->beezUPOrderId)->first();
+                        $db_order = Order::where('external_id', $order->beezUPOrderId)->first();                        
+
+                        if($fix_customer) {
+                            $customer = $this->getOrCreateCustomer($order);
+
+                            if($customer) {
+                                $db_order->user_id = $customer->id;
+                                $db_order->save();
+                            }
+                        }
 
                         if($add_address) {
-                            Log::info(print_r($order, true));
                             $this->createOrderAddress($db_order, $order);
                         }
 
@@ -89,29 +123,6 @@ class BeezupImportOrdersJob implements ShouldQueue
                             $this->createOrderProducts($db_order, $order);                    
                         }
                     }
-
-                    /*
-                    if ($this->doesOrderExists($order->beezUPOrderId)) {
-                        Log::info('order exists: '.print_r($order->beezUPOrderId, true));
-                        // Find order
-                        $db_order = Order::where('external_id', $order->beezUPOrderId)->first();
-
-                        if($db_order) {
-                            // Search for products
-                            $products = OrderProduct::where('order_id', $db_order->id)->get();
-
-                            if($products) {
-
-                            } else {
-                                Log::info('order HAS NO PRODUCTS: '.print_r($order->beezUPOrderId, true));
-                            }
-                        } else {
-                            Log::info('DB ORDER NOT FOUND  '.print_r($order->beezUPOrderId, true));    
-                        }
-                    } else {
-                        Log::info('order DOES NOT exists: '.print_r($order->beezUPOrderId, true));
-                    }
-                    */
                 }
 
             } else {          
@@ -158,11 +169,17 @@ class BeezupImportOrdersJob implements ShouldQueue
     {
         if (empty($data->order_Buyer_Identifier) && empty($data->order_Buyer_Email)) {
             throw new BeezupCustomerNotValidException();
-        }
-
+        }        
+        /*
         $customer = Customer::when($data->order_Buyer_Identifier ?? null, fn ($query) => $query->where('external_id', $data->order_Buyer_Identifier))
             ->when($data->order_Buyer_Email ?? null, fn ($query) => $query->where('email', $data->order_Buyer_Email))
             ->first();
+        */
+        if(!empty($data->order_Buyer_Identifier)) {
+            $customer = Customer::where('external_id', $data->order_Buyer_Identifier)->first();
+        } else {
+            $customer = Customer::where('email', $data->order_Buyer_Email)->first();
+        }
 
         if ($customer) {
             return $customer;

@@ -1,7 +1,7 @@
 @php
     $sorts = EcommerceHelper::getSortParams();
     $shows = EcommerceHelper::getShowParams();
-    $sortBy = request()->input('sort-by', 'default_sorting');
+    $sortBy = request()->input('sort-by', 'date_desc');
     $showing = (int)request()->input('num', (int)theme_option('number_of_products_per_page', 12));
 @endphp
 

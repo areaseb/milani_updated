@@ -33,6 +33,9 @@ class GSLinkClient
         	 $payload['ricaricaSeEsiste'] = false;
         }
 
+        Log::info(print_r($payload, true));
+        print_r($payload);
+
         try {
             $response = $this->client()->post('/api/sugo/DropShipping/caricaOrdini', [
                 'json' => $payload,
@@ -40,6 +43,8 @@ class GSLinkClient
 
             $body = json_decode($response->getBody()->getContents());
             Log::info(print_r($body, true));
+
+            print_r($body);
 
             return (bool) $body->success;
         } catch (Exception $e) {
